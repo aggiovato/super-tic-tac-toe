@@ -38,7 +38,8 @@ paths:
 ## Budgets
 
 - Initial bundle: warning at 400 kB, error at 550 kB uncompressed (`angular.json`).
-- Component styles: warning at 4 kB, error at 8 kB.
+- Component styles: warning at 6 kB, error at 10 kB (raised from the CLI default for the board,
+  the central component; split a component before going past the warning).
 - Targets to measure later: local response p95 ≤ 100 ms, framing 180–280 ms, interactive board
   ≤ 2.5 s at p75 (4G, CPU ×4), opponent p95 ≤ 100 / 300 / 800 ms.
 - When measuring, record device, browser, commit, network profile and build mode.
