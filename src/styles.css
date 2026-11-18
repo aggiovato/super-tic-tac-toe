@@ -7,6 +7,8 @@
 @import './styles/tokens/scales.css';
 @import './styles/themes/departures.css';
 @import './styles/tokens/semantic.css';
+@import './styles/themes/departures-contrast.css';
+@import './styles/components/button.css';
 
 @layer base {
   :root {
@@ -30,4 +32,23 @@
     outline: var(--border-emphasis) solid var(--color-focus);
     outline-offset: var(--border-emphasis);
   }
+
+  /* The player's motion setting overrides the system one in both directions. */
+  [data-motion='reduced'] *,
+  [data-motion='reduced'] *::before,
+  [data-motion='reduced'] *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Boards opening from and closing into the grid (same-document view transitions). */
+::view-transition-group(*) {
+  animation-duration: var(--duration-zoom);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-quick);
 }

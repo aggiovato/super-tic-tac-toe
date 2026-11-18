@@ -72,5 +72,8 @@
   --border-emphasis: var(--ref-stroke-3); /* forced board, focus ring */
   --duration-flap: var(--ref-duration-90); /* one half of a flap fall */
   --duration-quick: var(--ref-duration-150); /* a piece being drawn */
-  --duration-frame: var(--ref-duration-240); /* camera and board closing */
+  --duration-frame: var(--ref-duration-240); /* board closing */
+  --duration-step: var(--ref-duration-60); /* one character step of a flap cycling to its word */
+  --duration-zoom: var(--ref-duration-420); /* a board opening from, or closing into, the grid */
+  --duration-draw: var(--ref-duration-600); /* the winning line being drawn */
 }
