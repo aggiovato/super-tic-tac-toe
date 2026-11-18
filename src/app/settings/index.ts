@@ -1,8 +1,2 @@
-export {
-  DESIGNS,
-  NAME_MAX_LENGTH,
-  Preferences,
-  type Design,
-  type MotionSetting,
-  type PreferencesState,
-} from './preferences';
+export { DESIGNS, NAME_MAX_LENGTH, Preferences } from './preferences';
+export type { Design, MotionSetting, PreferencesState } from './preferences.model';

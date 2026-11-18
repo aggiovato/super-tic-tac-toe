@@ -41,15 +41,10 @@ describe('GameStore', () => {
     expect(store.lastRejection()).toBe('wrong-board');
   });
 
-  it('returns to the whole board after every move and when the layout changes', () => {
+  it('returns to the whole board after every move', () => {
     const store = setup();
-    store.setCompact(true);
     store.openBoard(4);
     store.play({ board: 4, cell: 2 });
-    expect(store.view()).toEqual({ kind: 'global' });
-
-    store.openBoard(2);
-    store.setCompact(false);
     expect(store.view()).toEqual({ kind: 'global' });
   });
 

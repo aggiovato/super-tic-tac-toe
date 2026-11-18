@@ -17,18 +17,11 @@ import {
   type RejectionReason,
 } from '@core';
 import { GameSession } from '@session';
-
-/** What the player is looking at. Changing it never changes the game. */
-export type View = { readonly kind: 'global' } | { readonly kind: 'board'; readonly board: number };
-
-/** Participant index (0 or 1) in a series; symbols swap on every rematch. */
-export type Participant = 0 | 1;
+import type { Participant, View } from './view.model';
 
 interface GameStoreState {
   readonly game: GameState;
   readonly view: View;
-  /** Narrow layout: boards are chosen on the global view and played zoomed. */
-  readonly compact: boolean;
   /** Legal cell under the pointer or focus, used to preview its departure. */
   readonly preview: Move | null;
   readonly lastRejection: RejectionReason | null;
@@ -49,7 +42,6 @@ export const GameStore = signalStore(
   withState<GameStoreState>(() => ({
     game: inject(GameSession).start(),
     view: GLOBAL,
-    compact: false,
     preview: null,
     lastRejection: null,
     xPlayer: 0,
@@ -127,12 +119,6 @@ export const GameStore = signalStore(
 
       showGlobal(): void {
         patchState(store, { view: GLOBAL, preview: null });
-      },
-
-      setCompact(compact: boolean): void {
-        if (compact !== store.compact()) {
-          patchState(store, { compact, view: GLOBAL });
-        }
       },
 
       /** Takes back the last move while the game is still going. */
