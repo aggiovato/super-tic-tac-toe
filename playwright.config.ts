@@ -12,6 +12,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     locale: 'en-US',
+    // Flows run without motion so every view settles at once; one spec covers the animated path.
+    reducedMotion: 'reduce',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
