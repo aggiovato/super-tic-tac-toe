@@ -72,8 +72,17 @@ A change is not done until `task check` is green.
 | `src/app/game/ui/`                     | Board, mini board, score, controls             | `state`, `core` types   |
 | `src/app/history/`, `src/app/storage/` | History, stats, IndexedDB                      | `core`                  |
 
-ESLint stops `core` and `ai` from importing Angular, NgRx, RxJS or app layers, and `core` from
-importing `ai`. Create each folder only with its first implementation.
+Each functional block (`core`, `ai`, `session`, `state`, `ui`, `history`, `storage`) has an
+`index.ts` that re-exports its public API. Other blocks import the folder (`../core`), never a
+file inside it (`../core/engine`); inside a block, files import each other directly. A sub-folder
+with its own audience gets its own `index.ts` too (`core/testing`, test-only).
+
+ESLint enforces it: no deep imports into a block, `core` and `ai` free of Angular, NgRx, RxJS and
+app layers, and `core` free of `ai`.
+
+Keep a block flat until its files stop being easy to scan; split into sub-folders by concept
+(e.g. `core/rules/v1/` once a second `rulesVersion` exists), never in advance. Create each folder
+only with its first implementation.
 
 ## Rules (`.claude/rules/`)
 
