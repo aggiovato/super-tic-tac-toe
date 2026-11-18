@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GLOBAL_DIAGONAL_WIN } from './testing/fixtures';
-import { formatState, play } from './testing/notation';
+import { GLOBAL_DIAGONAL_WIN, formatState, play } from './testing';
 
 // A complete game a reviewer can follow without Angular: `npm run test:core` replays it and the
 // snapshot shows the final position.

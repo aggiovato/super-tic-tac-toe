@@ -45,6 +45,33 @@ module.exports = defineConfig([
     },
   },
   {
+    // Every functional block exposes its public API through its index.ts. Other blocks import
+    // the folder (`../core`), never a file inside it (`../core/engine`).
+    files: ['src/app/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '**/core/*',
+                '**/ai/*',
+                '**/session/*',
+                '**/state/*',
+                '**/ui/*',
+                '**/history/*',
+                '**/storage/*',
+                '!**/core/testing',
+              ],
+              message: 'Import the block through its index.ts (e.g. "../core"), not its files.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // The engine and the opponent do not depend on Angular, NgRx, RxJS or app adapters.
     files: ['src/app/game/core/**/*.ts', 'src/app/game/ai/**/*.ts'],
     rules: {

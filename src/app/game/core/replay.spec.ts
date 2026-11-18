@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { replay } from './replay';
-import { CLOSES_OWN_TARGET, GLOBAL_DIAGONAL_WIN, GLOBAL_DRAW } from './testing/fixtures';
-import { parseMoves, play } from './testing/notation';
 import { RULES_VERSION } from './types';
+import { CLOSES_OWN_TARGET, GLOBAL_DIAGONAL_WIN, GLOBAL_DRAW, parseMoves, play } from './testing';
 
 describe('replay', () => {
   it.each([

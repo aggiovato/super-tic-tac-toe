@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove, initialState, legalMoves } from './engine';
+import type { GameState, Move } from './types';
 import {
   CLOSES_OWN_TARGET,
   GLOBAL_DIAGONAL_WIN,
   GLOBAL_DRAW,
   POINTS_TO_DRAWN_BOARD,
-} from './testing/fixtures';
-import { parseMoves, play } from './testing/notation';
-import type { GameState, Move } from './types';
+  parseMoves,
+  play,
+} from './testing';
 
 const boardsOf = (moves: readonly Move[]): number[] => [
   ...new Set(moves.map((move) => move.board)),
