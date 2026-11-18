@@ -16,6 +16,7 @@
   --color-surface-panel: var(--ref-raven-900); /* platforms, flap tiles, score tiles */
   --color-surface-raised: var(--ref-raven-700); /* hover and pressed fills */
   --color-fg: var(--ref-seagrass-400); /* body text, icons */
+  --color-fg-disabled: var(--ref-seagrass-600); /* unavailable controls, ≥ 3:1 on surfaces */
   --color-fg-strong: var(--ref-chalk-100); /* emphasis, current player */
   --color-line: var(--ref-seagrass-600); /* secondary strokes, ≥ 3:1 on every surface */
   --color-line-strong: var(--ref-seagrass-400); /* primary strokes */
@@ -25,7 +26,9 @@
 
   /* Game roles. */
   --color-mark-x: var(--ref-seagrass-400);
-  --color-mark-o: var(--ref-chalk-100);
+  --color-mark-o: var(
+    --ref-seagrass-400
+  ); /* brand: X and O share Seagrass; shape tells them apart */
   --color-target: var(--ref-apricot-500); /* forced board and its number */
   --color-last-move: var(--ref-chalk-100); /* chalk: the accent stays for the departure */
   --color-preview: var(--ref-chalk-100); /* board a hovered cell would send to */

@@ -51,7 +51,9 @@
 
   .btn:disabled,
   .btn[aria-disabled='true'] {
-    opacity: 0.55;
+    border-color: var(--color-surface-raised);
+    background: transparent;
+    color: var(--color-fg-disabled);
     cursor: not-allowed;
   }
 
