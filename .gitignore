@@ -1,4 +1,40 @@
-node_modules/
-dist/
+# Compiled output
+/dist
+/tmp
+/out-tsc
+
+# Node
+/node_modules
+npm-debug.log
+
+# Tests and reports
+/coverage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+__screenshots__/
+
+# Angular
+/.angular/cache
+
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Claude Code (local only)
+.claude/settings.local.json
+
+# Local documentation (implementation guide, not versioned)
+docs/
+
+# Environment and system
 .env
+.env.*
 .DS_Store
+Thumbs.db

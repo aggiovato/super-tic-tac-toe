@@ -1,0 +1,9 @@
+/* Engine and opponent: plain TypeScript, no Angular or DOM. Used by Vitest in Node (npm run test:core). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [],
+    "lib": ["ES2022"]
+  },
+  "include": ["src/app/game/core/**/*.ts", "src/app/game/ai/**/*.ts", "vitest.core.config.ts"]
+}
