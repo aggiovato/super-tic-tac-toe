@@ -5,6 +5,30 @@ const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 const prettier = require('eslint-config-prettier');
 
+// Functional blocks of the app. Each one has an index.ts and a tsconfig `paths` alias.
+const BLOCKS = 'core|ai|session|state|ui|history|storage';
+
+const BLOCK_BOUNDARIES = [
+  {
+    regex: `^\\.{1,2}/(?:.*/)?(?:${BLOCKS})(?:/|$)`,
+    message: 'Import another block through its alias (e.g. "@core"), not a relative path.',
+  },
+  {
+    regex: `^@(?:${BLOCKS})/(?!testing$)`,
+    message: 'Import the block alias (e.g. "@core"), not its internal files.',
+  },
+];
+
+const PLAIN_TYPESCRIPT = {
+  regex: '^(?:@angular/|@ngrx/|rxjs(?:/|$))',
+  message: 'core and ai are plain TypeScript.',
+};
+
+const NO_APP_LAYERS = {
+  regex: '^@(?:session|state|ui|history|storage)(?:/|$)',
+  message: 'core and ai must not import app layers.',
+};
+
 module.exports = defineConfig([
   {
     ignores: [
@@ -45,35 +69,32 @@ module.exports = defineConfig([
     },
   },
   {
-    // The engine and the opponent do not depend on Angular, NgRx, RxJS or app adapters.
-    files: ['src/app/game/core/**/*.ts', 'src/app/game/ai/**/*.ts'],
+    // Blocks talk to each other only through their alias (`@core`), which points to the block's
+    // index.ts. No relative path into another block, no alias into a block's files.
+    files: ['src/app/**/*.ts'],
+    rules: { 'no-restricted-imports': ['error', { patterns: BLOCK_BOUNDARIES }] },
+  },
+  {
+    // The opponent does not depend on Angular, NgRx, RxJS or app layers.
+    files: ['src/app/game/ai/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        { patterns: [PLAIN_TYPESCRIPT, NO_APP_LAYERS] },
+      ],
+    },
+  },
+  {
+    // The engine depends on nothing else: no framework, no app layer, no opponent.
+    files: ['src/app/game/core/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
         {
           patterns: [
-            {
-              group: ['@angular/*', '@ngrx/*', 'rxjs', 'rxjs/*'],
-              message: 'core and ai are plain TypeScript.',
-            },
-            {
-              group: ['**/session/**', '**/state/**', '**/ui/**', '**/storage/**', '**/history/**'],
-              message: 'core and ai must not import app layers.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    // The engine does not depend on the opponent either.
-    files: ['src/app/game/core/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            { group: ['**/ai/**', '../ai', '../ai/*'], message: 'core must not import ai.' },
+            PLAIN_TYPESCRIPT,
+            NO_APP_LAYERS,
+            { regex: '^@ai(?:/|$)', message: 'core must not import ai.' },
           ],
         },
       ],

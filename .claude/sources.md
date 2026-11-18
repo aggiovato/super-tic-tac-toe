@@ -19,7 +19,8 @@ Copied unmodified. Excluded from Prettier and ESLint so the pinned material is n
 | Angular CLI / build                         | 22.2.7                                      |
 | Angular core                                | 22.3.0                                      |
 | TypeScript                                  | 6.0.3                                       |
-| Vitest                                      | 5.1.1                                       |
+| Vitest / @vitest/coverage-v8                | 5.1.1 / 5.1.1                               |
+| fast-check                                  | 4.10.3                                      |
 | ESLint / angular-eslint / typescript-eslint | 10.15.0 / 22.8.0 / 8.73.0                   |
 | Prettier                                    | 3.10.1                                      |
 | Task                                        | 3.54.0                                      |

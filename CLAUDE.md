@@ -33,7 +33,7 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 0 · Bootstrap: done.** Next: **phase 1 · Executable engine**.
+**Phase 1 · Executable engine: done** (`src/app/game/core/`). Next: **phase 2 · Two humans**.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -48,16 +48,16 @@ Update this table when a phase closes.
 
 ## Commands
 
-| Task                          | What it does                                                              |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| `task setup`                  | `npm ci`                                                                  |
-| `task dev`                    | `ng serve`                                                                |
-| `task fmt` / `task fmt-check` | Prettier write / check                                                    |
-| `task lint`                   | ESLint (TS, templates and accessibility), zero warnings                   |
-| `task unit`                   | `test:core` (Vitest in Node) and `test:app` (`ng test`, Vitest + TestBed) |
-| `task build`                  | Production build with budgets                                             |
-| `task check`                  | All of the above, in CI order                                             |
-| `task ci`                     | `setup` + `check` (what the workflow runs)                                |
+| Task                          | What it does                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `task setup`                  | `npm ci`                                                                                 |
+| `task dev`                    | `ng serve`                                                                               |
+| `task fmt` / `task fmt-check` | Prettier write / check                                                                   |
+| `task lint`                   | ESLint (TS, templates and accessibility), zero warnings                                  |
+| `task unit`                   | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
+| `task build`                  | Production build with budgets                                                            |
+| `task check`                  | All of the above, in CI order                                                            |
+| `task ci`                     | `setup` + `check` (what the workflow runs)                                               |
 
 A change is not done until `task check` is green.
 
@@ -72,8 +72,28 @@ A change is not done until `task check` is green.
 | `src/app/game/ui/`                     | Board, mini board, score, controls             | `state`, `core` types   |
 | `src/app/history/`, `src/app/storage/` | History, stats, IndexedDB                      | `core`                  |
 
-ESLint stops `core` and `ai` from importing Angular, NgRx, RxJS or app layers, and `core` from
-importing `ai`. Create each folder only with its first implementation.
+Each functional block has an `index.ts` that re-exports its public API and a path alias that
+points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
+`resolve.tsconfigPaths`):
+
+| Alias                                | Block                   |
+| ------------------------------------ | ----------------------- |
+| `@core`, `@core/testing` (test-only) | `src/app/game/core/`    |
+| `@ai`, `@session`, `@state`, `@ui`   | `src/app/game/<block>/` |
+| `@history`, `@storage`               | `src/app/<block>/`      |
+
+Another block is imported only through its alias (`import { applyMove } from '@core'`), never
+with a relative path (`../core`) or into its files (`@core/engine`). Inside a block, files import
+each other with relative paths. A sub-folder with its own audience gets its own `index.ts` and
+alias too (`@core/testing`). A new block needs both an `index.ts` and an alias, and its name added
+to `BLOCKS` in `eslint.config.js`.
+
+ESLint enforces it: no relative or deep imports across blocks, `core` and `ai` free of Angular,
+NgRx, RxJS and app layers, and `core` free of `ai`.
+
+Keep a block flat until its files stop being easy to scan; split into sub-folders by concept
+(e.g. `core/rules/v1/` once a second `rulesVersion` exists), never in advance. Create each folder
+only with its first implementation.
 
 ## Rules (`.claude/rules/`)
 

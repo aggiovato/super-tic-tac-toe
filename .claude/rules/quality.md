@@ -14,16 +14,16 @@ paths:
 
 | Layer      | Tool                         | Minimum                                                                                   |
 | ---------- | ---------------------------- | ----------------------------------------------------------------------------------------- |
-| Engine     | Vitest in Node (`test:core`) | One test per rule and per regression. Target: 95 % branch coverage in `core`.             |
+| Engine     | Vitest in Node (`test:core`) | One test per rule and per regression. `test:core` fails under 95 % coverage in `core`.    |
 | Properties | fast-check (phase 1)         | Reachable sequences from the opening, mixing legal and invalid moves.                     |
 | AI         | Vitest in Node               | Tactical fixtures, legal fallback with an exhausted budget, cancelled search.             |
 | App        | `ng test` (Vitest + TestBed) | Store and components: double tap, late reply, restart, save error, focus.                 |
 | E2E        | Playwright (phase 2)         | Opening → forced target → free choice, end and rematch. Keyboard, mobile, reduced motion. |
 
-- Readable fixtures written as move sequences.
+- Readable fixtures written as move sequences (`board.cell`, e.g. `'4.2 2.4'`) in `core/testing/fixtures.ts`; play them with `play()` from `core/testing/notation.ts`, which fails on the first illegal move. `core/testing/` is test-only and excluded from the app build.
 - In the UI, query by role and accessible name; `data-testid` only for ambiguous cells.
 - Wait for visible states, never fixed sleeps.
-- Coverage finds gaps; it is not a goal in itself.
+- Coverage finds gaps; it is not a goal in itself. Check a new rule test by breaking the engine on purpose and watching it fail.
 - Test names describe behaviour in English (`it('forces O onto board 2 after X plays cell 2')`).
 
 ## Format and lint
