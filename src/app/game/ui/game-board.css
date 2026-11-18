@@ -181,12 +181,10 @@ button.cell:focus-visible .cell-number {
 }
 
 /* Closed boards: the small marks step back under one large mark. */
-/* Finished boards recede into the page; their large mark carries the result. */
+/* Finished boards go dark; their large mark carries the result. */
 .platform.closed {
   --platform-bg: var(--color-surface-done);
   --grid-line: var(--color-surface-raised);
-
-  box-shadow: none;
 }
 
 /* Marks of a closed board sit above its strike line: the cells hide theirs, this layer shows them. */
