@@ -58,3 +58,20 @@ use a monotonic clock. Search budgets: 50 / 200 / 600 ms (beginner / intermediat
 
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
+
+## Implementation map
+
+| File              | Contents                                                                  |
+| ----------------- | ------------------------------------------------------------------------- |
+| `core/types.ts`   | `GameState`, `Move`, statuses, `Target`, results, `RULES_VERSION`         |
+| `core/lines.ts`   | The eight lines and `findLine`, shared by both levels                     |
+| `core/resolve.ts` | `resolveBoard` (local) and `resolveGame` (global)                         |
+| `core/engine.ts`  | `initialState`, `legalMoves`, `applyMove`; rejection order follows rule 2 |
+| `core/replay.ts`  | `replay(moves, rulesVersion)`                                             |
+| `core/index.ts`   | Public API; other layers import only from here                            |
+| `core/testing/`   | Fixtures, `board.cell` notation and `formatState` (test-only)             |
+
+Canonical fixtures (`core/testing/fixtures.ts`) were found by playing the engine itself; when one
+changes, re-check the property its spec asserts. `example-game.spec.ts` snapshots a full game as
+text so a reviewer can follow it without Angular. fast-check prints the seed and shrink path of a
+failure; turn it into a fixed regression test before fixing.

@@ -33,7 +33,7 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 0 · Bootstrap: done.** Next: **phase 1 · Executable engine**.
+**Phase 1 · Executable engine: done** (`src/app/game/core/`). Next: **phase 2 · Two humans**.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -48,16 +48,16 @@ Update this table when a phase closes.
 
 ## Commands
 
-| Task                          | What it does                                                              |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| `task setup`                  | `npm ci`                                                                  |
-| `task dev`                    | `ng serve`                                                                |
-| `task fmt` / `task fmt-check` | Prettier write / check                                                    |
-| `task lint`                   | ESLint (TS, templates and accessibility), zero warnings                   |
-| `task unit`                   | `test:core` (Vitest in Node) and `test:app` (`ng test`, Vitest + TestBed) |
-| `task build`                  | Production build with budgets                                             |
-| `task check`                  | All of the above, in CI order                                             |
-| `task ci`                     | `setup` + `check` (what the workflow runs)                                |
+| Task                          | What it does                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `task setup`                  | `npm ci`                                                                                 |
+| `task dev`                    | `ng serve`                                                                               |
+| `task fmt` / `task fmt-check` | Prettier write / check                                                                   |
+| `task lint`                   | ESLint (TS, templates and accessibility), zero warnings                                  |
+| `task unit`                   | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
+| `task build`                  | Production build with budgets                                                            |
+| `task check`                  | All of the above, in CI order                                                            |
+| `task ci`                     | `setup` + `check` (what the workflow runs)                                               |
 
 A change is not done until `task check` is green.
 
