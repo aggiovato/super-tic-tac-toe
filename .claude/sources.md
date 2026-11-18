@@ -9,7 +9,7 @@ review the diff in a PR and update this table.
 | Barlow Semi Condensed (500, 600, 700, latin) | `@fontsource/barlow-semi-condensed` 5.3.0 (npm, self-hosted by the build) | https://github.com/jpt/barlow via Fontsource                                                                                                 | 2026-11-18 | OFL-1.1                                         | Brand typeface (PRODUCT.md), served locally for offline play.        |
 | Skill `angular-new-app`                      | `.claude/skills/angular-new-app/`                                         | Same commit as above                                                                                                                         | 2026-11-18 | MIT (frontmatter)                               | Official scaffold; useful when adding workspace apps (phase 6).      |
 
-Copied unmodified. Excluded from Prettier and ESLint so the pinned material is never rewritten.
+Copied unmodified. In-house generated textures (`public/textures/tear-line.svg`) carry a comment saying so. Excluded from Prettier and ESLint so the pinned material is never rewritten.
 
 ## Toolchain versions (recorded at project creation)
 

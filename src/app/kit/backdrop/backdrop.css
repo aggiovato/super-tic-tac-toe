@@ -1,0 +1,21 @@
+:host {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--backdrop-opacity);
+}
+
+.tear {
+  position: absolute;
+  display: block;
+  aspect-ratio: 1000 / 160;
+  background: var(--color-tear);
+  mask: url('/textures/tear-line.svg') center / 100% 100% no-repeat;
+
+  /* Low on the left, running down to a point. */
+  bottom: 6%;
+  left: -2%;
+  width: clamp(18rem, 42vw, 40rem);
+}

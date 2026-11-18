@@ -35,8 +35,8 @@
   --color-preview: var(--ref-chalk-100); /* board a hovered cell would send to */
   --color-win: var(--ref-apricot-500);
 
-  /* Atmosphere: page wash, light and shade. Decorative only; never carries information. */
-  --color-wash: color-mix(in srgb, var(--ref-seagrass-400) 7%, transparent); /* torn streaks */
+  /* Atmosphere: torn strips, light and shade. Decorative only; never carries information. */
+  --color-tear: var(--ref-seagrass-400); /* masked by the strip's own shading */
   --color-glow: color-mix(in srgb, var(--ref-raven-700) 85%, transparent); /* soft light */
   --color-shade: color-mix(in srgb, var(--ref-ink) 70%, transparent); /* vignette, shadows */
 
@@ -85,6 +85,6 @@
   --duration-step: var(--ref-duration-60); /* one character step of a flap cycling to its word */
   --duration-zoom: var(--ref-duration-420); /* a board opening from, or closing into, the grid */
   --duration-draw: var(--ref-duration-600); /* the winning line being drawn */
-  --shadow-panel: 0 0.375rem 1.25rem -0.25rem var(--color-shade); /* platforms over the wash */
-  --texture-wash: url('/textures/torn-wash.svg'); /* mask shape for --color-wash */
+  --shadow-panel: 0 0.375rem 1.25rem -0.25rem var(--color-shade); /* platforms over the page */
+  --backdrop-opacity: 1; /* thin torn strips behind everything; 0 hides them */
 }

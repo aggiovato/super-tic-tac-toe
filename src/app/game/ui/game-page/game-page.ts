@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import type { Player } from '@core';
 import { Translator } from '@i18n';
-import { Button, Icon, SplitFlap } from '@kit';
+import { Backdrop, Button, Icon, SplitFlap } from '@kit';
 import { Preferences } from '@settings';
 import { GameStore, type Participant } from '@state';
 import { DepartureBoard } from '../departure-board/departure-board';
@@ -21,7 +21,7 @@ const word = (text: string, accent = false, steps?: number, length = WORD_LENGTH
 /** The game route: departure row, board, series score and actions. */
 @Component({
   selector: 'app-game-page',
-  imports: [Button, DepartureBoard, GameBoard, Icon, SettingsPanel, SplitFlap],
+  imports: [Backdrop, Button, DepartureBoard, GameBoard, Icon, SettingsPanel, SplitFlap],
   templateUrl: './game-page.html',
   styleUrl: './game-page.css',
 })

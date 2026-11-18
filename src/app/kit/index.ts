@@ -1,3 +1,4 @@
+export { Backdrop } from './backdrop/backdrop';
 export { Button, type ButtonVariant } from './button/button';
 export { fadeIn, flipFrom, renderChange, type FlipOptions } from './dom/flip';
 export { injectMediaQuery } from './dom/media-query';

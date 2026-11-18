@@ -42,7 +42,7 @@ the semantic layer's values point at its primitives.
 
 | Group  | Tokens                                                                                                                                                                         |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Colour | `surface`, `surface-panel`, `surface-raised`, `surface-done`, `fg-disabled`, `wash`, `glow`, `shade`, `fg`, `fg-strong`, `line`, `line-strong`, `accent`, `on-accent`, `focus` |
+| Colour | `surface`, `surface-panel`, `surface-raised`, `surface-done`, `fg-disabled`, `tear`, `glow`, `shade`, `fg`, `fg-strong`, `line`, `line-strong`, `accent`, `on-accent`, `focus` |
 | Game   | `mark-x`, `mark-o`, `target`, `last-move`, `preview`, `win`                                                                                                                    |
 | Type   | `caption` 14, `body` 18, `title` 24, `score` 36, `flap` fluid 36–60 (each with its line height)                                                                                |
 | Radius | `cell` < `tile` < `panel` < `control` < `pill`: smaller parts get smaller radii                                                                                                |
@@ -62,7 +62,7 @@ shape cue (thick border, filled number) besides its colour. A new design must re
   animation and transition, and components read `Preferences.reducedMotion()` for JS-driven motion
   (flap cycling, view transitions).
 - Shared visual components live in `@kit` (`src/app/kit/<name>/`): `SplitFlap`, `StrikeLine`,
-  `Icon` and `Button` (`<button app-button="primary|secondary|quiet">`). Each keeps its styles
+  `Icon`, `Backdrop` (the page's single torn strip, `--color-tear`, `--backdrop-opacity`) and `Button` (`<button app-button="primary|secondary|quiet">`). Each keeps its styles
   encapsulated and built from semantic tokens only.
 
 ## Adding a design
