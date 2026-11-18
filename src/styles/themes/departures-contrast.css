@@ -4,7 +4,7 @@
  */
 [data-theme='departures-contrast'] {
   --color-surface-panel: var(--ref-raven-950);
-  --color-surface-done: var(--ref-ink); /* still darker than the open panels */
+  --color-surface-done: var(--ref-raven-950);
   --color-fg: var(--ref-chalk-100); /* 14.5:1 on raven-950 */
   --color-line: var(--ref-seagrass-400); /* 8.4:1 on raven-950 */
   --color-line-strong: var(--ref-chalk-100);

@@ -15,7 +15,7 @@
   --color-surface: var(--ref-raven-800); /* page ground */
   --color-surface-panel: var(--ref-raven-900); /* platforms, flap tiles, score tiles */
   --color-surface-raised: var(--ref-raven-700); /* hover and pressed fills */
-  --color-surface-done: var(--ref-raven-950); /* finished boards: darker than open ones */
+  --color-surface-done: var(--ref-raven-900); /* finished boards: the dark panel tone */
   --color-fg: var(--ref-seagrass-400); /* body text, icons */
   --color-fg-disabled: var(--ref-seagrass-600); /* unavailable controls, ≥ 3:1 on surfaces */
   --color-fg-strong: var(--ref-chalk-100); /* emphasis, current player */
