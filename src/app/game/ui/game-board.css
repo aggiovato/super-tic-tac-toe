@@ -117,8 +117,9 @@ button.cell:focus-visible {
   content: '';
   position: absolute;
   z-index: 1;
-  inset: 0;
+  inset: max(2px, 4cqmin);
   border: var(--border-line) solid transparent;
+  border-radius: var(--radius-tile);
   pointer-events: none;
   transition: border-color var(--duration-quick) var(--ease-out);
 }
