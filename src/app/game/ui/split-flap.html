@@ -1,0 +1,27 @@
+<ng-template #glyph let-char>
+  @if (char === '→') {
+    <svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+  } @else {
+    {{ char }}
+  }
+</ng-template>
+
+<span class="half top"
+  ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: char() }"
+/></span>
+<span class="half bottom old"
+  ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous() }"
+/></span>
+<span class="half bottom new"
+  ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: char() }"
+/></span>
+@for (current of [char()]; track current) {
+  @if (current !== previous()) {
+    <span class="half top leaf-out"
+      ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous() }"
+    /></span>
+    <span class="half bottom leaf-in"
+      ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: current }"
+    /></span>
+  }
+}

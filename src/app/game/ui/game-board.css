@@ -1,0 +1,211 @@
+:host {
+  /* Component tokens, built only from semantic tokens. */
+  --platform-bg: var(--color-surface-panel);
+  --platform-pad: var(--spacing-panel-pad);
+  --platform-radius: var(--radius-panel);
+  --grid-line: var(--color-line);
+  --dimmed: 0.4;
+  --thumbnail-size: 7rem;
+
+  display: block;
+  width: min(100%, 36rem);
+  margin-inline: auto;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-board-gap);
+}
+
+.board-zoom {
+  grid-template-columns: 1fr;
+}
+
+.platform {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--platform-pad);
+  padding: var(--platform-pad);
+  border: var(--border-emphasis) solid transparent;
+  border-radius: var(--platform-radius);
+  background: var(--platform-bg);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  transition: opacity var(--duration-frame) var(--ease-out);
+}
+
+.number {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-cell-gap);
+  background: var(--grid-line);
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 0;
+  padding: 0;
+  background: var(--platform-bg);
+  color: inherit;
+}
+
+button.cell.legal {
+  cursor: pointer;
+}
+
+button.cell.legal:hover {
+  background: var(--color-surface-raised);
+}
+
+.mark {
+  width: 78%;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.mark-x {
+  stroke: var(--color-mark-x);
+  stroke-width: 1.3;
+}
+
+.mark-o {
+  stroke: var(--color-mark-o);
+  stroke-width: 1.7;
+}
+
+.cell.last {
+  box-shadow: inset 0 0 0 var(--border-line) var(--color-last-move);
+}
+
+.cell-number {
+  position: absolute;
+  inset: var(--spacing-stack-tight) auto auto var(--spacing-stack-tight);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-fg);
+}
+
+/* The departure: shape (thick border, filled number) and colour together. */
+.forced {
+  border-color: var(--color-target);
+}
+
+.forced .number {
+  justify-self: start;
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-tile);
+  background: var(--color-target);
+  color: var(--color-on-accent);
+}
+
+.preview:not(.forced) {
+  border-color: var(--color-preview);
+  border-style: dashed;
+}
+
+.dim {
+  opacity: var(--dimmed);
+}
+
+.closed .cells {
+  opacity: 0.25;
+}
+
+.closing {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.closing .mark {
+  width: 86%;
+  stroke-width: 1.1;
+}
+
+.closing.drawn .mark {
+  stroke: var(--color-line-strong);
+}
+
+.win .closing .mark {
+  stroke: var(--color-win);
+}
+
+/* Narrow layout: a pickable platform is a button. */
+button.platform.playable {
+  cursor: pointer;
+}
+
+.platform-zoom .number {
+  font-size: var(--text-body);
+}
+
+.platform-zoom .mark {
+  width: 64%;
+}
+
+.thumbnail {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--spacing) * 1);
+  justify-self: start;
+  width: var(--thumbnail-size);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.thumbnail .platform {
+  --platform-pad: calc(var(--spacing) * 0.5);
+  --platform-radius: var(--radius-cell);
+
+  border-width: var(--border-hairline);
+}
+
+.thumbnail .number {
+  display: none;
+}
+
+.thumbnail .current {
+  border-color: var(--color-fg-strong);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mark path,
+  .mark circle {
+    stroke-dasharray: 20;
+    animation: draw var(--duration-quick) var(--ease-out) both;
+  }
+
+  .closing {
+    animation: drop var(--duration-frame) var(--ease-out) both;
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 20;
+  }
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}

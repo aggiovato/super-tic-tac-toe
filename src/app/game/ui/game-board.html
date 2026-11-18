@@ -1,0 +1,141 @@
+<ng-template #markIcon let-mark>
+  @if (mark === 'X') {
+    <svg class="mark mark-x" viewBox="0 0 10 10" aria-hidden="true">
+      <path d="M2.4 2.4l5.2 5.2M7.6 2.4l-5.2 5.2" />
+    </svg>
+  } @else if (mark === 'O') {
+    <svg class="mark mark-o" viewBox="0 0 10 10" aria-hidden="true">
+      <circle cx="5" cy="5" r="2.9" />
+    </svg>
+  }
+</ng-template>
+
+<!-- Number, cells and closing mark of one platform. `cells` makes each cell a button. -->
+<ng-template #platform let-board let-cells="cells">
+  <span class="number" aria-hidden="true">{{ board }}</span>
+  <div class="cells">
+    @for (cell of indices; track cell) {
+      @if (cells) {
+        <button
+          type="button"
+          class="cell"
+          [class.last]="isLast(board, cell)"
+          [class.legal]="isLegal(board, cell)"
+          [attr.data-roving]="mode() === 'zoom' ? cell : globalIndex(board, cell)"
+          [attr.tabindex]="
+            roving() === (mode() === 'zoom' ? cell : globalIndex(board, cell)) ? 0 : -1
+          "
+          [attr.aria-disabled]="!isLegal(board, cell)"
+          [attr.aria-label]="t().cell(board, cell, mark(board, cell))"
+          (click)="play(board, cell)"
+          (pointerenter)="onPointerEnter($event, { board, cell })"
+          (pointerleave)="preview(null)"
+          (focus)="
+            onFocusItem($event, mode() === 'zoom' ? cell : globalIndex(board, cell), {
+              board,
+              cell,
+            })
+          "
+          (blur)="preview(null)"
+        >
+          @if (mode() === 'zoom' && mark(board, cell) === null && isLegal(board, cell)) {
+            <span class="cell-number" aria-hidden="true">{{ cell }}</span>
+          }
+          <ng-container *ngTemplateOutlet="markIcon; context: { $implicit: mark(board, cell) }" />
+        </button>
+      } @else {
+        <span class="cell" [class.last]="isLast(board, cell)">
+          <ng-container *ngTemplateOutlet="markIcon; context: { $implicit: mark(board, cell) }" />
+        </span>
+      }
+    }
+  </div>
+  @switch (store.game().boards[board]?.kind) {
+    @case ('won') {
+      <span class="closing" aria-hidden="true">
+        <ng-container *ngTemplateOutlet="markIcon; context: { $implicit: winnerOf(board) }" />
+      </span>
+    }
+    @case ('drawn') {
+      <span class="closing drawn" aria-hidden="true">
+        <svg class="mark" viewBox="0 0 10 10"><path d="M2.5 4h5M2.5 6h5" /></svg>
+      </span>
+    }
+  }
+</ng-template>
+
+<div
+  class="board"
+  [class.board-zoom]="mode() === 'zoom'"
+  role="group"
+  [attr.aria-label]="t().boardLabel"
+  (keydown)="onKeydown($event)"
+>
+  @switch (mode()) {
+    @case ('zoom') {
+      @let board = zoomed() ?? 0;
+      <button type="button" class="thumbnail" (click)="back()" [attr.aria-label]="t().backToBoard">
+        @for (thumb of indices; track thumb) {
+          <span
+            class="platform"
+            [class.forced]="isForced(thumb)"
+            [class.current]="thumb === board"
+            [class.closed]="store.game().boards[thumb]?.kind !== 'open'"
+          >
+            <ng-container
+              *ngTemplateOutlet="platform; context: { $implicit: thumb, cells: false }"
+            />
+          </span>
+        }
+      </button>
+      <div
+        class="platform platform-zoom"
+        [class.forced]="isForced(board)"
+        role="group"
+        [attr.aria-label]="boardLabel(board)"
+      >
+        <ng-container *ngTemplateOutlet="platform; context: { $implicit: board, cells: true }" />
+      </div>
+    }
+    @case ('pick') {
+      @for (board of indices; track board) {
+        <button
+          type="button"
+          class="platform"
+          [class.forced]="isForced(board)"
+          [class.playable]="store.playableBoards().has(board)"
+          [class.dim]="!store.isOver() && !store.playableBoards().has(board)"
+          [class.closed]="store.game().boards[board]?.kind !== 'open'"
+          [class.win]="isWinningBoard(board)"
+          [attr.data-roving]="board"
+          [attr.tabindex]="roving() === board ? 0 : -1"
+          [attr.aria-disabled]="!store.playableBoards().has(board)"
+          [attr.aria-label]="
+            store.playableBoards().has(board) ? t().openBoard(board) : boardLabel(board)
+          "
+          (click)="open(board)"
+          (focus)="roving.set(board)"
+        >
+          <ng-container *ngTemplateOutlet="platform; context: { $implicit: board, cells: false }" />
+        </button>
+      }
+    }
+    @default {
+      @for (board of indices; track board) {
+        <div
+          class="platform"
+          [class.forced]="isForced(board)"
+          [class.playable]="store.playableBoards().has(board)"
+          [class.dim]="!store.isOver() && !store.playableBoards().has(board)"
+          [class.closed]="store.game().boards[board]?.kind !== 'open'"
+          [class.preview]="store.previewTarget() === board"
+          [class.win]="isWinningBoard(board)"
+          role="group"
+          [attr.aria-label]="boardLabel(board)"
+        >
+          <ng-container *ngTemplateOutlet="platform; context: { $implicit: board, cells: true }" />
+        </div>
+      }
+    }
+  }
+</div>

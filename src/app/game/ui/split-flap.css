@@ -1,0 +1,94 @@
+:host {
+  /* Component tokens: built only from semantic tokens. */
+  --flap-bg: var(--color-surface-panel);
+  --flap-fg: var(--color-fg);
+  --flap-split: var(--color-surface);
+
+  position: relative;
+  display: inline-block;
+  width: 0.78em;
+  height: 1.18em;
+  perspective: 8em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--flap-fg);
+}
+
+:host(.accent) {
+  --flap-fg: var(--color-target);
+}
+
+/* The hairline split across the middle of every tile. */
+:host::after {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 0.04em;
+  background: var(--flap-split);
+}
+
+.half {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-tile);
+  background: var(--flap-bg);
+  backface-visibility: hidden;
+}
+
+.top {
+  clip-path: inset(0 0 50% 0);
+}
+
+.bottom {
+  clip-path: inset(50% 0 0 0);
+}
+
+.new {
+  visibility: hidden;
+}
+
+.leaf-out {
+  animation: fall-out var(--duration-flap) var(--ease-flap) both;
+  animation-delay: calc(var(--flap-index) * 15ms);
+}
+
+.leaf-in {
+  animation: fall-in var(--duration-flap) var(--ease-flap) both;
+  animation-delay: calc(var(--flap-index) * 15ms + var(--duration-flap));
+}
+
+.arrow {
+  width: 0.6em;
+  height: 0.6em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes fall-out {
+  to {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes fall-in {
+  from {
+    transform: rotateX(90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf-out,
+  .leaf-in,
+  .old {
+    display: none;
+  }
+
+  .new {
+    visibility: visible;
+  }
+}
