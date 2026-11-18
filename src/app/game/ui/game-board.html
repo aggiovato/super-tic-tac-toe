@@ -4,13 +4,10 @@
     <app-split-flap
       class="platform-number"
       [char]="'' + (board + 1)"
-      [accent]="isForced(board) || isFreePick(board)"
+      [accent]="isForced(board)"
       [spin]="spinOf(board)"
       [maxSteps]="4"
     />
-    @if (closingGlyph(board); as glyph) {
-      <app-split-flap class="platform-number" [char]="glyph" [maxSteps]="3" />
-    }
   </span>
   <div class="cells">
     @for (cell of indices; track cell) {
@@ -28,7 +25,7 @@
           [attr.aria-label]="cellLabel(board, cell)"
           (click)="play(board, cell)"
           (pointerenter)="onPointerEnter($event, { board, cell })"
-          (pointerleave)="preview(null)"
+          (pointerleave)="onPointerLeave()"
           (focus)="
             onFocusItem(mode() === 'zoom' ? cell : globalIndex(board, cell), {
               board,
@@ -54,6 +51,23 @@
       <app-strike-line [segment]="line" />
     }
   </div>
+  @switch (closingMark(board)) {
+    @case ('X') {
+      <svg class="closing mark-x" viewBox="0 0 10 10" aria-hidden="true">
+        <path d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
+      </svg>
+    }
+    @case ('O') {
+      <svg class="closing mark-o" viewBox="0 0 10 10" aria-hidden="true">
+        <circle cx="5" cy="5" r="3" pathLength="1" />
+      </svg>
+    }
+    @case ('=') {
+      <svg class="closing drawn" viewBox="0 0 10 10" aria-hidden="true">
+        <path d="M2.5 4h5M2.5 6h5" pathLength="1" />
+      </svg>
+    }
+  }
 </ng-template>
 
 <div
@@ -95,7 +109,6 @@
         class="platform platform-zoom"
         [class.forced]="isForced(board)"
         [class.free-pick]="isFreePick(board)"
-        [style.view-transition-name]="'platform-' + board"
         role="group"
         [attr.aria-label]="boardLabel(board)"
       >
@@ -112,7 +125,7 @@
           [class.playable]="store.playableBoards().has(board)"
           [class.closed]="store.game().boards[board]?.kind !== 'open'"
           [class.win]="isWinningBoard(board)"
-          [style.view-transition-name]="'platform-' + board"
+          [attr.data-board]="board"
           [attr.data-roving]="board"
           [attr.tabindex]="roving() === board ? 0 : -1"
           [attr.aria-disabled]="!store.playableBoards().has(board)"

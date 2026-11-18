@@ -16,7 +16,7 @@ import { Icon, SplitFlap, StrikeLine, type Segment } from '@kit';
 import { Preferences } from '@settings';
 import { GameStore } from '@state';
 import { injectMediaQuery } from './media-query';
-import { runViewTransition } from './view-transition';
+import { fadeIn, flipFrom, renderChange, type FlipOptions } from './flip';
 
 /** How the board is played right now. */
 type Mode =
@@ -30,7 +30,15 @@ type Mode =
 const INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /** Pause on the whole board after a move on narrow screens, before the next board opens. */
-const PAUSE_BEFORE_OPEN_MS = 520;
+const PAUSE_BEFORE_OPEN_MS = 480;
+/** A CSS easing token, or a plain ease-out when it cannot be read. */
+const easingOf = (value: string | undefined): string => {
+  const easing = value?.trim() ?? '';
+  return easing.length > 0 ? easing : 'ease-out';
+};
+
+/** Hover intent: a preview appears or clears only once the pointer settles. */
+const PREVIEW_DELAY_MS = 140;
 
 const ARROWS: Readonly<Record<string, readonly [number, number]>> = {
   ArrowUp: [-1, 0],
@@ -85,7 +93,7 @@ function strike(line: Line): Segment {
   styleUrl: './game-board.css',
   host: {
     '[class.zoomed]': "mode() === 'zoom'",
-    '(window:keydown)': 'usingKeyboard = true',
+    '(window:keydown)': 'onWindowKeydown($event)',
     '(window:pointerdown)': 'usingKeyboard = false',
   },
 })
@@ -102,11 +110,15 @@ export class GameBoard {
   protected readonly glyphOf = glyphOf;
 
   private pendingOpen: ReturnType<typeof setTimeout> | undefined;
+  private pendingPreview: ReturnType<typeof setTimeout> | undefined;
   /** Whether the last interaction was a key press: only then does focus preview a departure. */
   protected usingKeyboard = false;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => clearTimeout(this.pendingOpen));
+    inject(DestroyRef).onDestroy(() => {
+      clearTimeout(this.pendingOpen);
+      clearTimeout(this.pendingPreview);
+    });
   }
 
   protected readonly mode = computed((): Mode => {
@@ -179,10 +191,11 @@ export class GameBoard {
     return this.isForced(board) ? this.store.game().revision : 0;
   }
 
-  protected closingGlyph(board: number): string | null {
+  /** The large mark laid over a closed board: its winner, or `=` for a draw. */
+  protected closingMark(board: number): 'X' | 'O' | '=' | null {
     const status = this.store.game().boards[board];
     if (status?.kind === 'won') {
-      return glyphOf(status.winner);
+      return status.winner;
     }
     return status?.kind === 'drawn' ? '=' : null;
   }
@@ -221,20 +234,26 @@ export class GameBoard {
     }
     if (this.mode() !== 'zoom') {
       this.store.play(move);
-      this.focusRovingAfterRender();
+      // Keyboard play continues on the next legal cell; a mouse click leaves focus alone.
+      if (this.usingKeyboard) {
+        this.focusRovingAfterRender();
+      }
       return;
     }
-    // Narrow screens: the open board closes back into the grid, showing the move in place; then,
-    // after a beat, the forced board opens from its own place.
-    void this.transition(() => this.store.play(move)).then(() => {
-      const target = this.store.game().target;
-      if (target.kind !== 'forced' || !this.preferences.autoZoom()) {
-        this.focusRovingAfterRender();
-        return;
-      }
-      const pause = this.preferences.reducedMotion() ? 0 : PAUSE_BEFORE_OPEN_MS;
-      this.pendingOpen = setTimeout(() => this.open(target.board), pause);
-    });
+    // Narrow screens: the open board settles back into its slot, showing the move in place; then,
+    // after a beat, the forced board grows out of its own slot.
+    const from = this.zoomElement()?.getBoundingClientRect();
+    void renderChange(this.injector, () => this.store.play(move))
+      .then(() => this.settleInto(board, from))
+      .then(() => {
+        const target = this.store.game().target;
+        if (target.kind !== 'forced' || !this.preferences.autoZoom()) {
+          this.focusRovingIfKeyboard();
+          return;
+        }
+        const pause = this.preferences.reducedMotion() ? 0 : PAUSE_BEFORE_OPEN_MS;
+        this.pendingOpen = setTimeout(() => this.open(target.board), pause);
+      });
   }
 
   protected open(board: number): void {
@@ -242,18 +261,73 @@ export class GameBoard {
     if (!this.store.playableBoards().has(board)) {
       return;
     }
-    void this.transition(() => this.store.openBoard(board)).then(() => this.focusRoving());
+    const from = this.slotElement(board)?.getBoundingClientRect();
+    void renderChange(this.injector, () => this.store.openBoard(board))
+      .then(() => {
+        const zoom = this.zoomElement();
+        const motion = this.motion();
+        if (!zoom || !from || !motion) {
+          return;
+        }
+        fadeIn(
+          this.host.nativeElement.querySelectorAll('.thumbnail'),
+          motion,
+          motion.duration * 0.3,
+        );
+        return flipFrom(zoom, from, motion);
+      })
+      .then(() => this.focusRovingIfKeyboard());
   }
 
   protected back(): void {
     clearTimeout(this.pendingOpen);
     const board = this.zoomed();
-    void this.transition(() => this.store.showGlobal()).then(() => {
-      if (board !== null) {
-        this.roving.set(board);
-      }
-      this.focusRoving();
+    const from = this.zoomElement()?.getBoundingClientRect();
+    void renderChange(this.injector, () => this.store.showGlobal())
+      .then(() => (board === null ? undefined : this.settleInto(board, from)))
+      .then(() => {
+        if (board !== null) {
+          this.roving.set(board);
+        }
+        this.focusRovingIfKeyboard();
+      });
+  }
+
+  /** The open board shrinks back into its slot while the other boards fade in around it. */
+  private settleInto(board: number, from: DOMRect | undefined): Promise<void> {
+    const slot = this.slotElement(board);
+    const motion = this.motion();
+    if (!slot || !from || !motion) {
+      return Promise.resolve();
+    }
+    const others = [...this.host.nativeElement.querySelectorAll('[data-board]')].filter(
+      (element) => element !== slot,
+    );
+    fadeIn(others, motion, motion.duration * 0.25);
+    slot.style.zIndex = '2';
+    return flipFrom(slot, from, motion).then(() => {
+      slot.style.zIndex = '';
     });
+  }
+
+  private slotElement(board: number): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>(`[data-board="${board}"]`);
+  }
+
+  private zoomElement(): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>('.platform-zoom');
+  }
+
+  /** Duration and easing from the `--duration-zoom` and `--ease-out` tokens; null without motion. */
+  private motion(): FlipOptions | null {
+    if (this.preferences.reducedMotion()) {
+      return null;
+    }
+    const style = this.document.defaultView?.getComputedStyle(this.host.nativeElement);
+    return {
+      duration: Number.parseFloat(style?.getPropertyValue('--duration-zoom') ?? '') || 420,
+      easing: easingOf(style?.getPropertyValue('--ease-out')),
+    };
   }
 
   protected preview(move: Move | null): void {
@@ -265,11 +339,20 @@ export class GameBoard {
   /** Devices that can hover; on touch screens a tap plays at once, so nothing previews. */
   private readonly canHover = injectMediaQuery('(hover: hover)');
 
-  /** Previews follow a real mouse pointer. */
+  /** Previews follow a real mouse pointer, once it settles on a cell. */
   protected onPointerEnter(event: PointerEvent, move: Move): void {
     if (event.pointerType === 'mouse' && this.canHover()) {
-      this.preview(move);
+      this.previewSoon(move);
     }
+  }
+
+  protected onPointerLeave(): void {
+    this.previewSoon(null);
+  }
+
+  private previewSoon(move: Move | null): void {
+    clearTimeout(this.pendingPreview);
+    this.pendingPreview = setTimeout(() => this.preview(move), PREVIEW_DELAY_MS);
   }
 
   /** Keyboard focus previews; focus moved by the app after a tap or click does not. */
@@ -280,12 +363,16 @@ export class GameBoard {
     }
   }
 
-  protected onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && this.mode() === 'zoom') {
+  /** Any key switches to keyboard mode; Escape leaves an open board wherever focus is. */
+  protected onWindowKeydown(event: KeyboardEvent): void {
+    this.usingKeyboard = true;
+    if (event.key === 'Escape' && this.mode() === 'zoom' && !event.defaultPrevented) {
       event.preventDefault();
       this.back();
-      return;
     }
+  }
+
+  protected onKeydown(event: KeyboardEvent): void {
     const delta = ARROWS[event.key];
     if (!delta) {
       return;
@@ -321,17 +408,14 @@ export class GameBoard {
     return index;
   }
 
-  private transition(update: () => void): Promise<void> {
-    return runViewTransition(
-      this.document,
-      this.injector,
-      this.preferences.reducedMotion(),
-      update,
-    );
-  }
-
   private focusRoving(): void {
     this.host.nativeElement.querySelector<HTMLElement>(`[data-roving="${this.roving()}"]`)?.focus();
+  }
+
+  private focusRovingIfKeyboard(): void {
+    if (this.usingKeyboard) {
+      this.focusRoving();
+    }
   }
 
   private focusRovingAfterRender(): void {

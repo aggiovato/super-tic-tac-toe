@@ -1,14 +1,13 @@
 /*
  * Sized from the arena container (`container-type: size` on the page), so the board takes the
- * largest square the screen allows in every layout.
+ * largest area the screen allows in every layout.
  */
 :host {
   /* Component tokens, built only from semantic tokens. */
   --platform-bg: var(--color-surface-panel);
   --platform-pad: var(--spacing-panel-pad);
   --platform-radius: var(--radius-panel);
-  --tile: var(--color-surface);
-  --tile-playable: var(--color-surface-raised);
+  --grid-line: var(--color-line);
   --head-size: clamp(0.875rem, 4.4cqmin, 1.5rem);
 
   display: block;
@@ -20,7 +19,7 @@
   display: grid;
   grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
   gap: var(--spacing-board-gap);
-  /* Square where height is short; on tall phones up to 18 % taller, so tiles read as flaps. */
+  /* Square where height is short; on tall phones up to 18 % taller. */
   width: min(100cqw, 100cqh);
   height: min(100cqh, min(100cqw, 100cqh) * 1.18);
   margin-inline: auto;
@@ -31,10 +30,9 @@
   gap: var(--spacing-stack-tight);
   width: 100%;
   height: 100%;
-  aspect-ratio: auto;
 }
 
-/* Platforms: a numbered head over a 3×3 of flap tiles. */
+/* Platforms: a numbered head over a classic 3×3 grid. */
 .platform {
   position: relative;
   display: grid;
@@ -46,9 +44,13 @@
   border: var(--border-emphasis) solid transparent;
   border-radius: var(--platform-radius);
   background: var(--platform-bg);
+  box-shadow: var(--shadow-panel);
   color: inherit;
   font: inherit;
   text-align: start;
+  transition:
+    border-color var(--duration-quick) var(--ease-out),
+    background-color var(--duration-quick) var(--ease-out);
 }
 
 button.platform {
@@ -61,20 +63,26 @@ button.platform.playable {
 
 .platform-head {
   display: flex;
-  justify-content: space-between;
   font-size: var(--head-size);
 }
 
+.platform-number {
+  transition: box-shadow var(--duration-quick) var(--ease-out);
+}
+
+/* Lines between cells, not boxes: the grid shows through the gaps. */
 .cells {
   position: relative;
   display: grid;
   grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
   gap: var(--spacing-cell-gap);
   min-height: 0;
+  background: var(--grid-line);
 }
 
 .cell {
-  --flap-bg: var(--tile);
+  --flap-bg: var(--platform-bg);
+  --flap-split: transparent;
 
   position: relative;
   display: block;
@@ -82,53 +90,45 @@ button.platform.playable {
   min-height: 0;
   padding: 0;
   border: 0;
-  background: none;
+  background: var(--platform-bg);
   color: inherit;
   container-type: size;
 }
 
-.playable .cell {
-  --flap-bg: var(--tile-playable);
+.playable {
+  --platform-bg: var(--color-surface-raised);
+}
+
+/* Boards that cannot be played this turn keep their marks but fade their grid. */
+.platform:not(.playable, .closed) {
+  --grid-line: var(--color-surface-raised);
 }
 
 button.cell.legal {
   cursor: pointer;
 }
 
-/*
- * Rings drawn above the flap tile: playable cells get a hairline (≥ 3:1), hover a stronger line,
- * keyboard focus the focus ring. The tile itself covers the button, so outlines would hide.
- */
-.cell::before {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  border-radius: var(--radius-tile);
-  pointer-events: none;
-}
-
-.cells > .cell::before {
-  border: var(--border-hairline) solid var(--color-line);
-}
-
 button.cell:focus-visible {
   outline: none;
 }
 
-button.cell:focus-visible::before {
-  border: var(--border-emphasis) solid var(--color-focus);
-}
-
-/* The cell just played: an inner ring in the last-move colour, above the tile. */
-.cell.last::after {
+/* Rings above the flap tile, which covers the button: last move, hover, keyboard focus. */
+.cell::after {
   content: '';
   position: absolute;
-  inset: 0;
   z-index: 1;
-  border: var(--border-line) solid var(--color-last-move);
-  border-radius: var(--radius-tile);
+  inset: 0;
+  border: var(--border-line) solid transparent;
   pointer-events: none;
+  transition: border-color var(--duration-quick) var(--ease-out);
+}
+
+.cell.last::after {
+  border-color: var(--color-last-move);
+}
+
+button.cell:focus-visible::after {
+  border: var(--border-emphasis) solid var(--color-focus);
 }
 
 .cell-number {
@@ -141,6 +141,7 @@ button.cell:focus-visible::before {
   color: var(--color-fg);
   opacity: 0;
   pointer-events: none;
+  transition: opacity var(--duration-quick) var(--ease-out);
 }
 
 .cell-number.always,
@@ -149,8 +150,8 @@ button.cell:focus-visible .cell-number {
 }
 
 @media (hover: hover) {
-  button.cell.legal:hover::before {
-    border: var(--border-line) solid var(--color-line-strong);
+  button.cell.legal:hover::after {
+    border-color: var(--color-line-strong);
   }
 
   button.cell.legal:hover .cell-number {
@@ -158,31 +159,73 @@ button.cell:focus-visible .cell-number {
   }
 
   button.platform.playable:hover {
-    --platform-bg: var(--color-surface-raised);
+    border-color: var(--color-line-strong);
   }
 }
 
-/* The departure: shape (thick border, accent number) and colour together. */
+/* The departure, the only accent border: thick outline and accent number. */
 .forced {
   border-color: var(--color-target);
 }
 
+/* A free choice: neutral outline on every playable board. */
 .free-pick:not(.forced) {
-  border-style: dashed;
-  border-color: var(--color-target);
+  border-color: var(--color-line);
 }
 
-.preview:not(.forced, .free-pick) {
-  border-style: dashed;
-  border-color: var(--color-preview);
+/* Where a hovered or focused cell would send the opponent: its number lights up softly. */
+.preview .platform-number {
+  box-shadow: 0 0 0 var(--border-line) var(--color-preview);
+  border-radius: var(--radius-tile);
 }
 
+/* Closed boards: the small marks step back under one large mark. */
 .closed .cells app-split-flap {
-  opacity: 0.45;
+  opacity: 0.55;
 }
 
-.win {
-  border-color: var(--color-win);
+.closing {
+  position: absolute;
+  inset: 12%;
+  width: 76%;
+  height: 76%;
+  fill: none;
+  stroke-linecap: round;
+  pointer-events: none;
+  filter: drop-shadow(0 0.25rem 0.5rem var(--color-shade));
+}
+
+.closing.mark-x {
+  stroke: var(--color-mark-x);
+  stroke-width: 0.7;
+}
+
+.closing.mark-o {
+  stroke: var(--color-mark-o);
+  stroke-width: 0.8;
+}
+
+.closing.drawn {
+  stroke: var(--color-line-strong);
+  stroke-width: 0.6;
+}
+
+.closing path,
+.closing circle {
+  stroke-dasharray: 1;
+  animation: draw-mark var(--duration-draw) var(--ease-out) both;
+}
+
+@keyframes draw-mark {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .closing :is(path, circle) {
+    animation: none;
+  }
 }
 
 /* Narrow screens, one board open: the thumbnail leads back to the whole board. */
@@ -214,15 +257,12 @@ button.cell:focus-visible .cell-number {
 
   display: block;
   border-width: var(--border-line);
+  box-shadow: none;
 }
 
 .thumbnail .cells {
   height: 100%;
   gap: 1px;
-}
-
-.thumbnail .cell::before {
-  border: 0;
 }
 
 .thumbnail .current {

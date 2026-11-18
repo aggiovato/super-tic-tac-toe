@@ -43,8 +43,11 @@
 }
 
 .why {
+  /* Fixed height: a preview or refusal replacing the sentence never moves anything below. */
   max-width: 60ch;
-  min-height: calc(2 * var(--text-body) * var(--text-body--line-height));
+  height: calc(3 * var(--text-body) * var(--text-body--line-height));
+  overflow: hidden;
+  text-wrap: pretty;
   font-size: var(--text-body);
   line-height: var(--text-body--line-height);
 }
