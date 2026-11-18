@@ -53,4 +53,6 @@ lands with the npm script it calls.
 
 E2E specs run against the production build served by `scripts/serve-dist.mjs` (SPA fallback) on
 desktop and Pixel 7 Chromium. They play through the UI with accessible names, never by reaching
-into the store, and wait for the view a move produces before the next one.
+into the store, and wait for the view a move produces before the next one. They run with reduced
+motion so every view settles at once; one spec covers the animated narrow-screen path. Cells are
+addressed by engine coordinates and named 1–9, as players see them.

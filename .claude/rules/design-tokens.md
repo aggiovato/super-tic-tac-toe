@@ -53,6 +53,18 @@ Accessibility is part of the contract: `fg` on every surface â‰¥ 4.5:1, `line` â
 and `surface-panel`, `focus` never equal to `accent` or `target`, and the target always carries a
 shape cue (thick border, filled number) besides its colour. A new design must re-check these.
 
+## Designs and shared components
+
+- Designs today: `departures` (default) and `departures-contrast` (brighter text and strokes,
+  darker panels), chosen in the settings panel and applied as `data-theme` on `<html>` by
+  `Preferences` (`@settings`).
+- The motion setting sets `data-motion="full|reduced"` on `<html>`; `reduced` disables every CSS
+  animation and transition, and components read `Preferences.reducedMotion()` for JS-driven motion
+  (flap cycling, view transitions).
+- Shared visual components live in `@kit` (`src/app/kit/`): `SplitFlap`, `StrikeLine`, `Icon` and
+  the `appButton` directive. The button family's CSS is global
+  (`src/styles/components/button.css`, `@layer components`) and uses semantic tokens only.
+
 ## Adding a design
 
 1. Create `src/styles/themes/<name>.css` with its primitives and a

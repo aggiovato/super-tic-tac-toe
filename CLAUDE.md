@@ -33,10 +33,11 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 2 · Two humans: in progress** on `phase/2-two-humans`. Built: GameStore, local session,
-departure-board UI (direct play on wide screens, pick-and-zoom on narrow ones), keyboard play,
-i18n (es/en), design tokens, Playwright. Pending: finish review and `DESIGN.md`, then the
-prototype decisions listed in the surface brief.
+**Phase 2 · Two humans: in progress** on `phase/2-two-humans`. Built: GameStore with undo, local session,
+departure-board UI (platforms with flap numbers, cells as flaps, flap rows that cycle to their
+word, win lines), two-column desktop, narrow screens that open boards from their place with view
+transitions, keyboard play, settings (names, language, motion, auto-open, hints, design), i18n
+(es/en) with boards numbered 1–9 for players, design tokens, Playwright. Pending: `DESIGN.md`.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -85,6 +86,8 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@core`, `@core/testing` (test-only) | `src/app/game/core/`    |
 | `@ai`, `@session`, `@state`, `@ui`   | `src/app/game/<block>/` |
 | `@history`, `@storage`, `@i18n`      | `src/app/<block>/`      |
+| `@settings` (player preferences)     | `src/app/settings/`     |
+| `@kit` (shared UI: flap, button…)    | `src/app/kit/`          |
 
 Another block is imported only through its alias (`import { applyMove } from '@core'`), never
 with a relative path (`../core`) or into its files (`@core/engine`). Inside a block, files import

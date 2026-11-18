@@ -13,8 +13,12 @@ Visitor mode: experience. The work itself leads from the first viewport: the boa
 Audience and job: a newcomer on their first turn (portfolio visitor, friend, returning player) must
 see where they may play and, after playing, why the opponent must play where they do.
 
-Unresolved: zoom amount on mobile, flap animation length and cadence, whether the global thumbnail
-lets players anticipate the next turn. The phase 2 prototype decides them.
+Decided after the first critique (22/40): boards numbered 1–9 for players; mini boards are
+platforms with a flap number; cells are flap tiles; flap rows cycle through the drum to their word;
+narrow screens close the open board into the grid after a move, pause, then open the forced board
+from its slot (view transitions); win lines are drawn on; desktop uses two columns with the board
+at full height. Players can rename themselves, switch language, motion, auto-open, hints and the
+high-contrast design.
 
 ## Direction contract
 
