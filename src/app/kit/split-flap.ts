@@ -73,6 +73,8 @@ export class SplitFlap {
   protected readonly previous = signal<Face>({ char: ' ', accent: false });
   /** Increments on every step so the falling leaves are recreated and animate again. */
   protected readonly flip = signal(0);
+  /** True while cycling; at rest the tile is drawn as one face, with no seam between halves. */
+  protected readonly flipping = signal(false);
 
   private initialised = false;
   private lastSpin = 0;
@@ -99,6 +101,7 @@ export class SplitFlap {
         const timers = path.map((char, i) =>
           setTimeout(
             () => {
+              this.flipping.set(true);
               this.previous.set(this.current());
               this.current.set({ char, accent: i === path.length - 1 && target.accent });
               this.flip.update((n) => n + 1);
@@ -106,7 +109,11 @@ export class SplitFlap {
             delay + i * step,
           ),
         );
-        onCleanup(() => timers.forEach(clearTimeout));
+        timers.push(setTimeout(() => this.flipping.set(false), delay + (path.length + 1) * step));
+        onCleanup(() => {
+          timers.forEach(clearTimeout);
+          this.flipping.set(false);
+        });
       });
     });
   }
