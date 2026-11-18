@@ -6,7 +6,7 @@ const angular = require('angular-eslint');
 const prettier = require('eslint-config-prettier');
 
 // Functional blocks of the app. Each one has an index.ts and a tsconfig `paths` alias.
-const BLOCKS = 'core|ai|session|state|ui|history|storage|i18n';
+const BLOCKS = 'core|ai|session|state|ui|history|storage|i18n|settings|kit';
 
 const BLOCK_BOUNDARIES = [
   {
@@ -25,7 +25,7 @@ const PLAIN_TYPESCRIPT = {
 };
 
 const NO_APP_LAYERS = {
-  regex: '^@(?:session|state|ui|history|storage|i18n)(?:/|$)',
+  regex: '^@(?:session|state|ui|history|storage|i18n|settings|kit)(?:/|$)',
   message: 'core and ai must not import app layers.',
 };
 
@@ -41,6 +41,7 @@ module.exports = defineConfig([
       'blob-report/',
       'docs/',
       '.claude/skills/',
+      '.impeccable/',
     ],
   },
   {

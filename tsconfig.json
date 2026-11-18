@@ -21,7 +21,9 @@
       "@ui": ["./src/app/game/ui/index.ts"],
       "@history": ["./src/app/history/index.ts"],
       "@storage": ["./src/app/storage/index.ts"],
-      "@i18n": ["./src/app/i18n/index.ts"]
+      "@i18n": ["./src/app/i18n/index.ts"],
+      "@settings": ["./src/app/settings/index.ts"],
+      "@kit": ["./src/app/kit/index.ts"]
     }
   },
   "angularCompilerOptions": {
