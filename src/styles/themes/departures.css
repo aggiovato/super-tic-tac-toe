@@ -4,6 +4,8 @@
  * primitives plus a [data-theme='<name>'] block overriding every semantic token it changes.
  */
 :root {
+  --ref-ink: #050b0c; /* derived: deepest shade, for shadows only */
+  --ref-raven-950: #0a1516; /* derived shade */
   --ref-raven-900: #0f1f21; /* derived shade */
   --ref-raven-800: #16292b; /* Raven Teal, 60 % */
   --ref-raven-700: #1d3437; /* derived tint */

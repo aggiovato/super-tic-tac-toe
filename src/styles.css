@@ -16,11 +16,26 @@
   }
 
   html {
-    background: var(--color-surface);
+    background:
+      radial-gradient(ellipse 70% 55% at 25% 15%, var(--color-glow), transparent 70%),
+      radial-gradient(ellipse 80% 60% at 85% 105%, var(--color-shade), transparent 70%),
+      var(--color-surface);
+    background-attachment: fixed;
     color: var(--color-fg);
     font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Torn streaks of the secondary colour washed over the ground. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-wash);
+    mask: var(--texture-wash) center / cover no-repeat;
+    pointer-events: none;
   }
 
   ::selection {
@@ -40,15 +55,4 @@
     animation: none !important;
     transition: none !important;
   }
-}
-
-/* Boards opening from and closing into the grid (same-document view transitions). */
-::view-transition-group(*) {
-  animation-duration: var(--duration-zoom);
-  animation-timing-function: var(--ease-out);
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: var(--duration-quick);
 }
