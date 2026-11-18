@@ -213,8 +213,18 @@ button.cell:focus-visible .cell-number {
   container-type: size;
 }
 
+/* A knockout in the board colour behind each mark, so the strike line breaks around it. */
+.mark-over.filled::before {
+  content: '';
+  position: absolute;
+  inset: 22%;
+  border-radius: var(--radius-pill);
+  background: var(--platform-bg);
+}
+
 .closing {
   position: absolute;
+  z-index: 4;
   inset: 12%;
   width: 76%;
   height: 76%;

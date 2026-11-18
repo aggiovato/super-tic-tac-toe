@@ -240,12 +240,24 @@ export class GameBoard {
       }
       return;
     }
-    // Narrow screens: the open board settles back into its slot, showing the move in place; then,
-    // after a beat, the forced board grows out of its own slot.
+    // Narrow screens: when the move sends the opponent to this same board, it simply stays open.
+    // Otherwise the board settles back into its slot, showing the move in place; then, after a
+    // beat, the forced board grows out of its own slot.
     const from = this.zoomElement()?.getBoundingClientRect();
-    void renderChange(this.injector, () => this.store.play(move))
-      .then(() => this.settleInto(board, from))
-      .then(() => {
+    let stays = false;
+    void renderChange(this.injector, () => {
+      this.store.play(move);
+      const target = this.store.game().target;
+      stays = target.kind === 'forced' && target.board === board && this.preferences.autoZoom();
+      if (stays) {
+        this.store.openBoard(board);
+      }
+    }).then(() => {
+      if (stays) {
+        this.focusRovingIfKeyboard();
+        return;
+      }
+      void this.settleInto(board, from).then(() => {
         const target = this.store.game().target;
         if (target.kind !== 'forced' || !this.preferences.autoZoom()) {
           this.focusRovingIfKeyboard();
@@ -254,6 +266,7 @@ export class GameBoard {
         const pause = this.preferences.reducedMotion() ? 0 : PAUSE_BEFORE_OPEN_MS;
         this.pendingOpen = setTimeout(() => this.open(target.board), pause);
       });
+    });
   }
 
   protected open(board: number): void {

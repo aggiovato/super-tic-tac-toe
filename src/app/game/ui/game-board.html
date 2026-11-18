@@ -54,30 +54,30 @@
       <!-- A closed board's marks are redrawn above its strike line, on the same grid. -->
       <span class="marks-over" aria-hidden="true">
         @for (cell of indices; track cell) {
-          <span class="mark-over">
+          <span class="mark-over" [class.filled]="mark(board, cell) !== null">
             <app-split-flap class="fill" [char]="glyphOf(mark(board, cell))" [maxSteps]="1" />
           </span>
         }
       </span>
     }
+    @switch (closingMark(board)) {
+      @case ('X') {
+        <svg class="closing mark-x" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
+        </svg>
+      }
+      @case ('O') {
+        <svg class="closing mark-o" viewBox="0 0 10 10" aria-hidden="true">
+          <circle cx="5" cy="5" r="3" pathLength="1" />
+        </svg>
+      }
+      @case ('=') {
+        <svg class="closing drawn" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2.5 4h5M2.5 6h5" pathLength="1" />
+        </svg>
+      }
+    }
   </div>
-  @switch (closingMark(board)) {
-    @case ('X') {
-      <svg class="closing mark-x" viewBox="0 0 10 10" aria-hidden="true">
-        <path d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
-      </svg>
-    }
-    @case ('O') {
-      <svg class="closing mark-o" viewBox="0 0 10 10" aria-hidden="true">
-        <circle cx="5" cy="5" r="3" pathLength="1" />
-      </svg>
-    }
-    @case ('=') {
-      <svg class="closing drawn" viewBox="0 0 10 10" aria-hidden="true">
-        <path d="M2.5 4h5M2.5 6h5" pathLength="1" />
-      </svg>
-    }
-  }
 </ng-template>
 
 <div
