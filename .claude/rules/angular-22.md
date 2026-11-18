@@ -23,11 +23,28 @@ review this file and `.claude/sources.md`.
 - v20+ naming: `game-board.ts` with class `GameBoard`, no `.component` suffix.
 - Selector prefix `app-` (kebab-case components, camelCase directives), enforced by ESLint.
 
+## Structure
+
+- One folder per component, named like it (`game-board/game-board.{ts,html,css}`), also inside
+  `@kit` (`kit/split-flap/`, `kit/button/`…). Plain DOM helpers live in `kit/dom/`.
+- Types and interfaces live in `*.model.ts` files (`core/models/move.model.ts`,
+  `board-platform/platform-view.model.ts`); a block with several groups them in `models/` with
+  its own `index.ts`. Components and services do not declare exported interfaces inline.
+- i18n: the contract in `i18n/messages.model.ts`, one file per language in `i18n/messages/`.
+
 ## Code
 
 - Inputs and outputs with `input()`, `input.required()`, `output()` and `model()`, always typed.
-- Derived state with `computed()`. Use `effect()` only to sync with the outside world (DOM,
-  storage), never to propagate state.
+- Derived state with `computed()`; writable state that resets from a source with `linkedSignal()`
+  (roving focus, a flap's run). Use `effect()` only to drive imperative APIs (timers, the
+  document, storage): never write signals synchronously inside an effect; a timer callback may.
+- Layout-dependent work uses `afterRenderEffect` phases: measure in `earlyRead`, apply in `write`
+  (the win line), never a signal written from a read phase. One-off DOM work after a change uses
+  `afterNextRender`.
+- View models: when a template would call many functions per item, derive one model per item in
+  a `computed` (`platforms()` → `PlatformView`) and pass it to a child component.
+- A component that enhances a native element uses an attribute selector (`button[app-button]`,
+  `[app-board-platform]`), keeping native semantics; its styles stay encapsulated, no global CSS.
 - Templates use `@if`, `@for` (with `track` on a stable identity, e.g. `track cell.index`) and
   `@switch`. No `*ngIf` or `*ngFor`.
 - No expensive work in templates: no building, filtering or sorting arrays. Derive it in a

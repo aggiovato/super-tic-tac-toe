@@ -61,9 +61,9 @@ shape cue (thick border, filled number) besides its colour. A new design must re
 - The motion setting sets `data-motion="full|reduced"` on `<html>`; `reduced` disables every CSS
   animation and transition, and components read `Preferences.reducedMotion()` for JS-driven motion
   (flap cycling, view transitions).
-- Shared visual components live in `@kit` (`src/app/kit/`): `SplitFlap`, `StrikeLine`, `Icon` and
-  the `appButton` directive. The button family's CSS is global
-  (`src/styles/components/button.css`, `@layer components`) and uses semantic tokens only.
+- Shared visual components live in `@kit` (`src/app/kit/<name>/`): `SplitFlap`, `StrikeLine`,
+  `Icon` and `Button` (`<button app-button="primary|secondary|quiet">`). Each keeps its styles
+  encapsulated and built from semantic tokens only.
 
 ## Adding a design
 
