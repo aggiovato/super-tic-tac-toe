@@ -50,6 +50,16 @@
     @if (localStrike(board); as line) {
       <app-strike-line [segment]="line" />
     }
+    @if (closingMark(board)) {
+      <!-- A closed board's marks are redrawn above its strike line, on the same grid. -->
+      <span class="marks-over" aria-hidden="true">
+        @for (cell of indices; track cell) {
+          <span class="mark-over">
+            <app-split-flap class="fill" [char]="glyphOf(mark(board, cell))" [maxSteps]="1" />
+          </span>
+        }
+      </span>
+    }
   </div>
   @switch (closingMark(board)) {
     @case ('X') {

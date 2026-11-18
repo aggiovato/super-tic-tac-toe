@@ -181,8 +181,36 @@ button.cell:focus-visible .cell-number {
 }
 
 /* Closed boards: the small marks step back under one large mark. */
-.closed .cells app-split-flap {
-  opacity: 0.55;
+/* Finished boards recede into the page; their large mark carries the result. */
+.platform.closed {
+  --platform-bg: var(--color-surface-done);
+  --grid-line: var(--color-surface-raised);
+
+  box-shadow: none;
+}
+
+/* Marks of a closed board sit above its strike line: the cells hide theirs, this layer shows them. */
+.closed .cell app-split-flap {
+  visibility: hidden;
+}
+
+.marks-over {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-cell-gap);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.mark-over {
+  --flap-bg: transparent;
+  --flap-split: transparent;
+
+  position: relative;
+  container-type: size;
 }
 
 .closing {
