@@ -12,10 +12,11 @@ import {
 import { Preferences } from '@settings';
 
 /**
- * Characters a tile can show, in drum order. Lowercase `x` and `o` are the players, drawn as the
- * board's own marks so they never read as a letter or a zero.
+ * Letters and digits on the drum, in order. A tile cycles through these on its way to a new
+ * character. Glyphs (`x` and `o` for the players, drawn as the board's marks so they never read as a
+ * letter or a zero; `→`; `=`) are never cycled through: they only appear as the final character.
  */
-const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑ0123456789=→xo';
+const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑ0123456789';
 const STAGGER_MS = 35;
 
 interface Face {
@@ -23,16 +24,23 @@ interface Face {
   readonly accent: boolean;
 }
 
-/** Characters between `from` and `to` on the drum, ending on `to`, at most `max` long. */
+/** Characters shown on the way from `from` to `to`, ending on `to`, at most `max` long. */
 function drumPath(from: string, to: string, max: number): string[] {
   const start = Math.max(0, DRUM.indexOf(from));
-  const end = Math.max(0, DRUM.indexOf(to));
+  const end = DRUM.indexOf(to);
+  const steps = Math.max(1, max);
+  if (end < 0) {
+    // A glyph: spin a few drum characters, then land on it.
+    return [
+      ...Array.from({ length: steps - 1 }, (_, i) => DRUM[(start + i + 1) % DRUM.length] ?? ' '),
+      to,
+    ];
+  }
   const distance = (end - start + DRUM.length) % DRUM.length;
-  const steps = Math.min(Math.max(distance, 1), max);
-  return Array.from({ length: steps }, (_, i) => {
-    const offset = (end - (steps - 1 - i) + DRUM.length) % DRUM.length;
-    return i === steps - 1 ? to : (DRUM[offset] ?? to);
-  });
+  const count = Math.min(Math.max(distance, 1), steps);
+  return Array.from({ length: count }, (_, i) =>
+    i === count - 1 ? to : (DRUM[(end - (count - 1 - i) + DRUM.length) % DRUM.length] ?? to),
+  );
 }
 
 /**
