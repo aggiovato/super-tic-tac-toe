@@ -3,19 +3,65 @@
   z-index: -1;
   inset: 0;
   overflow: hidden;
+  color: var(--color-tear);
   pointer-events: none;
   opacity: var(--backdrop-opacity);
 }
 
+/* Torn strips: a mask shape filled with the tear colour. */
 .tear {
   position: absolute;
   display: block;
   aspect-ratio: 1000 / 160;
-  background: var(--color-tear);
+  background: currentColor;
   mask: url('/textures/tear-line.svg') center / 100% 100% no-repeat;
+}
 
-  /* Low on the left, running down to a point. */
+/* Low on the left, running down to a point. */
+.tear-low {
   bottom: 6%;
   left: -2%;
   width: clamp(18rem, 42vw, 40rem);
+}
+
+/* Short and high on the right, mirrored: it balances the low one on wide screens. */
+.tear-high {
+  top: 7%;
+  right: -3%;
+  width: clamp(12rem, 24vw, 24rem);
+  transform: scale(-1, -1);
+}
+
+/* Oversized outline marks from the board itself, cropped by the page edges. */
+.ghost {
+  position: absolute;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 3;
+  opacity: var(--ghost-opacity);
+}
+
+.ghost-o {
+  bottom: -9rem;
+  left: -7rem;
+  width: clamp(18rem, 34vw, 30rem);
+}
+
+.ghost-x {
+  top: -6rem;
+  right: -6rem;
+  width: clamp(14rem, 24vw, 22rem);
+  transform: rotate(-8deg);
+}
+
+/* Narrow screens: the score sits low, so the low strip and the O move further down. */
+@media (max-width: 34.99rem) {
+  .tear-low {
+    bottom: 0.5%;
+  }
+
+  .ghost-o {
+    bottom: -12rem;
+  }
 }

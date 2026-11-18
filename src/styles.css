@@ -17,7 +17,7 @@
   html {
     background:
       radial-gradient(ellipse 70% 55% at 25% 15%, var(--color-glow), transparent 70%),
-      radial-gradient(ellipse 80% 60% at 85% 105%, var(--color-shade), transparent 70%),
+      radial-gradient(ellipse 80% 55% at 95% 120%, var(--color-shade), transparent 70%),
       var(--color-surface);
     background-attachment: fixed;
     color: var(--color-fg);
