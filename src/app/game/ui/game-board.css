@@ -211,15 +211,26 @@ button.cell:focus-visible .cell-number {
   stroke-width: 0.6;
 }
 
+/* The winner's three boards: their large marks turn to the win colour. */
+.win .closing {
+  stroke: var(--color-win);
+}
+
+/* Drawn on; the dash only exists while animating, so the finished stroke has no seam. */
 .closing path,
 .closing circle {
-  stroke-dasharray: 1;
-  animation: draw-mark var(--duration-draw) var(--ease-out) both;
+  animation: draw-mark var(--duration-draw) var(--ease-out) backwards;
 }
 
 @keyframes draw-mark {
   from {
+    stroke-dasharray: 1;
     stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
   }
 }
 

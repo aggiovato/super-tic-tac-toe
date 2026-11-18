@@ -45,13 +45,19 @@ export interface Segment {
       stroke: var(--strike-colour);
       stroke-width: var(--strike-width);
       stroke-linecap: round;
-      stroke-dasharray: 1;
-      animation: draw var(--strike-time) var(--ease-out) var(--strike-delay) both;
+      animation: draw var(--strike-time) var(--ease-out) var(--strike-delay) backwards;
     }
 
+    /* The dash only exists while drawing, so the finished line has no seam. */
     @keyframes draw {
       from {
+        stroke-dasharray: 1;
         stroke-dashoffset: 1;
+      }
+
+      to {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 0;
       }
     }
 
