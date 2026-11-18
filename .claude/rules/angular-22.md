@@ -37,6 +37,8 @@ review this file and `.claude/sources.md`.
 - Subscriptions, the Worker and timers are bound to the route lifecycle (`DestroyRef`,
   `takeUntilDestroyed`). No loose subscriptions.
 - Inject with `inject()`. GameStore is provided on the game route, not in `root`.
+- No user-facing string in templates or TS: read it from `Translator.t()` (`@i18n`).
+- State that lives with a route (GameStore, its session) is provided in the route's `providers`.
 - New forms (phase 7): Signal Forms.
 - Use the CLI (`npx ng generate …`) to scaffold, then adapt the output.
 

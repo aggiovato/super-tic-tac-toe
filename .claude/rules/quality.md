@@ -18,7 +18,7 @@ paths:
 | Properties | fast-check (phase 1)         | Reachable sequences from the opening, mixing legal and invalid moves.                     |
 | AI         | Vitest in Node               | Tactical fixtures, legal fallback with an exhausted budget, cancelled search.             |
 | App        | `ng test` (Vitest + TestBed) | Store and components: double tap, late reply, restart, save error, focus.                 |
-| E2E        | Playwright (phase 2)         | Opening → forced target → free choice, end and rematch. Keyboard, mobile, reduced motion. |
+| E2E        | Playwright (`e2e/`)          | Opening → forced target → free choice, end and rematch. Keyboard, mobile, reduced motion. |
 
 - Readable fixtures written as move sequences (`board.cell`, e.g. `'4.2 2.4'`) in `core/testing/fixtures.ts`; play them with `play()` from `core/testing/notation.ts`, which fails on the first illegal move. `core/testing/` is test-only and excluded from the app build.
 - In the UI, query by role and accessible name; `data-testid` only for ambiguous cells.
@@ -46,6 +46,11 @@ paths:
 ## CI
 
 `.github/workflows/ci.yml` runs on every PR and every push to `main`: Node from `.nvmrc`, pinned
-Task and `task ci` (install, format, lint, tests and build). Read-only permissions. Playwright
-Chromium joins the PR check once the board exists (phase 2). Each new Taskfile entry lands with
-the npm script it calls.
+Task, `task setup`, Playwright Chromium (installed after `npm ci` so it matches the lockfile) and
+`task check` (format, lint with the token check, unit tests, production build and e2e). Read-only
+permissions; the Playwright report and traces are uploaded when it fails. Each new Taskfile entry
+lands with the npm script it calls.
+
+E2E specs run against the production build served by `scripts/serve-dist.mjs` (SPA fallback) on
+desktop and Pixel 7 Chromium. They play through the UI with accessible names, never by reaching
+into the store, and wait for the view a move produces before the next one.

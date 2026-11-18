@@ -33,7 +33,10 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 1 · Executable engine: done** (`src/app/game/core/`). Next: **phase 2 · Two humans**.
+**Phase 2 · Two humans: in progress** on `phase/2-two-humans`. Built: GameStore, local session,
+departure-board UI (direct play on wide screens, pick-and-zoom on narrow ones), keyboard play,
+i18n (es/en), design tokens, Playwright. Pending: finish review and `DESIGN.md`, then the
+prototype decisions listed in the surface brief.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -56,6 +59,7 @@ Update this table when a phase closes.
 | `task lint`                   | ESLint (TS, templates and accessibility), zero warnings                                  |
 | `task unit`                   | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
 | `task build`                  | Production build with budgets                                                            |
+| `task e2e`                    | Production build + Playwright (desktop and mobile Chromium)                              |
 | `task check`                  | All of the above, in CI order                                                            |
 | `task ci`                     | `setup` + `check` (what the workflow runs)                                               |
 
@@ -80,7 +84,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | ------------------------------------ | ----------------------- |
 | `@core`, `@core/testing` (test-only) | `src/app/game/core/`    |
 | `@ai`, `@session`, `@state`, `@ui`   | `src/app/game/<block>/` |
-| `@history`, `@storage`               | `src/app/<block>/`      |
+| `@history`, `@storage`, `@i18n`      | `src/app/<block>/`      |
 
 Another block is imported only through its alias (`import { applyMove } from '@core'`), never
 with a relative path (`../core`) or into its files (`@core/engine`). Inside a block, files import
@@ -99,18 +103,28 @@ only with its first implementation.
 
 Loaded automatically for the files you touch:
 
-| Rule         | Scope                     | Contents                                        |
-| ------------ | ------------------------- | ----------------------------------------------- |
-| `angular-22` | `src/**`, Angular configs | Conventions for the installed Angular version   |
-| `game`       | `src/app/game/**`         | Rules v1, engine contract, fixtures, invariants |
-| `quality`    | `src/**`, configs, CI     | Required tests, lint, budgets, CI               |
+| Rule            | Scope                     | Contents                                         |
+| --------------- | ------------------------- | ------------------------------------------------ |
+| `angular-22`    | `src/**`, Angular configs | Conventions for the installed Angular version    |
+| `game`          | `src/app/game/**`         | Rules v1, engine contract, fixtures, invariants  |
+| `quality`       | `src/**`, configs, CI     | Required tests, lint, budgets, CI                |
+| `design-tokens` | styles, templates, `ui/`  | Token layers, semantic contract, adding a design |
 
 `.claude/sources.md` records origin, revision and licence of every external resource and the
 toolchain versions. Update it when adding or updating a skill or resource.
 
 Project skills: `angular-developer` and `angular-new-app` in `.claude/skills/` (pinned copy of
-`angular/skills`, see `sources.md`). UI work also uses `frontend-design` and `impeccable`; create
-`PRODUCT.md` and `DESIGN.md` with impeccable before the first UI (phase 2).
+`angular/skills`, see `sources.md`). UI work also uses `frontend-design` and `impeccable`.
+
+## Product and design
+
+- `PRODUCT.md`: users, purpose, brand commitments and principles (written with impeccable).
+- `.impeccable/surfaces/src-app-game-ui-game-page-ts.md`: the game screen's direction contract
+  (departure board). Read it before changing the game UI; it is development-only and never goes
+  into source or the bundle.
+- `DESIGN.md`: written at the end of phase 2 from the built UI.
+- User-facing copy lives only in `src/app/i18n/messages.ts` (es and en, typed so both stay
+  complete). The language follows the browser until the player switches it.
 
 ## Definition of done
 
