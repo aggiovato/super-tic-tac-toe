@@ -1,35 +1,47 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import type { Player } from '@core';
 import { Translator } from '@i18n';
+import { Button, Icon, SplitFlap } from '@kit';
+import { Preferences } from '@settings';
 import { GameStore, type Participant } from '@state';
 import { DepartureBoard, type FlapTile } from './departure-board';
 import { GameBoard } from './game-board';
 import { injectMediaQuery } from './media-query';
-import { SplitFlap } from './split-flap';
+import { SettingsPanel } from './settings-panel';
 
-/** Below this width a cell would be under 44 px: boards are picked, then played zoomed. */
+/** Below this width a cell would be under 44 px: boards are picked, then played open. */
 const COMPACT_QUERY = '(max-width: 34.99rem)';
-const WORD_LENGTH = 6;
+const WORD_LENGTH = 5;
+/** The result cascades through more characters than an ordinary turn. */
+const RESULT_STEPS = 14;
 
 const other = (player: Player): Player => (player === 'X' ? 'O' : 'X');
-const tile = (char: string, accent = false): FlapTile => ({ char, accent });
-const word = (text: string): FlapTile[] =>
-  [...text.padEnd(WORD_LENGTH).slice(0, WORD_LENGTH)].map((char) => tile(char));
+const glyph = (player: Player): string => (player === 'X' ? 'x' : 'o');
+const word = (text: string, accent = false, steps?: number, length = WORD_LENGTH): FlapTile[] =>
+  [...text.padEnd(length).slice(0, length)].map((char) => ({ char, accent, steps }));
 
-/** The game route: departure row, board and series score. */
+/** The game route: departure row, board, series score and actions. */
 @Component({
   selector: 'app-game-page',
-  imports: [DepartureBoard, GameBoard, SplitFlap],
+  imports: [Button, DepartureBoard, GameBoard, Icon, SettingsPanel, SplitFlap],
   templateUrl: './game-page.html',
+  styleUrl: './game-page.css',
 })
 export class GamePage {
   protected readonly store = inject(GameStore);
-  protected readonly translator = inject(Translator);
-  protected readonly t = this.translator.t;
+  protected readonly t = inject(Translator).t;
+  private readonly preferences = inject(Preferences);
 
   constructor() {
     const compact = injectMediaQuery(COMPACT_QUERY);
     effect(() => this.store.setCompact(compact()));
+  }
+
+  /** How a player is named in sentences: their custom name, otherwise their symbol. */
+  private who(player: Player): string {
+    const x = this.store.xPlayer();
+    const participant: Participant = player === 'X' ? x : x === 0 ? 1 : 0;
+    return this.preferences.names()[participant] || player;
   }
 
   /** Departure row: [player][arrow][destination…], or the result once the game ends. */
@@ -37,38 +49,52 @@ export class GamePage {
     const { status, target, turn } = this.store.game();
     const flap = this.t().flap;
     if (status.kind === 'won') {
-      return [tile(status.winner, true), tile(' '), ...word(flap.wins)];
+      return [
+        { char: glyph(status.winner), accent: true, steps: RESULT_STEPS },
+        { char: ' ', accent: false },
+        ...word(flap.wins, true, RESULT_STEPS),
+      ];
     }
     if (status.kind === 'drawn') {
-      return [tile(' '), tile(' '), ...word(flap.draw)];
+      // A draw has no player or arrow: the word takes the whole row.
+      return word(flap.draw, true, RESULT_STEPS, WORD_LENGTH + 2);
     }
+    const head: FlapTile[] = [
+      { char: glyph(turn), accent: false },
+      { char: '→', accent: false },
+    ];
     if (target.kind === 'forced') {
-      return [tile(turn), tile('→'), tile(String(target.board), true), ...word('').slice(1)];
+      return [...head, { char: String(target.board + 1), accent: true }, ...word('').slice(1)];
     }
-    return [tile(turn), tile('→'), ...word(flap.free)];
+    return [...head, ...word(flap.free, true)];
   });
 
-  /** One sentence explaining the row: why this board, or what a hovered cell would do. */
+  /** One sentence for the row: a refused move, a preview, or why this board. */
   protected readonly why = computed((): string => {
     const t = this.t();
     const { status, target, turn } = this.store.game();
+    const rejection = this.store.lastRejection();
+    if (rejection) {
+      return t.rejected(rejection, target.kind === 'forced' ? target.board + 1 : null);
+    }
     if (status.kind === 'won') {
-      return t.won(status.winner);
+      return t.won(this.who(status.winner));
     }
     if (status.kind === 'drawn') {
       return t.drawn;
     }
     const preview = this.store.previewTarget();
     if (preview !== undefined) {
-      return t.preview(other(turn), preview);
+      return t.preview(this.who(other(turn)), preview === null ? null : preview + 1);
     }
     const last = this.store.lastMove();
     if (!last) {
       return t.opening;
     }
+    const mover = this.who(other(turn));
     return target.kind === 'forced'
-      ? t.forced(other(turn), last.cell, turn)
-      : t.freeChoice(other(turn), last.cell, turn);
+      ? t.forced(mover, last.cell + 1, this.who(turn))
+      : t.freeChoice(mover, last.cell + 1, this.who(turn));
   });
 
   /** Announced once per change in the status region. */
@@ -76,28 +102,36 @@ export class GamePage {
     const t = this.t().status;
     const { status, target, turn } = this.store.game();
     if (status.kind === 'won') {
-      return t.won(status.winner);
+      return t.won(this.who(status.winner));
     }
     if (status.kind === 'drawn') {
       return t.drawn;
     }
-    return target.kind === 'forced' ? t.forced(turn, target.board) : t.free(turn);
+    return target.kind === 'forced'
+      ? t.forced(this.who(turn), target.board + 1)
+      : t.free(this.who(turn));
   });
 
   protected readonly score = computed(() => {
     const t = this.t();
     const wins = this.store.wins();
+    const names = this.preferences.names();
     const toMove = this.store.isOver() ? null : this.store.toMove();
     const digits = (value: number): string[] => [...String(Math.min(value, 99)).padStart(2, '0')];
     const player = (participant: Participant) => ({
-      label: t.player(participant + 1, this.store.symbolOf(participant)),
+      label: names[participant] || t.defaultName(participant + 1),
+      glyph: glyph(this.store.symbolOf(participant)),
       digits: digits(wins[participant]),
       active: toMove === participant,
     });
     return [
       player(0),
-      { label: t.draws, digits: digits(this.store.draws()), active: false },
+      { label: t.draws, glyph: null, digits: digits(this.store.draws()), active: false },
       player(1),
     ];
   });
+
+  protected readonly canUndo = computed(
+    () => this.store.game().moves.length > 0 && !this.store.isOver(),
+  );
 }

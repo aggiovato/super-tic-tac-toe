@@ -1,32 +1,47 @@
+/*
+ * Sized from the arena container (`container-type: size` on the page), so the board takes the
+ * largest square the screen allows in every layout.
+ */
 :host {
   /* Component tokens, built only from semantic tokens. */
   --platform-bg: var(--color-surface-panel);
   --platform-pad: var(--spacing-panel-pad);
   --platform-radius: var(--radius-panel);
-  --grid-line: var(--color-line);
-  --dimmed: 0.4;
-  --thumbnail-size: 7rem;
+  --tile: var(--color-surface);
+  --tile-playable: var(--color-surface-raised);
+  --head-size: clamp(0.875rem, 4.4cqmin, 1.5rem);
 
   display: block;
-  width: min(100%, 36rem);
-  margin-inline: auto;
+  height: 100%;
 }
 
 .board {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
   gap: var(--spacing-board-gap);
+  /* Square where height is short; on tall phones up to 18 % taller, so tiles read as flaps. */
+  width: min(100cqw, 100cqh);
+  height: min(100cqh, min(100cqw, 100cqh) * 1.18);
+  margin-inline: auto;
 }
 
 .board-zoom {
-  grid-template-columns: 1fr;
+  grid-template: auto minmax(0, 1fr) / minmax(0, 1fr);
+  gap: var(--spacing-stack-tight);
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
 }
 
+/* Platforms: a numbered head over a 3×3 of flap tiles. */
 .platform {
   position: relative;
   display: grid;
-  grid-template-rows: auto 1fr;
-  gap: var(--platform-pad);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: calc(var(--platform-pad) * 0.75);
+  min-width: 0;
+  min-height: 0;
   padding: var(--platform-pad);
   border: var(--border-emphasis) solid transparent;
   border-radius: var(--platform-radius);
@@ -34,178 +49,198 @@
   color: inherit;
   font: inherit;
   text-align: start;
-  transition: opacity var(--duration-frame) var(--ease-out);
 }
 
-.number {
-  font-size: var(--text-caption);
-  font-weight: 700;
-  line-height: 1;
+button.platform {
+  cursor: default;
+}
+
+button.platform.playable {
+  cursor: pointer;
+}
+
+.platform-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--head-size);
 }
 
 .cells {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
   gap: var(--spacing-cell-gap);
-  background: var(--grid-line);
+  min-height: 0;
 }
 
 .cell {
+  --flap-bg: var(--tile);
+
   position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  border: 0;
+  display: block;
+  min-width: 0;
+  min-height: 0;
   padding: 0;
-  background: var(--platform-bg);
+  border: 0;
+  background: none;
   color: inherit;
+  container-type: size;
+}
+
+.playable .cell {
+  --flap-bg: var(--tile-playable);
 }
 
 button.cell.legal {
   cursor: pointer;
 }
 
-button.cell.legal:hover {
-  background: var(--color-surface-raised);
+/*
+ * Rings drawn above the flap tile: playable cells get a hairline (≥ 3:1), hover a stronger line,
+ * keyboard focus the focus ring. The tile itself covers the button, so outlines would hide.
+ */
+.cell::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: var(--radius-tile);
+  pointer-events: none;
 }
 
-.mark {
-  width: 78%;
-  fill: none;
-  stroke-linecap: round;
+.cells > .cell::before {
+  border: var(--border-hairline) solid var(--color-line);
 }
 
-.mark-x {
-  stroke: var(--color-mark-x);
-  stroke-width: 1.3;
+button.cell:focus-visible {
+  outline: none;
 }
 
-.mark-o {
-  stroke: var(--color-mark-o);
-  stroke-width: 1.7;
+button.cell:focus-visible::before {
+  border: var(--border-emphasis) solid var(--color-focus);
 }
 
-.cell.last {
-  box-shadow: inset 0 0 0 var(--border-line) var(--color-last-move);
+/* The cell just played: an inner ring in the last-move colour, above the tile. */
+.cell.last::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: var(--border-line) solid var(--color-last-move);
+  border-radius: var(--radius-tile);
+  pointer-events: none;
 }
 
 .cell-number {
   position: absolute;
-  inset: var(--spacing-stack-tight) auto auto var(--spacing-stack-tight);
-  font-size: var(--text-caption);
+  z-index: 1;
+  inset: 0.3em auto auto 0.4em;
+  font-size: clamp(0.625rem, 24cqmin, 1.125rem);
   font-weight: 700;
   line-height: 1;
   color: var(--color-fg);
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* The departure: shape (thick border, filled number) and colour together. */
+.cell-number.always,
+button.cell:focus-visible .cell-number {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  button.cell.legal:hover::before {
+    border: var(--border-line) solid var(--color-line-strong);
+  }
+
+  button.cell.legal:hover .cell-number {
+    opacity: 1;
+  }
+
+  button.platform.playable:hover {
+    --platform-bg: var(--color-surface-raised);
+  }
+}
+
+/* The departure: shape (thick border, accent number) and colour together. */
 .forced {
   border-color: var(--color-target);
 }
 
-.forced .number {
-  justify-self: start;
-  padding: 0.1em 0.35em;
-  border-radius: var(--radius-tile);
-  background: var(--color-target);
-  color: var(--color-on-accent);
-}
-
-.preview:not(.forced) {
-  border-color: var(--color-preview);
+.free-pick:not(.forced) {
   border-style: dashed;
+  border-color: var(--color-target);
 }
 
-.dim {
-  opacity: var(--dimmed);
+.preview:not(.forced, .free-pick) {
+  border-style: dashed;
+  border-color: var(--color-preview);
 }
 
-.closed .cells {
-  opacity: 0.25;
+.closed .cells app-split-flap {
+  opacity: 0.45;
 }
 
-.closing {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
+.win {
+  border-color: var(--color-win);
 }
 
-.closing .mark {
-  width: 86%;
-  stroke-width: 1.1;
-}
-
-.closing.drawn .mark {
-  stroke: var(--color-line-strong);
-}
-
-.win .closing .mark {
-  stroke: var(--color-win);
-}
-
-/* Narrow layout: a pickable platform is a button. */
-button.platform.playable {
-  cursor: pointer;
-}
-
-.platform-zoom .number {
-  font-size: var(--text-body);
-}
-
-.platform-zoom .mark {
-  width: 64%;
-}
-
+/* Narrow screens, one board open: the thumbnail leads back to the whole board. */
 .thumbnail {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: calc(var(--spacing) * 1);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-stack);
   justify-self: start;
-  width: var(--thumbnail-size);
+  min-height: 2.75rem;
   padding: 0;
   border: 0;
   background: none;
+  color: var(--color-fg);
+  font: inherit;
   cursor: pointer;
 }
 
-.thumbnail .platform {
-  --platform-pad: calc(var(--spacing) * 0.5);
-  --platform-radius: var(--radius-cell);
-
-  border-width: var(--border-hairline);
+.thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-cell-gap);
+  width: clamp(5.5rem, 28cqmin, 8.5rem);
+  aspect-ratio: 1;
 }
 
-.thumbnail .number {
-  display: none;
+.thumbnail .platform {
+  --platform-pad: 1px;
+  --platform-radius: var(--radius-cell);
+
+  display: block;
+  border-width: var(--border-line);
+}
+
+.thumbnail .cells {
+  height: 100%;
+  gap: 1px;
+}
+
+.thumbnail .cell::before {
+  border: 0;
 }
 
 .thumbnail .current {
   border-color: var(--color-fg-strong);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .mark path,
-  .mark circle {
-    stroke-dasharray: 20;
-    animation: draw var(--duration-quick) var(--ease-out) both;
-  }
-
-  .closing {
-    animation: drop var(--duration-frame) var(--ease-out) both;
-  }
+.thumbnail-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-stack-tight);
+  font-size: var(--text-body);
+  font-weight: 600;
 }
 
-@keyframes draw {
-  from {
-    stroke-dashoffset: 20;
-  }
-}
+.platform-zoom {
+  --head-size: clamp(1.25rem, 7cqmin, 2.25rem);
 
-@keyframes drop {
-  from {
-    opacity: 0;
-    transform: scale(1.15);
-  }
+  justify-self: center;
+  width: min(100%, 100cqh);
+  height: 100%;
 }

@@ -1,57 +1,48 @@
-<main class="mx-auto flex min-h-dvh w-full max-w-[40rem] flex-col gap-stack px-gutter py-stack">
-  <header class="flex items-center justify-between gap-stack">
+<div class="game">
+  <header class="masthead">
     <h1 class="text-title font-semibold text-fg-strong">Super Tic Tac Toe</h1>
-    <button
-      type="button"
-      class="min-h-11 rounded-pill border-2 border-line px-4 text-caption font-semibold hover:bg-surface-raised"
-      [attr.lang]="translator.lang() === 'es' ? 'en' : 'es'"
-      (click)="translator.toggle()"
-    >
-      {{ t().switchLanguage }}
-    </button>
+    <app-settings-panel />
   </header>
 
-  <section class="flex flex-col gap-stack-tight" aria-labelledby="departure-heading">
+  <section class="departures" aria-labelledby="departure-heading">
     <h2 id="departure-heading" class="sr-only">{{ t().departureLabel }}</h2>
     <app-departure-board class="text-flap" [tiles]="tiles()" [label]="status()" />
-    <p class="max-w-[60ch] text-body">{{ why() }}</p>
+    <p class="why" [class.refused]="store.lastRejection()">{{ why() }}</p>
   </section>
 
   <p class="sr-only" role="status">{{ status() }}</p>
 
-  <app-game-board />
+  <section class="arena" [attr.aria-label]="t().boardLabel">
+    <app-game-board />
+  </section>
 
-  <footer class="mt-auto flex flex-col gap-stack pt-stack">
-    <dl class="grid grid-cols-3 gap-stack-tight" [attr.aria-label]="t().score">
+  <footer class="controls">
+    <dl class="score" [attr.aria-label]="t().score">
       @for (entry of score(); track $index) {
-        <div class="flex flex-col gap-1" [class.text-fg-strong]="entry.active">
-          <dt class="text-caption font-semibold">{{ entry.label }}</dt>
-          <dd class="flex gap-[0.08em] text-score">
+        <div class="score-entry" [class.active]="entry.active">
+          <dt>
+            @if (entry.glyph) {
+              <app-split-flap class="score-glyph" [char]="entry.glyph" [maxSteps]="1" />
+            }
+            <span class="truncate">{{ entry.label }}</span>
+          </dt>
+          <dd class="text-score">
             <span class="sr-only">{{ entry.digits.join('') }}</span>
             @for (digit of entry.digits; track $index) {
-              <app-split-flap [char]="digit" [index]="$index" />
+              <app-split-flap [char]="digit" [index]="$index" [maxSteps]="10" />
             }
           </dd>
         </div>
       }
     </dl>
-    <div class="flex flex-wrap gap-stack-tight">
-      @if (store.isOver()) {
-        <button
-          type="button"
-          class="min-h-11 rounded-control bg-accent px-6 text-body font-bold text-on-accent"
-          (click)="store.rematch()"
-        >
-          {{ t().rematch }}
-        </button>
-      }
-      <button
-        type="button"
-        class="min-h-11 rounded-control border-2 border-line px-6 text-body font-semibold hover:bg-surface-raised"
-        (click)="store.newSeries()"
-      >
-        {{ t().newSeries }}
+    <div class="actions">
+      <button appButton="secondary" [disabled]="!canUndo()" (click)="store.undo()">
+        <app-icon name="undo" />
+        {{ t().undo }}
       </button>
+      @if (store.isOver()) {
+        <button appButton="primary" (click)="store.rematch()">{{ t().rematch }}</button>
+      }
     </div>
   </footer>
-</main>
+</div>
