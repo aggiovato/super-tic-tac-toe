@@ -8,7 +8,6 @@
 @import './styles/themes/departures.css';
 @import './styles/tokens/semantic.css';
 @import './styles/themes/departures-contrast.css';
-@import './styles/components/button.css';
 
 @layer base {
   :root {

@@ -63,9 +63,11 @@ module.exports = defineConfig([
         'error',
         { type: 'attribute', prefix: 'app', style: 'camelCase' },
       ],
+      // Components may also enhance a native element through an attribute selector
+      // (`button[app-button]`), like Angular Material's `mat-button`.
       '@angular-eslint/component-selector': [
         'error',
-        { type: 'element', prefix: 'app', style: 'kebab-case' },
+        { type: ['element', 'attribute'], prefix: 'app', style: 'kebab-case' },
       ],
     },
   },

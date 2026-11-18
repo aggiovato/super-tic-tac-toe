@@ -1,22 +1,17 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
+  computed,
   DOCUMENT,
   effect,
   ElementRef,
   inject,
   input,
-  signal,
-  untracked,
+  linkedSignal,
 } from '@angular/core';
 import { Preferences } from '@settings';
+import { drumPath } from './drum';
 
-/**
- * Letters and digits on the drum, in order. A tile cycles through these on its way to a new
- * character. Glyphs (`x` and `o` for the players, drawn as the board's marks so they never read as a
- * letter or a zero; `→`; `=`) are never cycled through: they only appear as the final character.
- */
-const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZÁÉÍÓÚÑ0123456789';
 const STAGGER_MS = 35;
 
 interface Face {
@@ -24,29 +19,18 @@ interface Face {
   readonly accent: boolean;
 }
 
-/** Characters shown on the way from `from` to `to`, ending on `to`, at most `max` long. */
-function drumPath(from: string, to: string, max: number): string[] {
-  const start = Math.max(0, DRUM.indexOf(from));
-  const end = DRUM.indexOf(to);
-  const steps = Math.max(1, max);
-  if (end < 0) {
-    // A glyph: spin a few drum characters, then land on it.
-    return [
-      ...Array.from({ length: steps - 1 }, (_, i) => DRUM[(start + i + 1) % DRUM.length] ?? ' '),
-      to,
-    ];
-  }
-  const distance = (end - start + DRUM.length) % DRUM.length;
-  const count = Math.min(Math.max(distance, 1), steps);
-  return Array.from({ length: count }, (_, i) =>
-    i === count - 1 ? to : (DRUM[(end - (count - 1 - i) + DRUM.length) % DRUM.length] ?? to),
-  );
+/** A tile's way to its target: the faces it shows in order and how far along it is. */
+interface Run {
+  readonly path: readonly Face[];
+  readonly step: number;
+  readonly settled: boolean;
 }
 
 /**
  * One tile of a split-flap display. A new character is reached by cycling through the drum, each
  * step dropping the old top half and landing the new bottom half, staggered by `index` so a word
- * forms left to right. Reduced motion shows the new character at once.
+ * forms left to right. Reduced motion shows the new character at once. At rest the tile is drawn
+ * as one face, with no seam.
  */
 @Component({
   selector: 'app-split-flap',
@@ -65,56 +49,60 @@ export class SplitFlap {
   /** Changing it replays the cycle from blank, e.g. when a board becomes the destination. */
   readonly spin = input(0);
 
-  private readonly preferences = inject(Preferences);
+  private readonly reducedMotion = inject(Preferences).reducedMotion;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly window = inject(DOCUMENT).defaultView;
 
-  protected readonly current = signal<Face>({ char: ' ', accent: false });
-  protected readonly previous = signal<Face>({ char: ' ', accent: false });
-  /** Increments on every step so the falling leaves are recreated and animate again. */
-  protected readonly flip = signal(0);
-  /** True while cycling; at rest the tile is drawn as one face, with no seam between halves. */
-  protected readonly flipping = signal(false);
+  /**
+   * Derived state: every new target (or spin) starts a run from the face currently shown. The
+   * first render and reduced motion settle on the target at once.
+   */
+  private readonly run = linkedSignal<{ face: Face; spin: number }, Run>({
+    source: () => ({ face: { char: this.char(), accent: this.accent() }, spin: this.spin() }),
+    computation: (source, previous) => {
+      const shown = previous ? previous.value.path[previous.value.step] : undefined;
+      if (!shown || !previous || this.reducedMotion()) {
+        return { path: [source.face], step: 0, settled: true };
+      }
+      const replay = source.spin !== previous.source.spin && source.spin !== 0;
+      const chars = drumPath(replay ? ' ' : shown.char, source.face.char, this.maxSteps());
+      const faces = chars.map((char, i) => ({
+        char,
+        accent: i === chars.length - 1 && source.face.accent,
+      }));
+      return { path: [shown, ...faces], step: 0, settled: false };
+    },
+  });
 
-  private initialised = false;
-  private lastSpin = 0;
+  protected readonly current = computed(() => {
+    const { path, step } = this.run();
+    return path[step] ?? { char: ' ', accent: false };
+  });
+
+  protected readonly previous = computed(() => {
+    const { path, step } = this.run();
+    return path[Math.max(0, step - 1)] ?? this.current();
+  });
+
+  /** While cycling the tile is drawn as two halves with falling leaves; at rest as one face. */
+  protected readonly flipping = computed(() => !this.run().settled && this.run().step > 0);
+  protected readonly step = computed(() => this.run().step);
 
   constructor() {
+    // Drives the run with timers. It only schedules: the step advances in the timer callback.
     effect((onCleanup) => {
-      const target: Face = { char: this.char(), accent: this.accent() };
-      const spin = this.spin();
-      const reduced = this.preferences.reducedMotion();
-
-      untracked(() => {
-        const replay = spin !== this.lastSpin;
-        this.lastSpin = spin;
-        if (!this.initialised || reduced) {
-          this.initialised = true;
-          this.previous.set(target);
-          this.current.set(target);
-          return;
-        }
-        const from = replay ? ' ' : this.current().char;
-        const path = drumPath(from, target.char, this.maxSteps());
-        const step = this.stepMs();
-        const delay = this.index() * STAGGER_MS;
-        const timers = path.map((char, i) =>
-          setTimeout(
-            () => {
-              this.flipping.set(true);
-              this.previous.set(this.current());
-              this.current.set({ char, accent: i === path.length - 1 && target.accent });
-              this.flip.update((n) => n + 1);
-            },
-            delay + i * step,
-          ),
+      const { path, step, settled } = this.run();
+      if (settled) {
+        return;
+      }
+      const last = step === path.length - 1;
+      const wait = step === 0 ? this.index() * STAGGER_MS : this.stepMs();
+      const timer = setTimeout(() => {
+        this.run.update((run) =>
+          last ? { ...run, settled: true } : { ...run, step: run.step + 1 },
         );
-        timers.push(setTimeout(() => this.flipping.set(false), delay + (path.length + 1) * step));
-        onCleanup(() => {
-          timers.forEach(clearTimeout);
-          this.flipping.set(false);
-        });
-      });
+      }, wait);
+      onCleanup(() => clearTimeout(timer));
     });
   }
 

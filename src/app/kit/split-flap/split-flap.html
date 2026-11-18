@@ -24,7 +24,7 @@
   <span class="half bottom" [class.accent]="previous().accent">
     <ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous().char }" />
   </span>
-  @for (step of [flip()]; track step) {
+  @for (step of [step()]; track step) {
     <span class="half top leaf-out" [class.accent]="previous().accent">
       <ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous().char }" />
     </span>
