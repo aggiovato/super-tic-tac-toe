@@ -41,14 +41,35 @@ describe('GameStore', () => {
     expect(store.lastRejection()).toBe('wrong-board');
   });
 
-  it('opens the forced board zoomed on a compact layout and the whole board otherwise', () => {
+  it('returns to the whole board after every move and when the layout changes', () => {
     const store = setup();
     store.setCompact(true);
+    store.openBoard(4);
     store.play({ board: 4, cell: 2 });
-    expect(store.view()).toEqual({ kind: 'board', board: 2 });
+    expect(store.view()).toEqual({ kind: 'global' });
 
+    store.openBoard(2);
     store.setCompact(false);
     expect(store.view()).toEqual({ kind: 'global' });
+  });
+
+  it('takes back the last move while the game goes on, but not after it ends', () => {
+    const store = setup();
+    store.play({ board: 4, cell: 2 });
+    store.play({ board: 2, cell: 4 });
+    store.undo();
+    expect(store.game().moves).toEqual([{ board: 4, cell: 2 }]);
+    expect(store.game().turn).toBe('O');
+    expect(store.game().target).toEqual({ kind: 'forced', board: 2 });
+
+    store.undo();
+    store.undo();
+    expect(store.game().moves).toEqual([]);
+
+    playAll(store, GLOBAL_DIAGONAL_WIN);
+    store.undo();
+    expect(store.isOver()).toBe(true);
+    expect(store.wins()).toEqual([1, 0]);
   });
 
   it('only zooms into boards that can be played', () => {

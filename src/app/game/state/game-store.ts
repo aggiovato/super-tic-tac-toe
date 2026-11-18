@@ -10,6 +10,7 @@ import {
 import {
   applyMove,
   legalMoves,
+  replay,
   type GameState,
   type Move,
   type Player,
@@ -40,13 +41,6 @@ interface GameStoreState {
 }
 
 const GLOBAL: View = { kind: 'global' };
-
-/** View after a move: on narrow layouts a forced board opens zoomed; otherwise the whole board. */
-function viewFor(game: GameState, compact: boolean): View {
-  return compact && game.target.kind === 'forced'
-    ? { kind: 'board', board: game.target.board }
-    : GLOBAL;
-}
 
 const sameMove = (a: Move, b: Move): boolean => a.board === b.board && a.cell === b.cell;
 
@@ -109,12 +103,8 @@ export const GameStore = signalStore(
           return;
         }
         const game = result.state;
-        patchState(store, {
-          game,
-          preview: null,
-          lastRejection: null,
-          view: viewFor(game, store.compact()),
-        });
+        // Every move ends on the whole board; the UI decides whether to open the next one.
+        patchState(store, { game, preview: null, lastRejection: null, view: GLOBAL });
         if (game.status.kind === 'in-progress' || store.scored()) {
           return;
         }
@@ -141,7 +131,24 @@ export const GameStore = signalStore(
 
       setCompact(compact: boolean): void {
         if (compact !== store.compact()) {
-          patchState(store, { compact, view: viewFor(store.game(), compact) });
+          patchState(store, { compact, view: GLOBAL });
+        }
+      },
+
+      /** Takes back the last move while the game is still going. */
+      undo(): void {
+        const moves = store.game().moves;
+        if (moves.length === 0 || store.isOver()) {
+          return;
+        }
+        const result = replay(moves.slice(0, -1), store.game().rulesVersion);
+        if (result.ok) {
+          patchState(store, {
+            game: result.state,
+            view: GLOBAL,
+            preview: null,
+            lastRejection: null,
+          });
         }
       },
 
