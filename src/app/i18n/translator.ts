@@ -8,6 +8,7 @@ const STORAGE_KEY = 'super-ttt.lang';
 export class Translator {
   private readonly document = inject(DOCUMENT);
 
+  readonly languages: readonly Lang[] = ['es', 'en'];
   readonly lang = signal<Lang>(this.initialLang());
   readonly t = computed(() => MESSAGES[this.lang()]);
 
@@ -17,11 +18,10 @@ export class Translator {
     });
   }
 
-  toggle(): void {
-    const next: Lang = this.lang() === 'es' ? 'en' : 'es';
-    this.lang.set(next);
+  setLang(lang: Lang): void {
+    this.lang.set(lang);
     try {
-      this.document.defaultView?.localStorage.setItem(STORAGE_KEY, next);
+      this.document.defaultView?.localStorage.setItem(STORAGE_KEY, lang);
     } catch {
       // Storage may be blocked (private mode); the choice then lasts for this visit only.
     }
