@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LINES } from './lines';
 import { resolveBoard, resolveGame } from './resolve';
-import type { BoardStatus, Mark } from './types';
+import type { BoardStatus, Mark } from './models';
 
 const marks = (notation: string): Mark[] =>
   [...notation].map((char) => (char === 'X' || char === 'O' ? char : null));

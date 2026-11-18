@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { findLine, LINES } from './lines';
-import type { Player } from './types';
+import type { Player } from './models';
 
 const ownersWith = (indices: readonly number[], player: Player): (Player | null)[] =>
   Array.from({ length: 9 }, (_, index) => (indices.includes(index) ? player : null));

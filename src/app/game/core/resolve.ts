@@ -1,5 +1,5 @@
 import { findLine } from './lines';
-import type { BoardStatus, GameStatus, Mark, Player } from './types';
+import type { BoardStatus, GameStatus, Mark, Player } from './models';
 
 /**
  * Status of a mini board after `mover` placed a piece on it. Only the mover can have completed a

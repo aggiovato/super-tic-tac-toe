@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { replay } from './replay';
-import { RULES_VERSION } from './types';
+import { RULES_VERSION } from './models';
 import { CLOSES_OWN_TARGET, GLOBAL_DIAGONAL_WIN, GLOBAL_DRAW, parseMoves, play } from './testing';
 
 describe('replay', () => {

@@ -1,5 +1,5 @@
 import { applyMove, initialState } from '../engine';
-import type { GameState, Move } from '../types';
+import type { GameState, Move } from '../models';
 
 /** Parses readable fixtures: `'4.2 2.4'` is X on board 4 cell 2, then O on board 2 cell 4. */
 export function parseMoves(notation: string): Move[] {

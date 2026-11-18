@@ -1,5 +1,5 @@
 import { applyMove, initialState } from './engine';
-import { RULES_VERSION, type Move, type ReplayResult } from './types';
+import { RULES_VERSION, type Move, type ReplayResult } from './models';
 
 /**
  * Rebuilds a game from its moves. The same moves and rules version always yield the same state.
