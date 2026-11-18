@@ -20,7 +20,8 @@
       "@state": ["./src/app/game/state/index.ts"],
       "@ui": ["./src/app/game/ui/index.ts"],
       "@history": ["./src/app/history/index.ts"],
-      "@storage": ["./src/app/storage/index.ts"]
+      "@storage": ["./src/app/storage/index.ts"],
+      "@i18n": ["./src/app/i18n/index.ts"]
     }
   },
   "angularCompilerOptions": {
@@ -39,6 +40,9 @@
     },
     {
       "path": "./tsconfig.core.json"
+    },
+    {
+      "path": "./tsconfig.e2e.json"
     }
   ]
 }
