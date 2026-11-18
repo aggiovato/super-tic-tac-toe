@@ -1,0 +1,50 @@
+---
+version: 1
+slug: 'src-app-game-ui-game-page-ts'
+primary_target: 'src/app/game/ui/game-page.ts'
+related_targets: []
+---
+
+# Game screen
+
+Scope: the playable game route (two humans on one device in phase 2; the opponent joins in phase 3).
+Visitor mode: experience. The work itself leads from the first viewport: the board is playable at once.
+
+Audience and job: a newcomer on their first turn (portfolio visitor, friend, returning player) must
+see where they may play and, after playing, why the opponent must play where they do.
+
+Unresolved: zoom amount on mobile, flap animation length and cadence, whether the global thumbnail
+lets players anticipate the next turn. The phase 2 prototype decides them.
+
+## Direction contract
+
+THESIS: every move is a departure. The cell you play announces, on a split-flap board, the board
+your opponent departs to next. Refuses the category default of a neutral 9×9 grid with a glowing
+highlight and a turn bar.
+
+OWN-WORLD: Raven Teal ground; flap tiles in a darker teal with a hairline split across the middle;
+Seagrass Grey flap characters and X strokes; a lighter chalk tint for O rings; Apricot Flare only
+for the departure (the forced board, its number and the primary control). Barlow Semi Condensed
+bold with tabular figures on every flap. Mini boards are numbered platforms 0–8; the number is part
+of the board, not a label above it. Flat surfaces, no gradients, no glow except a win.
+
+STORY: the player reads the flap row ("O → 2"), sees platform 2 lit, plays a cell, watches the row
+flip to the board that cell sends to, and understands the rule without being told it.
+
+FIRST VIEWPORT: top, the departure row of flap tiles (player, arrow, board number or "libre") with
+one short sentence explaining why; middle, the 3×3 of numbered platforms at full width with the
+forced platform outlined and numbered in Apricot and the rest dimmed; bottom, the series score in
+tabular flap digits and the primary action. On narrow phones the forced platform opens zoomed with
+a global thumbnail; on desktop the whole board is played directly.
+
+SIGNATURE INTERACTION: hovering (mouse) or keyboard-focusing a legal cell previews its departure:
+the platform with the same number gets a dashed outline and the sentence under the row says where
+the opponent would go. The flap row stays still until the move is committed, then flips.
+Motion grammar: flaps fall top-half then bottom-half, staggered left to right, 180–280 ms total;
+reduced motion swaps characters instantly. Closing a board drops a large X or O over it; winning
+the game cascades every flap to the result.
+
+FORM: departure board, position 1 on the first grounded list (taken as IMPECCABLE'S PICK from the
+first roll). seed:01ba8917d88f659b
+
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
