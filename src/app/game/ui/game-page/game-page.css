@@ -112,13 +112,14 @@
   gap: var(--spacing-stack-tight);
 }
 
-@media (min-width: 64rem) {
+/* Any landscape screen from tablet width up: board on the right at full height. */
+@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
   .game {
     grid-template:
       'masthead arena' auto
       'departures arena' auto
       'controls arena' auto
-      '. arena' minmax(0, 1fr) / minmax(20rem, 26rem) minmax(0, 1fr);
+      '. arena' minmax(0, 1fr) / minmax(18rem, 26rem) minmax(0, 1fr);
     row-gap: var(--spacing-stack-loose);
     column-gap: var(--spacing-stack-loose);
     padding-block: var(--spacing-stack-loose);
