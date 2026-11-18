@@ -17,19 +17,20 @@ export interface Segment {
   host: { 'aria-hidden': 'true', '[class.game]': "variant() === 'game'" },
   styles: `
     :host {
-      --strike-colour: var(--color-fg-strong);
-      --strike-width: 4; /* in viewBox units: percent of the container */
+      --strike-colour: var(--color-win);
+      --strike-width: 1.6; /* in viewBox units: percent of the container */
       --strike-time: calc(var(--duration-draw) * 0.6);
       --strike-delay: 0ms;
 
       position: absolute;
+      z-index: 2;
       inset: 0;
       pointer-events: none;
+      filter: drop-shadow(0 0.125rem 0.375rem var(--color-shade));
     }
 
     :host(.game) {
-      --strike-colour: var(--color-win);
-      --strike-width: 2.4;
+      --strike-width: 0.9;
       --strike-time: var(--duration-draw);
       --strike-delay: var(--duration-frame);
     }

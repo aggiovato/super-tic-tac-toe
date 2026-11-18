@@ -1,9 +1,8 @@
 :host {
-  /* Component tokens: built only from semantic tokens. */
-  --flap-bg: var(--color-surface-panel);
-  --flap-fg: var(--color-fg);
-  --flap-accent: var(--color-target);
-  --flap-split: var(--color-surface);
+  /*
+   * Component tokens with defaults; a parent may set --flap-bg, --flap-fg, --flap-accent or
+   * --flap-split (e.g. a board cell), so they are read with fallbacks and never set here.
+   */
   --flap-half: calc(var(--duration-step) / 2);
 
   position: relative;
@@ -13,7 +12,7 @@
   perspective: 8em;
   font-weight: 700;
   line-height: 1;
-  color: var(--flap-fg);
+  color: var(--flap-fg, var(--color-fg));
 }
 
 /* A tile that fills a positioned container that is a size container, e.g. a board cell. */
@@ -31,7 +30,7 @@
   position: absolute;
   inset: 50% 0 auto;
   height: max(1px, 0.035em);
-  background: var(--flap-split);
+  background: var(--flap-split, var(--color-surface));
 }
 
 .half {
@@ -40,12 +39,12 @@
   display: grid;
   place-items: center;
   border-radius: var(--radius-tile);
-  background: var(--flap-bg);
+  background: var(--flap-bg, var(--color-surface-panel));
   backface-visibility: hidden;
 }
 
 .accent {
-  color: var(--flap-accent);
+  color: var(--flap-accent, var(--color-target));
 }
 
 .top {
