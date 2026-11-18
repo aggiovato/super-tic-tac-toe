@@ -187,54 +187,13 @@ button.cell:focus-visible .cell-number {
   --grid-line: var(--color-surface-raised);
 }
 
-/* Marks of a closed board sit above its strike line: the cells hide theirs, this layer shows them. */
+/* A closed board: small marks step back, the strike line crosses them, the large mark tops both. */
 .closed .cell app-split-flap {
-  visibility: hidden;
-}
-
-.marks-over {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  display: grid;
-  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-cell-gap);
-  pointer-events: none;
-}
-
-.mark-over {
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  min-height: 0;
-}
-
-/* Same size and strokes as the marks on the flap tiles. */
-.mark-over svg {
-  width: 48%;
-  max-height: 100%;
-  overflow: visible;
-  fill: none;
-  stroke-linecap: round;
-}
-
-.mark-over .halo {
-  stroke: var(--platform-bg);
-  stroke-width: 3;
-}
-
-.mark-over .ink {
   opacity: 0.7;
 }
 
-.mark-over .mark-x {
-  stroke: var(--color-mark-x);
-  stroke-width: 1.3;
-}
-
-.mark-over .mark-o {
-  stroke: var(--color-mark-o);
-  stroke-width: 1.7;
+.closed .cell.last::after {
+  border-color: transparent;
 }
 
 .closing {

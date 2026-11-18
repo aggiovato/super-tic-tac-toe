@@ -50,30 +50,6 @@
     @if (localStrike(board); as line) {
       <app-strike-line [segment]="line" />
     }
-    @if (closingMark(board)) {
-      <!-- A closed board's marks are redrawn above its strike line, on the same grid, each with a
-           halo in the board colour so the line passes behind it. -->
-      <span class="marks-over" aria-hidden="true">
-        @for (cell of indices; track cell) {
-          <span class="mark-over">
-            @switch (mark(board, cell)) {
-              @case ('X') {
-                <svg viewBox="0 0 10 10">
-                  <path class="halo" d="M2.4 2.4l5.2 5.2M7.6 2.4l-5.2 5.2" />
-                  <path class="ink mark-x" d="M2.4 2.4l5.2 5.2M7.6 2.4l-5.2 5.2" />
-                </svg>
-              }
-              @case ('O') {
-                <svg viewBox="0 0 10 10">
-                  <circle class="halo" cx="5" cy="5" r="2.9" />
-                  <circle class="ink mark-o" cx="5" cy="5" r="2.9" />
-                </svg>
-              }
-            }
-          </span>
-        }
-      </span>
-    }
     @switch (closingMark(board)) {
       @case ('X') {
         <svg class="closing mark-x" viewBox="0 0 10 10" aria-hidden="true">
