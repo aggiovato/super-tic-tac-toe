@@ -209,18 +209,25 @@ button.cell:focus-visible .cell-number {
 }
 
 .closing.mark-x {
+  --mark-width: 0.7;
+
   stroke: var(--color-mark-x);
-  stroke-width: 0.7;
 }
 
 .closing.mark-o {
+  --mark-width: 0.8;
+
   stroke: var(--color-mark-o);
-  stroke-width: 0.8;
 }
 
 .closing.drawn {
+  --mark-width: 0.6;
+
   stroke: var(--color-line-strong);
-  stroke-width: 0.6;
+}
+
+.win .closing .halo {
+  stroke: var(--platform-bg);
 }
 
 /* The winner's three boards: their large marks turn to the win colour. */
@@ -228,9 +235,18 @@ button.cell:focus-visible .cell-number {
   stroke: var(--color-win);
 }
 
+/* A halo in the board colour behind each large mark, so any line passes beneath it. */
+.closing .halo {
+  stroke: var(--platform-bg);
+  stroke-width: calc(var(--mark-width) + 1.2);
+}
+
+.closing .ink {
+  stroke-width: var(--mark-width);
+}
+
 /* Drawn on; the dash only exists while animating, so the finished stroke has no seam. */
-.closing path,
-.closing circle {
+.closing .ink {
   animation: draw-mark var(--duration-draw) var(--ease-out) backwards;
 }
 
@@ -247,7 +263,7 @@ button.cell:focus-visible .cell-number {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .closing :is(path, circle) {
+  :root:not([data-motion='full']) .closing .ink {
     animation: none;
   }
 }

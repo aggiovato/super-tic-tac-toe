@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  afterRenderEffect,
   Component,
   computed,
   DestroyRef,
@@ -9,6 +10,7 @@ import {
   inject,
   Injector,
   linkedSignal,
+  signal,
 } from '@angular/core';
 import type { Line, Mark, Move } from '@core';
 import { Translator } from '@i18n';
@@ -95,6 +97,7 @@ function strike(line: Line): Segment {
     '[class.zoomed]': "mode() === 'zoom'",
     '(window:keydown)': 'onWindowKeydown($event)',
     '(window:pointerdown)': 'usingKeyboard = false',
+    '(window:resize)': 'measureWinLine()',
   },
 })
 export class GameBoard {
@@ -115,6 +118,7 @@ export class GameBoard {
   protected usingKeyboard = false;
 
   constructor() {
+    afterRenderEffect({ read: () => this.measureWinLine() });
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.pendingOpen);
       clearTimeout(this.pendingPreview);
@@ -151,11 +155,55 @@ export class GameBoard {
     }
   });
 
-  /** The winning line across boards, once the game is won. */
-  protected readonly winLine = computed((): Segment | null => {
+  /**
+   * The winning line across boards, through the centres of the three winning grids as rendered
+   * (each grid sits under its board's number, so card centres would be off). Percent of the board.
+   */
+  protected readonly winSegment = signal<Segment | null>(null);
+
+  protected measureWinLine(): void {
     const status = this.store.game().status;
-    return status.kind === 'won' ? strike(status.line) : null;
-  });
+    const board = this.host.nativeElement.querySelector<HTMLElement>('.board');
+    if (status.kind !== 'won' || this.mode() === 'zoom' || !board) {
+      if (this.winSegment() !== null) {
+        this.winSegment.set(null);
+      }
+      return;
+    }
+    const frame = board.getBoundingClientRect();
+    const centre = (index: number) => {
+      const grid = board.querySelector(`[data-cells="${index}"]`)?.getBoundingClientRect();
+      return grid
+        ? {
+            x: ((grid.left + grid.width / 2 - frame.left) / frame.width) * 100,
+            y: ((grid.top + grid.height / 2 - frame.top) / frame.height) * 100,
+          }
+        : null;
+    };
+    const a = centre(status.line[0]);
+    const b = centre(status.line[2]);
+    if (!a || !b) {
+      return;
+    }
+    const over = 0.22;
+    const next: Segment = {
+      x1: a.x - (b.x - a.x) * over,
+      y1: a.y - (b.y - a.y) * over,
+      x2: b.x + (b.x - a.x) * over,
+      y2: b.y + (b.y - a.y) * over,
+    };
+    const current = this.winSegment();
+    const same =
+      current &&
+      Math.abs(current.x1 - next.x1) +
+        Math.abs(current.y1 - next.y1) +
+        Math.abs(current.x2 - next.x2) +
+        Math.abs(current.y2 - next.y2) <
+        0.1;
+    if (!same) {
+      this.winSegment.set(next);
+    }
+  }
 
   protected mark(board: number, cell: number): Mark {
     return this.store.game().cells[board]?.[cell] ?? null;

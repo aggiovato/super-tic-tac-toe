@@ -9,7 +9,7 @@
       [maxSteps]="4"
     />
   </span>
-  <div class="cells">
+  <div class="cells" [attr.data-cells]="board">
     @for (cell of indices; track cell) {
       @if (cells) {
         <button
@@ -53,17 +53,19 @@
     @switch (closingMark(board)) {
       @case ('X') {
         <svg class="closing mark-x" viewBox="0 0 10 10" aria-hidden="true">
-          <path d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
+          <path class="halo" d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" />
+          <path class="ink" d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
         </svg>
       }
       @case ('O') {
         <svg class="closing mark-o" viewBox="0 0 10 10" aria-hidden="true">
-          <circle cx="5" cy="5" r="3" pathLength="1" />
+          <circle class="halo" cx="5" cy="5" r="3" />
+          <circle class="ink" cx="5" cy="5" r="3" pathLength="1" />
         </svg>
       }
       @case ('=') {
         <svg class="closing drawn" viewBox="0 0 10 10" aria-hidden="true">
-          <path d="M2.5 4h5M2.5 6h5" pathLength="1" />
+          <path class="ink" d="M2.5 4h5M2.5 6h5" pathLength="1" />
         </svg>
       }
     }
@@ -157,7 +159,7 @@
       }
     }
   }
-  @if (mode() !== 'zoom' && winLine(); as line) {
+  @if (mode() !== 'zoom' && winSegment(); as line) {
     <app-strike-line variant="game" [segment]="line" />
   }
 </div>
