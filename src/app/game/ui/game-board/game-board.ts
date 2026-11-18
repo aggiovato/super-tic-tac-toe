@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
@@ -11,14 +10,24 @@ import {
   Injector,
   linkedSignal,
   signal,
+  viewChild,
 } from '@angular/core';
 import type { Line, Mark, Move } from '@core';
 import { Translator } from '@i18n';
-import { Icon, SplitFlap, StrikeLine, type Segment } from '@kit';
+import {
+  fadeIn,
+  flipFrom,
+  Icon,
+  injectMediaQuery,
+  renderChange,
+  StrikeLine,
+  type FlipOptions,
+  type Segment,
+} from '@kit';
 import { Preferences } from '@settings';
 import { GameStore } from '@state';
-import { injectMediaQuery } from './media-query';
-import { fadeIn, flipFrom, renderChange, type FlipOptions } from './flip';
+import { BoardPlatform, type CellPointer } from '../board-platform/board-platform';
+import type { PlatformView } from '../board-platform/platform-view.model';
 
 /** How the board is played right now. */
 type Mode =
@@ -31,16 +40,14 @@ type Mode =
 
 const INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 
+/** Below this width a cell would be under 44 px: boards are picked, then played open. */
+const COMPACT_QUERY = '(max-width: 34.99rem)';
 /** Pause on the whole board after a move on narrow screens, before the next board opens. */
 const PAUSE_BEFORE_OPEN_MS = 480;
-/** A CSS easing token, or a plain ease-out when it cannot be read. */
-const easingOf = (value: string | undefined): string => {
-  const easing = value?.trim() ?? '';
-  return easing.length > 0 ? easing : 'ease-out';
-};
-
 /** Hover intent: a preview appears or clears only once the pointer settles. */
 const PREVIEW_DELAY_MS = 140;
+/** How far a strike line overshoots the outer marks, as a share of its length. */
+const OVERSHOOT = 0.22;
 
 const ARROWS: Readonly<Record<string, readonly [number, number]>> = {
   ArrowUp: [-1, 0],
@@ -66,67 +73,71 @@ const moveAt = (index: number): Move => {
 /** Flap character for a mark: players are drawn glyphs, empty is blank. */
 const glyphOf = (mark: Mark): string => (mark === 'X' ? 'x' : mark === 'O' ? 'o' : ' ');
 
-/** Segment through the centres of a line of a 3×3 grid, overshooting both ends, in percent. */
-function strike(line: Line): Segment {
+/** Segment from `a` to `b` (percent points), overshooting both ends. */
+const overshoot = (a: { x: number; y: number }, b: { x: number; y: number }): Segment => ({
+  x1: a.x - (b.x - a.x) * OVERSHOOT,
+  y1: a.y - (b.y - a.y) * OVERSHOOT,
+  x2: b.x + (b.x - a.x) * OVERSHOOT,
+  y2: b.y + (b.y - a.y) * OVERSHOOT,
+});
+
+/** Segment through the centres of a line of a 3×3 grid, in percent of the grid. */
+const gridStrike = (line: Line): Segment => {
   const centre = (i: number) => ({
     x: ((i % 3) * 2 + 1) * (100 / 6),
     y: (Math.floor(i / 3) * 2 + 1) * (100 / 6),
   });
-  const a = centre(line[0]);
-  const b = centre(line[2]);
-  const over = 0.22;
-  return {
-    x1: a.x - (b.x - a.x) * over,
-    y1: a.y - (b.y - a.y) * over,
-    x2: b.x + (b.x - a.x) * over,
-    y2: b.y + (b.y - a.y) * over,
-  };
-}
+  return overshoot(centre(line[0]), centre(line[2]));
+};
+
+const easingOf = (value: string | undefined): string => {
+  const easing = value?.trim() ?? '';
+  return easing.length > 0 ? easing : 'ease-out';
+};
 
 /**
  * The nine numbered platforms. One keyboard entry point: Tab lands on a single roving item and
  * the arrow keys jump to the next legal option in that direction; Escape leaves an open board.
- * On narrow screens boards open from, and close into, their place in the grid.
+ * On narrow screens boards grow out of, and settle back into, their place in the grid.
  */
 @Component({
   selector: 'app-game-board',
-  imports: [NgTemplateOutlet, SplitFlap, Icon, StrikeLine],
+  imports: [BoardPlatform, Icon, StrikeLine],
   templateUrl: './game-board.html',
   styleUrl: './game-board.css',
   host: {
     '[class.zoomed]': "mode() === 'zoom'",
     '(window:keydown)': 'onWindowKeydown($event)',
     '(window:pointerdown)': 'usingKeyboard = false',
-    '(window:resize)': 'measureWinLine()',
+    '(window:resize)': 'onResize()',
   },
 })
 export class GameBoard {
   protected readonly store = inject(GameStore);
-  protected readonly t = inject(Translator).t;
   protected readonly preferences = inject(Preferences);
+  protected readonly t = inject(Translator).t;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
 
   protected readonly indices = INDICES;
-  protected readonly globalIndex = globalIndex;
-  protected readonly glyphOf = glyphOf;
+
+  /** Narrow screens pick a board, then play it open. */
+  private readonly compact = injectMediaQuery(COMPACT_QUERY);
+  /** Changes on resize so measured layout (the win line) is measured again. */
+  private readonly viewport = signal(0);
+  /** Whether the last interaction was a key press: only then does focus move or preview. */
+  protected usingKeyboard = false;
+  /** Devices that can hover; on touch screens a tap plays at once, so nothing previews. */
+  private readonly canHover = injectMediaQuery('(hover: hover)');
 
   private pendingOpen: ReturnType<typeof setTimeout> | undefined;
   private pendingPreview: ReturnType<typeof setTimeout> | undefined;
-  /** Whether the last interaction was a key press: only then does focus preview a departure. */
-  protected usingKeyboard = false;
 
-  constructor() {
-    afterRenderEffect({ read: () => this.measureWinLine() });
-    inject(DestroyRef).onDestroy(() => {
-      clearTimeout(this.pendingOpen);
-      clearTimeout(this.pendingPreview);
-    });
-  }
+  private readonly winStrike = viewChild(StrikeLine);
 
   protected readonly mode = computed((): Mode => {
-    if (!this.store.compact()) {
+    if (!this.compact()) {
       return 'direct';
     }
     return this.store.view().kind === 'board' ? 'zoom' : 'pick';
@@ -140,6 +151,60 @@ export class GameBoard {
   private readonly legalKeys = computed(
     () => new Set(this.store.legal().map((move) => move.board * 9 + move.cell)),
   );
+
+  /** Every platform's view, derived once per change of the game, mode, preview or language. */
+  protected readonly platforms = computed((): readonly PlatformView[] => {
+    const game = this.store.game();
+    const t = this.t();
+    const mode = this.mode();
+    const legal = this.legalKeys();
+    const last = this.store.lastMove();
+    const playable = this.store.playableBoards();
+    const previewTarget = this.store.previewTarget();
+    const { status, target } = game;
+    return INDICES.map((board) => {
+      const boardStatus = game.boards[board];
+      const forced = target.kind === 'forced' && target.board === board;
+      const closing =
+        boardStatus?.kind === 'won'
+          ? boardStatus.winner
+          : boardStatus?.kind === 'drawn'
+            ? '='
+            : null;
+      const label =
+        boardStatus?.kind === 'won'
+          ? t.closedWon(board + 1, boardStatus.winner)
+          : boardStatus?.kind === 'drawn'
+            ? t.closedDrawn(board + 1)
+            : t.board(board + 1);
+      return {
+        board,
+        number: String(board + 1),
+        label,
+        forced,
+        freePick: target.kind === 'free' && game.moves.length > 0 && playable.has(board),
+        playable: playable.has(board),
+        closed: boardStatus?.kind !== 'open',
+        preview: previewTarget === board,
+        win: status.kind === 'won' && status.line.includes(board),
+        spin: forced ? game.revision : 0,
+        closing,
+        strike: boardStatus?.kind === 'won' ? gridStrike(boardStatus.line) : null,
+        cells: INDICES.map((cell) => {
+          const mark = game.cells[board]?.[cell] ?? null;
+          return {
+            cell,
+            mark,
+            glyph: glyphOf(mark),
+            legal: legal.has(board * 9 + cell),
+            last: last?.board === board && last.cell === cell,
+            label: t.cell(board + 1, cell + 1, mark),
+            roving: mode === 'zoom' ? cell : globalIndex(board, cell),
+          };
+        }),
+      };
+    });
+  });
 
   /** Which item holds tabindex 0. Resets to the first legal option whenever the game moves. */
   protected readonly roving = linkedSignal(() => {
@@ -155,121 +220,33 @@ export class GameBoard {
     }
   });
 
-  /**
-   * The winning line across boards, through the centres of the three winning grids as rendered
-   * (each grid sits under its board's number, so card centres would be off). Percent of the board.
-   */
-  protected readonly winSegment = signal<Segment | null>(null);
-
-  protected measureWinLine(): void {
-    const status = this.store.game().status;
-    const board = this.host.nativeElement.querySelector<HTMLElement>('.board');
-    if (status.kind !== 'won' || this.mode() === 'zoom' || !board) {
-      if (this.winSegment() !== null) {
-        this.winSegment.set(null);
-      }
-      return;
-    }
-    const frame = board.getBoundingClientRect();
-    const centre = (index: number) => {
-      const grid = board.querySelector(`[data-cells="${index}"]`)?.getBoundingClientRect();
-      return grid
-        ? {
-            x: ((grid.left + grid.width / 2 - frame.left) / frame.width) * 100,
-            y: ((grid.top + grid.height / 2 - frame.top) / frame.height) * 100,
-          }
-        : null;
-    };
-    const a = centre(status.line[0]);
-    const b = centre(status.line[2]);
-    if (!a || !b) {
-      return;
-    }
-    const over = 0.22;
-    const next: Segment = {
-      x1: a.x - (b.x - a.x) * over,
-      y1: a.y - (b.y - a.y) * over,
-      x2: b.x + (b.x - a.x) * over,
-      y2: b.y + (b.y - a.y) * over,
-    };
-    const current = this.winSegment();
-    const same =
-      current &&
-      Math.abs(current.x1 - next.x1) +
-        Math.abs(current.y1 - next.y1) +
-        Math.abs(current.x2 - next.x2) +
-        Math.abs(current.y2 - next.y2) <
-        0.1;
-    if (!same) {
-      this.winSegment.set(next);
-    }
+  constructor() {
+    // The win line goes through the centres of the three winning grids as rendered (each grid
+    // sits under its board's number, so card centres would be off): measure, then place.
+    afterRenderEffect({
+      earlyRead: () => {
+        this.viewport();
+        return this.measureWinLine();
+      },
+      write: (segment) => {
+        const value = segment();
+        if (value) {
+          this.winStrike()?.place(value);
+        }
+      },
+    });
+    inject(DestroyRef).onDestroy(() => {
+      clearTimeout(this.pendingOpen);
+      clearTimeout(this.pendingPreview);
+    });
   }
 
-  protected mark(board: number, cell: number): Mark {
-    return this.store.game().cells[board]?.[cell] ?? null;
+  protected onResize(): void {
+    this.viewport.update((n) => n + 1);
   }
 
   protected isLegal(board: number, cell: number): boolean {
     return this.legalKeys().has(board * 9 + cell);
-  }
-
-  protected isLast(board: number, cell: number): boolean {
-    const last = this.store.lastMove();
-    return last?.board === board && last.cell === cell;
-  }
-
-  protected isForced(board: number): boolean {
-    const target = this.store.game().target;
-    return target.kind === 'forced' && target.board === board;
-  }
-
-  /**
-   * Playable on a free choice after a move sent to a closed board: shown as a departure too, with
-   * a lighter outline. The opening is free as well but stays calm; its sentence explains it.
-   */
-  protected isFreePick(board: number): boolean {
-    const game = this.store.game();
-    return (
-      game.target.kind === 'free' && game.moves.length > 0 && this.store.playableBoards().has(board)
-    );
-  }
-
-  /** Replays the number flap each time this board becomes the forced destination. */
-  protected spinOf(board: number): number {
-    return this.isForced(board) ? this.store.game().revision : 0;
-  }
-
-  /** The large mark laid over a closed board: its winner, or `=` for a draw. */
-  protected closingMark(board: number): 'X' | 'O' | '=' | null {
-    const status = this.store.game().boards[board];
-    if (status?.kind === 'won') {
-      return status.winner;
-    }
-    return status?.kind === 'drawn' ? '=' : null;
-  }
-
-  /** The line that closed a board, as a segment over its cells. */
-  protected localStrike(board: number): Segment | null {
-    const status = this.store.game().boards[board];
-    return status?.kind === 'won' ? strike(status.line) : null;
-  }
-
-  protected isWinningBoard(board: number): boolean {
-    const status = this.store.game().status;
-    return status.kind === 'won' && status.line.includes(board);
-  }
-
-  protected boardLabel(board: number): string {
-    const status = this.store.game().boards[board];
-    const t = this.t();
-    if (status?.kind === 'won') {
-      return t.closedWon(board + 1, status.winner);
-    }
-    return status?.kind === 'drawn' ? t.closedDrawn(board + 1) : t.board(board + 1);
-  }
-
-  protected cellLabel(board: number, cell: number): string {
-    return this.t().cell(board + 1, cell + 1, this.mark(board, cell));
   }
 
   /** Illegal cells still reach the store, so the reason is shown instead of nothing happening. */
@@ -354,73 +331,22 @@ export class GameBoard {
       });
   }
 
-  /** The open board shrinks back into its slot while the other boards fade in around it. */
-  private settleInto(board: number, from: DOMRect | undefined): Promise<void> {
-    const slot = this.slotElement(board);
-    const motion = this.motion();
-    if (!slot || !from || !motion) {
-      return Promise.resolve();
-    }
-    const others = [...this.host.nativeElement.querySelectorAll('[data-board]')].filter(
-      (element) => element !== slot,
-    );
-    fadeIn(others, motion, motion.duration * 0.25);
-    slot.style.zIndex = '2';
-    return flipFrom(slot, from, motion).then(() => {
-      slot.style.zIndex = '';
-    });
-  }
-
-  private slotElement(board: number): HTMLElement | null {
-    return this.host.nativeElement.querySelector<HTMLElement>(`[data-board="${board}"]`);
-  }
-
-  private zoomElement(): HTMLElement | null {
-    return this.host.nativeElement.querySelector<HTMLElement>('.platform-zoom');
-  }
-
-  /** Duration and easing from the `--duration-zoom` and `--ease-out` tokens; null without motion. */
-  private motion(): FlipOptions | null {
-    if (this.preferences.reducedMotion()) {
-      return null;
-    }
-    const style = this.document.defaultView?.getComputedStyle(this.host.nativeElement);
-    return {
-      duration: Number.parseFloat(style?.getPropertyValue('--duration-zoom') ?? '') || 420,
-      easing: easingOf(style?.getPropertyValue('--ease-out')),
-    };
-  }
-
-  protected preview(move: Move | null): void {
-    this.store.setPreview(
-      move && this.preferences.hints() && this.isLegal(move.board, move.cell) ? move : null,
-    );
-  }
-
-  /** Devices that can hover; on touch screens a tap plays at once, so nothing previews. */
-  private readonly canHover = injectMediaQuery('(hover: hover)');
-
   /** Previews follow a real mouse pointer, once it settles on a cell. */
-  protected onPointerEnter(event: PointerEvent, move: Move): void {
+  protected onCellEnter(board: number, { cell, event }: CellPointer): void {
     if (event.pointerType === 'mouse' && this.canHover()) {
-      this.previewSoon(move);
+      this.previewSoon({ board, cell });
     }
   }
 
-  protected onPointerLeave(): void {
+  protected onCellLeave(): void {
     this.previewSoon(null);
   }
 
-  private previewSoon(move: Move | null): void {
-    clearTimeout(this.pendingPreview);
-    this.pendingPreview = setTimeout(() => this.preview(move), PREVIEW_DELAY_MS);
-  }
-
   /** Keyboard focus previews; focus moved by the app after a tap or click does not. */
-  protected onFocusItem(index: number, move: Move): void {
-    this.roving.set(index);
+  protected onCellFocus(board: number, cell: number): void {
+    this.roving.set(this.mode() === 'zoom' ? cell : globalIndex(board, cell));
     if (this.usingKeyboard) {
-      this.preview(move);
+      this.preview({ board, cell });
     }
   }
 
@@ -441,6 +367,39 @@ export class GameBoard {
     event.preventDefault();
     this.roving.set(this.nextOption(this.roving(), delta));
     this.focusRoving();
+  }
+
+  private preview(move: Move | null): void {
+    this.store.setPreview(
+      move && this.preferences.hints() && this.isLegal(move.board, move.cell) ? move : null,
+    );
+  }
+
+  private previewSoon(move: Move | null): void {
+    clearTimeout(this.pendingPreview);
+    this.pendingPreview = setTimeout(() => this.preview(move), PREVIEW_DELAY_MS);
+  }
+
+  /** The win line in percent of the board, from the rendered grids; null when there is none. */
+  private measureWinLine(): Segment | null {
+    const status = this.store.game().status;
+    const board = this.host.nativeElement.querySelector<HTMLElement>('.board');
+    if (status.kind !== 'won' || this.mode() === 'zoom' || !board) {
+      return null;
+    }
+    const frame = board.getBoundingClientRect();
+    const centre = (index: number) => {
+      const grid = board.querySelector(`[data-cells="${index}"]`)?.getBoundingClientRect();
+      return grid
+        ? {
+            x: ((grid.left + grid.width / 2 - frame.left) / frame.width) * 100,
+            y: ((grid.top + grid.height / 2 - frame.top) / frame.height) * 100,
+          }
+        : null;
+    };
+    const a = centre(status.line[0]);
+    const b = centre(status.line[2]);
+    return a && b ? overshoot(a, b) : null;
   }
 
   /** Next legal option in the arrow's direction, or the current one when there is none. */
@@ -467,6 +426,43 @@ export class GameBoard {
       col += dCol;
     }
     return index;
+  }
+
+  /** The open board shrinks back into its slot while the other boards fade in around it. */
+  private settleInto(board: number, from: DOMRect | undefined): Promise<void> {
+    const slot = this.slotElement(board);
+    const motion = this.motion();
+    if (!slot || !from || !motion) {
+      return Promise.resolve();
+    }
+    const others = [...this.host.nativeElement.querySelectorAll('[data-board]')].filter(
+      (element) => element !== slot,
+    );
+    fadeIn(others, motion, motion.duration * 0.25);
+    slot.style.zIndex = '2';
+    return flipFrom(slot, from, motion).then(() => {
+      slot.style.zIndex = '';
+    });
+  }
+
+  private slotElement(board: number): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>(`[data-board="${board}"]`);
+  }
+
+  private zoomElement(): HTMLElement | null {
+    return this.host.nativeElement.querySelector<HTMLElement>('.zoom');
+  }
+
+  /** Duration and easing from the `--duration-zoom` and `--ease-out` tokens; null without motion. */
+  private motion(): FlipOptions | null {
+    if (this.preferences.reducedMotion()) {
+      return null;
+    }
+    const style = this.document.defaultView?.getComputedStyle(this.host.nativeElement);
+    return {
+      duration: Number.parseFloat(style?.getPropertyValue('--duration-zoom') ?? '') || 420,
+      easing: easingOf(style?.getPropertyValue('--ease-out')),
+    };
   }
 
   private focusRoving(): void {

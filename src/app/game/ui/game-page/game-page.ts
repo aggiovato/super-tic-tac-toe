@@ -1,16 +1,14 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import type { Player } from '@core';
 import { Translator } from '@i18n';
 import { Button, Icon, SplitFlap } from '@kit';
 import { Preferences } from '@settings';
 import { GameStore, type Participant } from '@state';
-import { DepartureBoard, type FlapTile } from './departure-board';
-import { GameBoard } from './game-board';
-import { injectMediaQuery } from './media-query';
-import { SettingsPanel } from './settings-panel';
+import { DepartureBoard } from '../departure-board/departure-board';
+import type { FlapTile } from '../departure-board/flap-tile.model';
+import { GameBoard } from '../game-board/game-board';
+import { SettingsPanel } from '../settings-panel/settings-panel';
 
-/** Below this width a cell would be under 44 px: boards are picked, then played open. */
-const COMPACT_QUERY = '(max-width: 34.99rem)';
 const WORD_LENGTH = 5;
 /** The result cascades through more characters than an ordinary turn. */
 const RESULT_STEPS = 14;
@@ -31,11 +29,6 @@ export class GamePage {
   protected readonly store = inject(GameStore);
   protected readonly t = inject(Translator).t;
   private readonly preferences = inject(Preferences);
-
-  constructor() {
-    const compact = injectMediaQuery(COMPACT_QUERY);
-    effect(() => this.store.setCompact(compact()));
-  }
 
   /** How a player is named in sentences: their custom name, otherwise their symbol. */
   private who(player: Player): string {

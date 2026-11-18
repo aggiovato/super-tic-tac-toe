@@ -1,12 +1,6 @@
 import { Component, input } from '@angular/core';
 import { SplitFlap } from '@kit';
-
-export interface FlapTile {
-  readonly char: string;
-  readonly accent: boolean;
-  /** Most intermediate characters on the way to this one (longer for the result cascade). */
-  readonly steps?: number;
-}
+import type { FlapTile } from './flap-tile.model';
 
 /** The departure row: who moves and where to. Its spoken form comes from `label`. */
 @Component({

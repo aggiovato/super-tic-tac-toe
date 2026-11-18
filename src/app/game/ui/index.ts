@@ -1,1 +1,1 @@
-export { GamePage } from './game-page';
+export { GamePage } from './game-page/game-page';

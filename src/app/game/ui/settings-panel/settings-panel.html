@@ -1,4 +1,4 @@
-<button appButton="quiet" size="small" popovertarget="settings-panel">
+<button app-button="quiet" size="small" popovertarget="settings-panel">
   <app-icon name="settings" />
   {{ t().settings.open }}
 </button>
@@ -9,7 +9,7 @@
       {{ t().settings.title }}
     </h2>
     <button
-      appButton="quiet"
+      app-button="quiet"
       popovertarget="settings-panel"
       popovertargetaction="hide"
       [attr.aria-label]="t().settings.close"
@@ -106,7 +106,7 @@
   </div>
 
   <button
-    [appButton]="confirmingReset() ? 'primary' : 'secondary'"
+    [app-button]="confirmingReset() ? 'primary' : 'secondary'"
     class="w-full"
     (click)="newSeries()"
   >

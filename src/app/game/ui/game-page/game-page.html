@@ -36,12 +36,12 @@
       }
     </dl>
     <div class="actions">
-      <button appButton="secondary" [disabled]="!canUndo()" (click)="store.undo()">
+      <button app-button="secondary" [disabled]="!canUndo()" (click)="store.undo()">
         <app-icon name="undo" />
         {{ t().undo }}
       </button>
       @if (store.isOver()) {
-        <button appButton="primary" (click)="store.rematch()">{{ t().rematch }}</button>
+        <button app-button="primary" (click)="store.rematch()">{{ t().rematch }}</button>
       }
     </div>
   </footer>
