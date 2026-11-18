@@ -199,25 +199,42 @@ button.cell:focus-visible .cell-number {
   display: grid;
   grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
   gap: var(--spacing-cell-gap);
-  opacity: 0.7;
   pointer-events: none;
 }
 
 .mark-over {
-  --flap-bg: transparent;
-  --flap-split: transparent;
-
-  position: relative;
-  container-type: size;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
 }
 
-/* A knockout in the board colour behind each mark, so the strike line breaks around it. */
-.mark-over.filled::before {
-  content: '';
-  position: absolute;
-  inset: 22%;
-  border-radius: var(--radius-pill);
-  background: var(--platform-bg);
+/* Same size and strokes as the marks on the flap tiles. */
+.mark-over svg {
+  width: 48%;
+  max-height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.mark-over .halo {
+  stroke: var(--platform-bg);
+  stroke-width: 3;
+}
+
+.mark-over .ink {
+  opacity: 0.7;
+}
+
+.mark-over .mark-x {
+  stroke: var(--color-mark-x);
+  stroke-width: 1.3;
+}
+
+.mark-over .mark-o {
+  stroke: var(--color-mark-o);
+  stroke-width: 1.7;
 }
 
 .closing {
