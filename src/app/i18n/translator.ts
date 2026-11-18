@@ -1,5 +1,6 @@
 import { DOCUMENT, computed, effect, inject, Injectable, signal } from '@angular/core';
-import { MESSAGES, type Lang } from './messages';
+import { MESSAGES } from './messages';
+import type { Lang } from './messages.model';
 
 const STORAGE_KEY = 'super-ttt.lang';
 

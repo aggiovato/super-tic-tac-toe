@@ -1,2 +1,3 @@
-export { MESSAGES, type Lang, type Messages } from './messages';
+export { MESSAGES } from './messages';
+export type { Lang, Messages } from './messages.model';
 export { Translator } from './translator';
