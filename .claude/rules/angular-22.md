@@ -16,6 +16,8 @@ review this file and `.claude/sources.md`.
 
 - `strict` and `strictTemplates` are set explicitly in `tsconfig.json`, even though TS 6 and
   Angular 22 default to them. Do not remove them.
+- Block aliases (`@core`, `@ai`, `@state`…) live in `tsconfig.json` `paths` (no `baseUrl`, TS 6).
+  Angular and Vitest both resolve them from there; never duplicate them in another config.
 - Standalone components and CLI 22 defaults: zoneless, and `OnPush` is the default change
   detection. Do not add `standalone: true`, an explicit `OnPush` or Zone.js.
 - v20+ naming: `game-board.ts` with class `GameBoard`, no `.component` suffix.
