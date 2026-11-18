@@ -105,6 +105,18 @@ test('narrow screens open a board and come back', async ({ page, isMobile }) => 
   await expect(openBoard(page, 2)).toBeFocused();
 });
 
+test('a move that sends the opponent to the same board keeps it open', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Boards open and close on narrow screens');
+  await openBoard(page, 4).click();
+  await cell(page, 4, 4).click();
+  await expect(status(page)).toHaveText('O to move. Must play on board 5.');
+  await expect(cell(page, 4, 0)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Show all' })).toBeVisible();
+});
+
 test('with full motion the forced board opens by itself after a move', async ({
   page,
   isMobile,
