@@ -1,27 +1,35 @@
 <ng-template #glyph let-char>
-  @if (char === '→') {
-    <svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
-  } @else {
-    {{ char }}
+  @switch (char) {
+    @case ('→') {
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+    }
+    @case ('x') {
+      <svg class="glyph mark-x" viewBox="0 0 10 10">
+        <path d="M2.4 2.4l5.2 5.2M7.6 2.4l-5.2 5.2" />
+      </svg>
+    }
+    @case ('o') {
+      <svg class="glyph mark-o" viewBox="0 0 10 10"><circle cx="5" cy="5" r="2.9" /></svg>
+    }
+    @default {
+      {{ char }}
+    }
   }
 </ng-template>
 
-<span class="half top"
-  ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: char() }"
-/></span>
-<span class="half bottom old"
-  ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous() }"
-/></span>
-<span class="half bottom new"
-  ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: char() }"
-/></span>
-@for (current of [char()]; track current) {
-  @if (current !== previous()) {
-    <span class="half top leaf-out"
-      ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous() }"
-    /></span>
-    <span class="half bottom leaf-in"
-      ><ng-container *ngTemplateOutlet="glyph; context: { $implicit: current }"
-    /></span>
+<span class="half top" [class.accent]="current().accent">
+  <ng-container *ngTemplateOutlet="glyph; context: { $implicit: current().char }" />
+</span>
+<span class="half bottom" [class.accent]="previous().accent">
+  <ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous().char }" />
+</span>
+@for (step of [flip()]; track step) {
+  @if (step > 0) {
+    <span class="half top leaf-out" [class.accent]="previous().accent">
+      <ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous().char }" />
+    </span>
+    <span class="half bottom leaf-in" [class.accent]="current().accent">
+      <ng-container *ngTemplateOutlet="glyph; context: { $implicit: current().char }" />
+    </span>
   }
 }
