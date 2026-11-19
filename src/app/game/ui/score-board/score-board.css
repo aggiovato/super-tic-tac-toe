@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.score {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-stack-tight);
+}
+
+.score-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+  min-width: 0;
+}
+
+.score-entry dt {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.score-entry.active dt {
+  color: var(--color-fg-strong);
+}
+
+.score-glyph {
+  font-size: var(--text-body);
+}
+
+.score-entry dd {
+  display: flex;
+  gap: 0.08em;
+  margin: 0;
+}

@@ -8,14 +8,29 @@
 }
 
 .board {
+  /* The platforms' number size, and the row it takes above each square grid. */
+  --head-size: clamp(0.875rem, 4.4cqmin, 1.5rem);
+  /* Thumbnail of the whole game above an open board. */
+  --thumbnail-size: clamp(5.5rem, 28cqmin, 8.5rem);
+
   position: relative;
   display: grid;
-  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
+  grid-template: repeat(3, auto) / repeat(3, minmax(0, 1fr));
+  align-content: start;
   gap: var(--spacing-board-gap);
-  /* Square where height is short; on tall phones up to 18 % taller. */
-  width: min(100cqw, 100cqh);
-  height: min(100cqh, min(100cqw, 100cqh) * 1.18);
+  /*
+   * Every platform's grid is square, so the board is three head rows taller than it is wide:
+   * full width on phones, and on short screens as wide as the height leaves after those rows.
+   */
+  width: min(100cqw, 100cqh - 3 * var(--head-row));
   margin-inline: auto;
+}
+
+/* Declared where each head size is set, so it resolves against that size. */
+.board,
+.zoom {
+  /* Number row: the flap tile is 1.18em tall (kit/split-flap), plus the platform's head gap. */
+  --head-row: calc(var(--head-size) * 1.18 + var(--spacing-panel-pad) * 0.75);
 }
 
 .board-zoom {
@@ -25,33 +40,23 @@
   height: 100%;
 }
 
+/* The open board: a square grid as large as the space under the thumbnail allows. */
+.zoom {
+  --head-size: clamp(1.25rem, 7cqmin, 2.25rem);
+
+  justify-self: center;
+  width: min(
+    100%,
+    100cqh - max(2.75rem, var(--thumbnail-size)) - var(--spacing-stack-tight) - var(--head-row)
+  );
+}
+
+/* Narrow screens, whole board: a board that closed in the open view sparks as it lands. */
+button[data-board] {
+  --spark-delay: calc(var(--duration-zoom) * 0.85);
+}
+
 /* Narrow screens, one board open: the thumbnail leads back to the whole board. */
 .thumbnail {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-stack);
   justify-self: start;
-  min-height: 2.75rem;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-fg);
-  font: inherit;
-  cursor: pointer;
-}
-
-.thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-cell-gap);
-  width: clamp(5.5rem, 28cqmin, 8.5rem);
-  aspect-ratio: 1;
-}
-
-.thumbnail-label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-stack-tight);
-  font-size: var(--text-body);
-  font-weight: 600;
 }

@@ -29,6 +29,12 @@ export interface PlatformView {
   /** Replays the number flap each time the board becomes the forced destination. */
   readonly spin: number;
   readonly closing: 'X' | 'O' | '=' | null;
+  /** Closed by the last move and not yet seen: its large mark and line draw on, once. */
+  readonly fresh: boolean;
+  /** Fresh and motion allowed: the card flashes and shakes as it closes. */
+  readonly spark: boolean;
+  /** One of the three boards that won the game, motion allowed: it flashes three times. */
+  readonly winSpark: boolean;
   readonly strike: Segment | null;
   readonly cells: readonly CellView[];
 }

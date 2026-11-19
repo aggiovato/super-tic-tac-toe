@@ -8,11 +8,17 @@
  * takes the full height on the right.
  */
 .game {
+  /*
+   * Smallest arena that keeps cells playable. Reserved by the track itself, so on short phones the
+   * page scrolls instead of the board running under the score.
+   */
+  --arena-min: 18rem;
+
   display: grid;
   grid-template:
     'masthead' auto
     'departures' auto
-    'arena' minmax(0, 1fr)
+    'arena' minmax(var(--arena-min), 1fr)
     'controls' auto / minmax(0, 1fr);
   gap: var(--spacing-stack);
   max-width: 80rem;
@@ -37,28 +43,11 @@
 
 .departures {
   grid-area: departures;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-stack-tight);
-}
-
-.why {
-  /* Fixed height: a preview or refusal replacing the sentence never moves anything below. */
-  max-width: 60ch;
-  height: calc(3 * var(--text-body) * var(--text-body--line-height));
-  overflow: hidden;
-  text-wrap: pretty;
-  font-size: var(--text-body);
-  line-height: var(--text-body--line-height);
-}
-
-.why.refused {
-  color: var(--color-fg-strong);
 }
 
 .arena {
   grid-area: arena;
-  min-height: 18rem;
+  min-height: var(--arena-min);
   container-type: size;
 }
 
@@ -67,49 +56,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-stack);
-}
-
-.score {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-stack-tight);
-}
-
-.score-entry {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-stack-tight);
-  min-width: 0;
-}
-
-.score-entry dt {
-  display: flex;
-  align-items: center;
-  gap: 0.35em;
-  min-width: 0;
-  font-size: var(--text-caption);
-  font-weight: 600;
-}
-
-.score-entry.active dt {
-  color: var(--color-fg-strong);
-}
-
-.score-glyph {
-  font-size: var(--text-body);
-}
-
-.score-entry dd {
-  display: flex;
-  gap: 0.08em;
-  margin: 0;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--spacing-stack-tight);
 }
 
 /* Any landscape screen from tablet width up: board on the right at full height. */

@@ -1,15 +1,23 @@
-/* Platforms: a numbered head over a classic 3×3 grid. */
+/*
+ * Platforms: a numbered head over a classic 3×3 grid. The grid is always square, so a platform is
+ * a card one head row taller than it is wide; the board sizes itself from that (`--head-size`,
+ * `--head-row`, set by the board that lays the platforms out).
+ */
 :host {
   /* Component tokens, built only from semantic tokens. */
   --platform-bg: var(--color-surface-panel);
   --platform-pad: var(--spacing-panel-pad);
   --platform-radius: var(--radius-panel);
   --grid-line: var(--color-line);
-  --head-size: clamp(0.875rem, 4.4cqmin, 1.5rem);
+  /* The closing spark: how long it crackles, and when (the board sets a delay where it lands). */
+  --spark-time: var(--duration-draw);
+  --spark-delay: 0ms;
+  --spark-colour: var(--color-spark);
 
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: start;
   gap: calc(var(--platform-pad) * 0.75);
   min-width: 0;
   min-height: 0;
@@ -46,29 +54,20 @@
   transition: box-shadow var(--duration-quick) var(--ease-out);
 }
 
-/* Lines between cells, not boxes: the grid shows through the gaps. */
+/*
+ * Lines between cells, not boxes: the grid shows through the gaps. The line colour stops 1px short
+ * of the outer edges: on scaled screens (125 %) a grid at a fractional position anti-aliases its
+ * edge cells, and a full-size background would bleed there as a thin line.
+ */
 .cells {
   position: relative;
   display: grid;
   grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
   gap: var(--spacing-cell-gap);
+  aspect-ratio: 1;
   min-height: 0;
-  background: var(--grid-line);
-}
-
-.cell {
-  --flap-bg: var(--platform-bg);
-  --flap-split: transparent;
-
-  position: relative;
-  display: block;
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: var(--platform-bg);
-  color: inherit;
-  container-type: size;
+  background: linear-gradient(var(--grid-line), var(--grid-line)) center / calc(100% - 2px)
+    calc(100% - 2px) no-repeat;
 }
 
 :host(.playable) {
@@ -80,61 +79,7 @@
   --grid-line: var(--color-surface-raised);
 }
 
-button.cell.legal {
-  cursor: pointer;
-}
-
-button.cell:focus-visible {
-  outline: none;
-}
-
-/* Rings above the flap tile, which covers the button: last move, hover, keyboard focus. */
-.cell::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  inset: max(2px, 4cqmin);
-  border: var(--border-line) solid transparent;
-  border-radius: var(--radius-tile);
-  pointer-events: none;
-  transition: border-color var(--duration-quick) var(--ease-out);
-}
-
-.cell.last::after {
-  border-color: var(--color-last-move);
-}
-
-button.cell:focus-visible::after {
-  border: var(--border-emphasis) solid var(--color-focus);
-}
-
-.cell-number {
-  position: absolute;
-  z-index: 1;
-  inset: 0.3em auto auto 0.4em;
-  font-size: clamp(0.625rem, 24cqmin, 1.125rem);
-  font-weight: 700;
-  line-height: 1;
-  color: var(--color-fg);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--duration-quick) var(--ease-out);
-}
-
-.cell-number.always,
-button.cell:focus-visible .cell-number {
-  opacity: 1;
-}
-
 @media (hover: hover) {
-  button.cell.legal:hover::after {
-    border-color: var(--color-line-strong);
-  }
-
-  button.cell.legal:hover .cell-number {
-    opacity: 1;
-  }
-
   :host(button.playable:hover) {
     border-color: var(--color-line-strong);
   }
@@ -156,90 +101,131 @@ button.cell:focus-visible .cell-number {
   border-radius: var(--radius-tile);
 }
 
-/* Finished boards go dark; their large mark carries the result. */
+/* Finished boards go dark; their large mark carries the result, above the stepped-back cells. */
 :host(.closed) {
   --platform-bg: var(--color-surface-done);
   --grid-line: var(--color-surface-raised);
-}
-
-/* A closed board: small marks step back, the strike line crosses them, the large mark tops both. */
-:host(.closed) .cell app-split-flap {
-  opacity: 0.7;
-}
-
-:host(.closed) .cell.last::after {
-  border-color: transparent;
-}
-
-.closing {
-  position: absolute;
-  z-index: 4;
-  inset: 12%;
-  width: 76%;
-  height: 76%;
-  fill: none;
-  stroke-linecap: round;
-  pointer-events: none;
-  filter: drop-shadow(0 0.25rem 0.5rem var(--color-shade));
-}
-
-.closing.mark-x {
-  --mark-width: 0.7;
-
-  stroke: var(--color-mark-x);
-}
-
-.closing.mark-o {
-  --mark-width: 0.8;
-
-  stroke: var(--color-mark-o);
-}
-
-.closing.drawn {
-  --mark-width: 0.6;
-
-  stroke: var(--color-line-strong);
-}
-
-:host(.win) .closing .halo {
-  stroke: var(--platform-bg);
+  --cell-mark-opacity: 0.7;
+  --cell-last-ring: transparent;
 }
 
 /* The winner's three boards: their large marks turn to the win colour. */
-:host(.win) .closing {
-  stroke: var(--color-win);
+:host(.win) {
+  --closing-colour: var(--color-win);
 }
 
-/* A halo in the board colour behind each large mark, so any line passes beneath it. */
-.closing .halo {
-  stroke: var(--platform-bg);
-  stroke-width: calc(var(--mark-width) + 1.2);
+/*
+ * A board closing: an electric flicker of the outline and a brief shake, once. A won game: its three
+ * boards flash three times. The only transient light on components (see DESIGN.md, The No Glow
+ * Rule). The shake moves `translate`, which composes with the `transform` of a board settling into
+ * its slot instead of replacing it.
+ *
+ * Any `translate` makes the platform a stacking context, which would trap its large mark beneath
+ * the game's strike line. So the shake holds no value outside its run (no fill), and the boards of
+ * a won game do not shake at all: their three flashes take its place.
+ */
+:host(.spark:not(.mini, .win)) {
+  animation: spark-shake calc(var(--spark-time) * 0.5) linear var(--spark-delay);
 }
 
-.closing .ink {
-  stroke-width: var(--mark-width);
+:host(.spark:not(.mini))::before,
+:host(.win-spark:not(.mini))::before {
+  content: '';
+  position: absolute;
+  z-index: 5;
+  inset: calc(-1 * var(--border-emphasis));
+  border: var(--border-emphasis) solid var(--spark-colour);
+  border-radius: inherit;
+  box-shadow:
+    0 0 1rem var(--spark-colour),
+    inset 0 0 1.5rem var(--spark-colour);
+  opacity: 0;
+  pointer-events: none;
+  animation: spark-flicker var(--spark-time) linear var(--spark-delay) both;
 }
 
-/* Drawn on; the dash only exists while animating, so the finished stroke has no seam. */
-.closing .ink {
-  animation: draw-mark var(--duration-draw) var(--ease-out) backwards;
+/*
+ * After the closing spark of the winning move, if any, three strong flashes on each winning board,
+ * in the accent: the game's one spectacle.
+ */
+:host(.win-spark:not(.mini))::before {
+  --spark-colour: var(--color-accent);
+
+  animation: spark-win calc(var(--spark-time) * 1.6) linear
+    calc(var(--spark-delay) + var(--spark-time) * 0.4) both;
 }
 
-@keyframes draw-mark {
-  from {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
+@keyframes spark-win {
+  0%,
+  16%,
+  42%,
+  68%,
+  100% {
+    opacity: 0;
   }
 
-  to {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 0;
+  6%,
+  32%,
+  58% {
+    opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .closing .ink {
-    animation: none;
+/* Uneven on and off, like an arc catching: bright strikes that fade out. */
+@keyframes spark-flicker {
+  0% {
+    opacity: 0;
+  }
+
+  6% {
+    opacity: 1;
+  }
+
+  12% {
+    opacity: 0.2;
+  }
+
+  20% {
+    opacity: 0.9;
+  }
+
+  28% {
+    opacity: 0.35;
+  }
+
+  38% {
+    opacity: 0.75;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes spark-shake {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  15% {
+    translate: -0.15rem 0.08rem;
+  }
+
+  30% {
+    translate: 0.15rem -0.08rem;
+  }
+
+  45% {
+    translate: -0.1rem -0.05rem;
+  }
+
+  60% {
+    translate: 0.1rem 0.05rem;
+  }
+
+  80% {
+    translate: -0.05rem 0;
   }
 }
 
@@ -259,6 +245,7 @@ button.cell:focus-visible .cell-number {
 
 :host(.mini) .cells {
   height: 100%;
+  aspect-ratio: auto;
   gap: 1px;
 }
 
@@ -269,12 +256,4 @@ button.cell:focus-visible .cell-number {
 /* The forced board keeps its departure colour in the thumbnail too, even while open. */
 :host(.mini.forced) {
   border-color: var(--color-target);
-}
-
-:host(.zoom) {
-  --head-size: clamp(1.25rem, 7cqmin, 2.25rem);
-
-  justify-self: center;
-  width: min(100%, 100cqh);
-  height: 100%;
 }

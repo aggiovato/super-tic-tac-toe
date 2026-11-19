@@ -1,0 +1,12 @@
+<button type="button" (click)="back.emit()">
+  <span class="grid" aria-hidden="true">
+    @for (thumb of platforms(); track thumb.board) {
+      <span
+        class="mini"
+        [class.current]="thumb.board === current()"
+        [app-board-platform]="thumb"
+      ></span>
+    }
+  </span>
+  <span class="label"><app-icon name="grid" />{{ t().showAll }}</span>
+</button>

@@ -9,18 +9,12 @@
     @case ('zoom') {
       @let board = zoomed() ?? 0;
       @let view = platforms()[board];
-      <button type="button" class="thumbnail" (click)="back()">
-        <span class="thumbnail-grid" aria-hidden="true">
-          @for (thumb of platforms(); track thumb.board) {
-            <span
-              class="mini"
-              [class.current]="thumb.board === board"
-              [app-board-platform]="thumb"
-            ></span>
-          }
-        </span>
-        <span class="thumbnail-label"><app-icon name="grid" />{{ t().showAll }}</span>
-      </button>
+      <app-board-thumbnail
+        class="thumbnail"
+        [platforms]="platforms()"
+        [current]="board"
+        (back)="back()"
+      />
       <div
         class="zoom"
         role="group"

@@ -1,0 +1,75 @@
+:host {
+  --flap-bg: var(--platform-bg);
+  --flap-split: transparent;
+
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: var(--platform-bg);
+  color: inherit;
+  container-type: size;
+}
+
+/* A closed board steps its small marks back under the strike line and its large mark. */
+app-split-flap {
+  opacity: var(--cell-mark-opacity, 1);
+}
+
+:host(button.legal) {
+  cursor: pointer;
+}
+
+:host(button:focus-visible) {
+  outline: none;
+}
+
+/* Rings above the flap tile, which covers the button: last move, hover, keyboard focus. */
+:host::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: max(2px, 4cqmin);
+  border: var(--border-line) solid transparent;
+  border-radius: var(--radius-tile);
+  pointer-events: none;
+  transition: border-color var(--duration-quick) var(--ease-out);
+}
+
+:host(.last)::after {
+  border-color: var(--cell-last-ring, var(--color-last-move));
+}
+
+:host(button:focus-visible)::after {
+  border: var(--border-emphasis) solid var(--color-focus);
+}
+
+.number {
+  position: absolute;
+  z-index: 1;
+  inset: 0.3em auto auto 0.4em;
+  font-size: clamp(0.625rem, 24cqmin, 1.125rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-fg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-quick) var(--ease-out);
+}
+
+.number.always,
+:host(button:focus-visible) .number {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  :host(button.legal:hover)::after {
+    border-color: var(--color-line-strong);
+  }
+
+  :host(button.legal:hover) .number {
+    opacity: 1;
+  }
+}

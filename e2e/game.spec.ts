@@ -143,3 +143,84 @@ test('settings switch language, rename players and need a second press to reset'
   await page.getByRole('button', { name: 'Nueva serie' }).click();
   await expect(page.getByRole('button', { name: 'Borrar marcador y empezar' })).toBeVisible();
 });
+
+test('every board grid is square, whole and open', async ({ page, isMobile }) => {
+  const isSquare = async (grid: ReturnType<Page['locator']>) => {
+    const box = await grid.boundingBox();
+    expect(box).not.toBeNull();
+    expect(Math.abs((box?.width ?? 0) - (box?.height ?? 1))).toBeLessThan(1);
+  };
+  await isSquare(page.locator('[data-cells="4"]'));
+  if (isMobile) {
+    await openBoard(page, 4).click();
+    await expect(cell(page, 4, 0)).toBeVisible();
+    await isSquare(page.getByRole('group', { name: 'Board 5' }).locator('[data-cells="4"]'));
+  }
+});
+
+test('a closed board draws its mark once, not each time the views switch', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Views are rebuilt only on narrow screens');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const drawing = () =>
+    page.evaluate(
+      () =>
+        document.getAnimations().filter((animation) => {
+          const name = animation instanceof CSSAnimation ? animation.animationName : '';
+          return name.endsWith('draw-mark');
+        }).length,
+    );
+  // X closes board 5 along its top row; O is then sent to board 3, which opens by itself.
+  await playAll(page, '4.0 0.4 4.1 1.4 4.2');
+  await expect(cell(page, 2, 0)).toBeVisible({ timeout: 3000 });
+  await page.getByRole('button', { name: 'Show all' }).click();
+  await expect(openBoard(page, 2)).toBeVisible();
+  expect(await drawing()).toBe(0);
+});
+
+test('winning a board spells TIP, TAP and TOE beside the name', async ({ page }) => {
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Super 3T');
+  const ending = page.locator('app-brand-title .flaps');
+  // Folded away until a board is won.
+  await expect(ending).toBeHidden();
+  // X wins board 5 along its top row.
+  await playAll(page, '4.0 0.4 4.1 1.4 4.2');
+  await expect(ending).toBeVisible();
+  await expect(ending).toHaveText(/I\s*P/);
+  await expect(ending).toHaveText(/A\s*P/);
+  await expect(ending).toHaveText(/O\s*E/);
+  await expect(ending).toBeHidden();
+});
+
+test('the three boards that win the game flash', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const flashing = () =>
+    page.evaluate(() =>
+      document
+        .getAnimations()
+        .filter(
+          (animation) =>
+            animation instanceof CSSAnimation && animation.animationName.endsWith('spark-win'),
+        )
+        .map((animation) => {
+          const target =
+            animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
+          return target?.querySelector('[data-cells]')?.getAttribute('data-cells');
+        })
+        .sort(),
+    );
+  await playAll(page, GLOBAL_DIAGONAL_WIN);
+  await expect(status(page)).toHaveText(/wins/);
+  await expect.poll(flashing).toEqual(['0', '4', '8']);
+  // No winning board becomes a stacking context (a held `translate` from the closing shake),
+  // which would lift the game's strike line above its large mark.
+  const translates = await page.evaluate(() =>
+    ['0', '4', '8'].map((board) => {
+      const platform = document.querySelector(`[data-cells="${board}"]`)?.parentElement;
+      return platform ? getComputedStyle(platform).translate : null;
+    }),
+  );
+  expect(translates).toEqual(['none', 'none', 'none']);
+});

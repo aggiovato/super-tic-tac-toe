@@ -1,0 +1,34 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+/* The flaps sit right after the T, at the title's size, as if part of the word. */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.04em;
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 600;
+  line-height: var(--text-title--line-height);
+  color: var(--color-fg-strong);
+  white-space: nowrap;
+}
+
+/* Folded away at rest; unfolds to fit both tiles (0.78em each, see kit/split-flap) when shown. */
+.flaps {
+  display: inline-flex;
+  gap: 0.08em;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-width var(--duration-frame) var(--ease-out),
+    opacity var(--duration-frame) var(--ease-out);
+}
+
+.flaps.shown {
+  max-width: 2em;
+  opacity: 1;
+}
