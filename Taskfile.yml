@@ -1,6 +1,6 @@
 version: '3'
 
-# Each entry lands with the npm script it calls. e2e arrives in phase 2 with Playwright.
+# Each entry lands with the npm script it calls.
 tasks:
   setup:
     desc: Install locked dependencies
@@ -24,14 +24,20 @@ tasks:
       - npm run test:app
   build:
     desc: Production build with budgets
+    run: once
     cmds: [npm run build]
+  e2e:
+    desc: Playwright against the production build (needs `npx playwright install chromium` once)
+    cmds:
+      - task: build
+      - npm run test:e2e
   check:
     desc: Full verification, same as CI
     cmds:
       - task: fmt-check
       - task: lint
       - task: unit
-      - task: build
+      - task: e2e
   ci:
     desc: Clean install and full verification
     cmds:

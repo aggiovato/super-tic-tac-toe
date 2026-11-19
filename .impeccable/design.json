@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T00:21:10+00:00",
+  "title": "Design System: Super Tic Tac Toe",
+  "extensions": {
+    "colorMeta": {
+      "raven-teal": {
+        "role": "neutral",
+        "displayName": "Raven Teal",
+        "canonical": "#16292b",
+        "tonalRamp": [
+          "#050b0c",
+          "#0a1516",
+          "#0f1f21",
+          "#16292b",
+          "#1d3437",
+          "#657874",
+          "#9fb3ab",
+          "#dce6e1"
+        ]
+      },
+      "raven-deep": {
+        "role": "neutral",
+        "displayName": "Raven Deep",
+        "canonical": "#0f1f21",
+        "tonalRamp": [
+          "#050b0c",
+          "#0a1516",
+          "#0f1f21",
+          "#16292b",
+          "#1d3437",
+          "#657874",
+          "#9fb3ab",
+          "#dce6e1"
+        ]
+      },
+      "raven-deepest": {
+        "role": "neutral",
+        "displayName": "Raven Deepest",
+        "canonical": "#0a1516",
+        "tonalRamp": [
+          "#050b0c",
+          "#0a1516",
+          "#0f1f21",
+          "#16292b",
+          "#1d3437",
+          "#657874",
+          "#9fb3ab",
+          "#dce6e1"
+        ]
+      },
+      "raven-lift": {
+        "role": "neutral",
+        "displayName": "Raven Lift",
+        "canonical": "#1d3437",
+        "tonalRamp": [
+          "#050b0c",
+          "#0a1516",
+          "#0f1f21",
+          "#16292b",
+          "#1d3437",
+          "#657874",
+          "#9fb3ab",
+          "#dce6e1"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#050b0c",
+        "tonalRamp": [
+          "oklch(15% 0.015 200)",
+          "oklch(25% 0.019 200)",
+          "oklch(35% 0.022 200)",
+          "oklch(48% 0.027 200)",
+          "oklch(60% 0.028 200)",
+          "oklch(72% 0.024 200)",
+          "oklch(84% 0.019 200)",
+          "oklch(95% 0.015 200)"
+        ]
+      },
+      "seagrass-grey": {
+        "role": "neutral",
+        "displayName": "Seagrass Grey",
+        "canonical": "#9fb3ab",
+        "tonalRamp": [
+          "oklch(15% 0.012 165)",
+          "oklch(25% 0.015 165)",
+          "oklch(35% 0.019 165)",
+          "oklch(48% 0.023 165)",
+          "oklch(60% 0.023 165)",
+          "oklch(72% 0.02 165)",
+          "oklch(84% 0.016 165)",
+          "oklch(95% 0.012 165)"
+        ]
+      },
+      "seagrass-dim": {
+        "role": "neutral",
+        "displayName": "Seagrass Dim",
+        "canonical": "#657874",
+        "tonalRamp": [
+          "oklch(15% 0.012 165)",
+          "oklch(25% 0.015 165)",
+          "oklch(35% 0.019 165)",
+          "oklch(48% 0.023 165)",
+          "oklch(60% 0.023 165)",
+          "oklch(72% 0.02 165)",
+          "oklch(84% 0.016 165)",
+          "oklch(95% 0.012 165)"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "#dce6e1",
+        "tonalRamp": [
+          "oklch(15% 0.012 165)",
+          "oklch(25% 0.015 165)",
+          "oklch(35% 0.019 165)",
+          "oklch(48% 0.023 165)",
+          "oklch(60% 0.023 165)",
+          "oklch(72% 0.02 165)",
+          "oklch(84% 0.016 165)",
+          "oklch(95% 0.012 165)"
+        ]
+      },
+      "apricot-flare": {
+        "role": "primary",
+        "displayName": "Apricot Flare",
+        "canonical": "#ff8a1f",
+        "tonalRamp": [
+          "oklch(15% 0.088 55)",
+          "oklch(25% 0.111 55)",
+          "oklch(35% 0.134 55)",
+          "oklch(48% 0.164 55)",
+          "oklch(60% 0.169 55)",
+          "oklch(72% 0.141 55)",
+          "oklch(84% 0.114 55)",
+          "oklch(95% 0.088 55)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "flap": {
+        "displayName": "Flap",
+        "purpose": "The departure row; one character per split-flap tile."
+      },
+      "score": {
+        "displayName": "Score",
+        "purpose": "Series score digits, as flap tiles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "The masthead name only."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "The explanatory sentence under the departure row, buttons, settings choices."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Score labels, settings legends and captions, small buttons."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel-lift",
+        "value": "0 0.375rem 1.25rem -0.25rem var(--color-shade)",
+        "purpose": "Every full-size platform over the page; not thumbnails."
+      },
+      {
+        "name": "mark-drop",
+        "value": "drop-shadow(0 0.25rem 0.5rem var(--color-shade))",
+        "purpose": "Filter under the large mark on a closed board."
+      },
+      {
+        "name": "line-drop",
+        "value": "drop-shadow(0 0.125rem 0.375rem var(--color-shade))",
+        "purpose": "Filter under strike lines."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-flap",
+        "value": "cubic-bezier(0.3, 0, 0.2, 1)",
+        "purpose": "Flap halves falling."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "State transitions, drawn marks and lines, board zoom."
+      },
+      {
+        "name": "duration-step",
+        "value": "60ms",
+        "purpose": "One character step of a flap cycling to its word (each half is half of it)."
+      },
+      {
+        "name": "duration-quick",
+        "value": "150ms",
+        "purpose": "Border, fill, ring and opacity state changes."
+      },
+      {
+        "name": "duration-frame",
+        "value": "240ms",
+        "purpose": "Board closing; delay before the game-winning line."
+      },
+      {
+        "name": "duration-zoom",
+        "value": "420ms",
+        "purpose": "A board opening from, or closing into, the grid on narrow screens."
+      },
+      {
+        "name": "duration-draw",
+        "value": "600ms",
+        "purpose": "Large closing marks and the winning line being drawn on."
+      },
+      {
+        "name": "preview-delay",
+        "value": "140ms",
+        "purpose": "Hover intent before the departure preview appears."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow",
+        "value": "max-width: 34.99rem",
+        "purpose": "Bottom-sheet settings, single backdrop strip."
+      },
+      {
+        "name": "two-column",
+        "value": "min-width: 48rem and min-aspect-ratio: 5/4",
+        "purpose": "Side column plus full-height board."
+      },
+      {
+        "name": "fixed-height",
+        "value": "min-height: 34rem",
+        "purpose": "Game locks to one viewport height."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one accent action per view (Rematch).",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Rematch</button>",
+      "css": ".ds-btn{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;gap:.5rem;min-height:2.75rem;padding:0 1rem;border:2px solid transparent;border-radius:.75rem;font-size:1.125rem;font-weight:600;line-height:1;cursor:pointer;transition:background-color 150ms cubic-bezier(.16,1,.3,1),border-color 150ms cubic-bezier(.16,1,.3,1);}.ds-btn-primary{background:#ff8a1f;color:#16292b;font-weight:700;}.ds-btn-primary:hover{box-shadow:inset 0 0 0 2px #16292b;}.ds-btn:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined everyday action (Undo).",
+      "html": "<button class=\"ds-btn2\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10a6 6 0 0 1 0 12h-3\"/></svg>Undo</button>",
+      "css": ".ds-btn2{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;gap:.5rem;min-height:2.75rem;padding:0 1rem;border:2px solid #657874;border-radius:.75rem;background:transparent;color:#9fb3ab;font-size:1.125rem;font-weight:600;line-height:1;cursor:pointer;transition:background-color 150ms cubic-bezier(.16,1,.3,1);}.ds-btn2:hover{background:#1d3437;}.ds-btn2:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}.ds-btn2:disabled{border-color:#1d3437;color:#657874;cursor:not-allowed;background:transparent;}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Text-only control (Settings, close).",
+      "html": "<button class=\"ds-btn3\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M4 7h10M18 7h2M4 17h4M12 17h8\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"10\" cy=\"17\" r=\"2\"/></svg>Settings</button>",
+      "css": ".ds-btn3{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:inline-flex;align-items:center;gap:.5rem;min-height:2.75rem;padding:0 .5rem;border:2px solid transparent;border-radius:.75rem;background:transparent;color:#9fb3ab;font-size:.875rem;font-weight:600;cursor:pointer;}.ds-btn3:hover{background:#1d3437;}.ds-btn3:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Player name field in settings.",
+      "html": "<label class=\"ds-field\">Player 1<input class=\"ds-input\" type=\"text\" placeholder=\"Player 1\"></label>",
+      "css": ".ds-field{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:flex;flex-direction:column;gap:.5rem;font-size:.875rem;color:#9fb3ab;}.ds-input{min-height:2.75rem;padding:0 1rem;border:2px solid #657874;border-radius:.75rem;background:#16292b;color:#dce6e1;font:inherit;font-size:1.125rem;}.ds-input::placeholder{color:#9fb3ab;}.ds-input:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}"
+    },
+    {
+      "name": "Departure Row",
+      "kind": "custom",
+      "refersTo": "flap-tile",
+      "description": "Split-flap tiles announcing who moves and where: X → 2, the destination in Apricot.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-flap\"><svg viewBox=\"0 0 10 10\"><path d=\"M2.4 2.4l5.2 5.2M7.6 2.4l-5.2 5.2\" stroke-width=\"1.3\"/></svg></span><span class=\"ds-flap\"><svg viewBox=\"0 0 24 24\"><path d=\"M4 12h15m-6-6 6 6-6 6\" stroke-width=\"3\"/></svg></span><span class=\"ds-flap ds-accent\">2</span></div>",
+      "css": ".ds-row{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:flex;gap:.08em;font-size:3rem;font-variant-numeric:tabular-nums;}.ds-flap{position:relative;display:grid;place-items:center;width:.78em;height:1.18em;border-radius:.25rem;background:#0f1f21;color:#9fb3ab;font-weight:700;line-height:1;}.ds-flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:max(1px,.035em);background:#16292b;}.ds-flap svg{width:.62em;height:.62em;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;}.ds-accent{color:#ff8a1f;}"
+    },
+    {
+      "name": "Forced Platform",
+      "kind": "card",
+      "refersTo": "platform",
+      "description": "A numbered mini board; the forced one carries the Apricot outline and number.",
+      "html": "<div class=\"ds-plat ds-forced\"><span class=\"ds-num\">2</span><div class=\"ds-cells\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>",
+      "css": ".ds-plat{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:grid;gap:.5rem;width:9rem;padding:.6rem;border:3px solid transparent;border-radius:.5rem;background:#1d3437;box-shadow:0 .375rem 1.25rem -.25rem rgba(5,11,12,.7);transition:border-color 150ms cubic-bezier(.16,1,.3,1);}.ds-plat:hover{border-color:#9fb3ab;}.ds-forced,.ds-forced:hover{border-color:#ff8a1f;}.ds-num{display:grid;place-items:center;width:1.1rem;height:1.4rem;border-radius:.25rem;background:#0f1f21;color:#9fb3ab;font-weight:700;font-size:1rem;}.ds-forced .ds-num{color:#ff8a1f;}.ds-cells{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:#657874;aspect-ratio:1;}.ds-cells i{background:#1d3437;}"
+    },
+    {
+      "name": "Score Entry",
+      "kind": "custom",
+      "refersTo": "flap-tile",
+      "description": "Player label over tabular flap digits.",
+      "html": "<dl class=\"ds-score\"><dt>Player 1</dt><dd><span>0</span><span>1</span></dd></dl>",
+      "css": ".ds-score{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;margin:0;display:flex;flex-direction:column;gap:.5rem;color:#9fb3ab;}.ds-score dt{font-size:.875rem;font-weight:600;color:#dce6e1;}.ds-score dd{margin:0;display:flex;gap:.08em;font-size:2.25rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}.ds-score dd span{position:relative;display:grid;place-items:center;width:.78em;height:1.18em;border-radius:.25rem;background:#0f1f21;}.ds-score dd span::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#16292b;}"
+    },
+    {
+      "name": "Settings Choice",
+      "kind": "input",
+      "refersTo": "settings-sheet",
+      "description": "Token-drawn radio in the settings sheet.",
+      "html": "<label class=\"ds-choice\"><input type=\"radio\" name=\"m\" checked> Follow the system</label><label class=\"ds-choice\"><input type=\"radio\" name=\"m\"> Reduced</label>",
+      "css": ".ds-choice{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:flex;align-items:flex-start;gap:.5rem;min-height:2rem;font-size:1.125rem;color:#9fb3ab;cursor:pointer;}.ds-choice input{appearance:none;display:grid;place-items:center;width:1.25rem;height:1.25rem;margin:.15em 0 0;border:2px solid #657874;border-radius:9999px;background:#16292b;cursor:pointer;transition:border-color 150ms;}.ds-choice input::before{content:'';width:.5rem;height:.5rem;border-radius:9999px;background:#dce6e1;transform:scale(0);transition:transform 150ms cubic-bezier(.16,1,.3,1);}.ds-choice input:checked{border-color:#dce6e1;}.ds-choice input:checked::before{transform:scale(1);}.ds-choice:hover input:not(:checked){border-color:#9fb3ab;}.ds-choice input:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Departure Board",
+    "overview": "Every move is a departure. The screen reads like a station's split-flap board: a row of dark teal flap tiles announces who moves and which board they depart to (\"X → 2\", \"X → FREE\", \"X WINS\"), and the nine mini boards below are numbered platforms waiting for that announcement. The rule of the game (the cell you play decides where your opponent plays) is shown by the board flipping, not explained by a manual.\n\nThe world is dark, flat and quiet by default. A Raven Teal ground carries a soft wash of light and shade plus two faint torn-paper strips from the owner's artwork, so the page has atmosphere without any component competing with the board. Seagrass Grey does all the everyday work: text, strokes, both X and O. Apricot Flare is spent only on the departure (the forced board, its number, the one primary action) and on a win. Density is game-like: one screen, no scrolling during play, the board taking every pixel the layout allows.\n\nMotion is mechanical, not decorative: flaps fall top half then bottom half and cycle through the drum to their character, staggered left to right; a closed board has its large mark drawn on; a win draws its line. A player's motion setting overrides the system one in both directions, and every effect has an instant equivalent.",
+    "keyCharacteristics": [
+      "Split-flap tiles with a hairline split across the middle are the signature unit: departure row, platform numbers, cells and score digits are all flaps.",
+      "Three-colour brand palette in roughly 60 / 30 / 10 proportion (Raven Teal / Seagrass Grey / Apricot Flare), plus derived tints and shades only.",
+      "One family, Barlow Semi Condensed, with tabular figures everywhere.",
+      "Flat components on a softly lit ground; depth comes from tonal steps and one soft panel shadow.",
+      "The forced target is always the most visible thing on screen, and always carries a shape cue besides colour."
+    ],
+    "rules": [
+      {
+        "name": "The One Departure Rule",
+        "body": "Apricot Flare marks where the next move may go, the one primary action, and a win. A second use of orange on a screen is a bug.",
+        "section": "colors"
+      },
+      {
+        "name": "The Shared Ink Rule",
+        "body": "X and O are both drawn in Seagrass Grey (Chalk in high contrast). Shape tells them apart, never colour; the accent is reserved for the departure.",
+        "section": "colors"
+      },
+      {
+        "name": "The Focus Is Not The Accent Rule",
+        "body": "The keyboard focus ring is Chalk, 3px, offset 3px; never Apricot Flare, so focus can never be mistaken for the forced target.",
+        "section": "colors"
+      },
+      {
+        "name": "The Role Name Rule",
+        "body": "Code uses role tokens (`--color-target`, `--color-surface-panel`), never hue names or raw values; a new design is a new theme file overriding those roles (see `.claude/rules/design-tokens.md`).",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Everywhere Rule",
+        "body": "Every digit on screen is tabular so flaps and scores never shift width while cycling.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Copy is written in sentence case at normal tracking. Capitals appear only as characters on flap tiles, where the board itself is the uppercase device.",
+        "section": "typography"
+      },
+      {
+        "name": "The Atmosphere Carries No Information Rule",
+        "body": "The wash and the torn strips are decoration only. The high-contrast design removes them (backdrop opacity 0, no glow), and nothing is lost.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Glow Rule",
+        "body": "No component glows. State is shown by borders, rings and tone; the only spectacle is a win (orange line and marks).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep Apricot Flare to the departure, the single primary action and a win (about 10% of the screen at most).",
+      "**Do** give the forced target a shape cue (3px outline and accent number tile) besides its colour.",
+      "**Do** render every changing word or number as a row of split-flap tiles with tabular figures.",
+      "**Do** draw X and O as round-capped SVG strokes in the same colour, distinguished by shape.",
+      "**Do** use role tokens only in components; add a design as a theme file that overrides roles.",
+      "**Do** keep the sentence under the departure row at a fixed three-line height so previews and refusals never move the board.",
+      "**Do** provide an instant equivalent for every animation and honour the player's motion setting over the system one."
+    ],
+    "donts": [
+      "**Don't** add glows, gradients or shadows to components beyond the panel lift and the drop shadows under drawn marks and lines.",
+      "**Don't** use Apricot Flare for focus, hover, the last move or the preview; those are Chalk or Seagrass.",
+      "**Don't** colour X and O differently.",
+      "**Don't** put information in the backdrop wash or torn strips; they vanish in the high-contrast design.",
+      "**Don't** move a dashed or accent outline from platform to platform while hovering; the preview lives on the destination's number tile.",
+      "**Don't** introduce a second typeface, raw hex values or Tailwind default palette, size or radius utilities in app code."
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+<ng-template #glyph let-char>
+  @switch (char) {
+    @case ('→') {
+      <svg class="glyph" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+    }
+    @case ('x') {
+      <svg class="glyph mark-x" viewBox="0 0 10 10">
+        <path d="M2.4 2.4l5.2 5.2M7.6 2.4l-5.2 5.2" />
+      </svg>
+    }
+    @case ('o') {
+      <svg class="glyph mark-o" viewBox="0 0 10 10"><circle cx="5" cy="5" r="2.9" /></svg>
+    }
+    @default {
+      {{ char }}
+    }
+  }
+</ng-template>
+
+@if (flipping()) {
+  <span class="half top" [class.accent]="current().accent">
+    <ng-container *ngTemplateOutlet="glyph; context: { $implicit: current().char }" />
+  </span>
+  <span class="half bottom" [class.accent]="previous().accent">
+    <ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous().char }" />
+  </span>
+  @for (step of [step()]; track step) {
+    <span class="half top leaf-out" [class.accent]="previous().accent">
+      <ng-container *ngTemplateOutlet="glyph; context: { $implicit: previous().char }" />
+    </span>
+    <span class="half bottom leaf-in" [class.accent]="current().accent">
+      <ng-container *ngTemplateOutlet="glyph; context: { $implicit: current().char }" />
+    </span>
+  }
+} @else {
+  <span class="half" [class.accent]="current().accent">
+    <ng-container *ngTemplateOutlet="glyph; context: { $implicit: current().char }" />
+  </span>
+}

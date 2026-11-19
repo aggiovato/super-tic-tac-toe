@@ -1,0 +1,89 @@
+/*
+ * Layer 2 · Semantic tokens: the contract every design implements. Components and templates use
+ * only these (as Tailwind utilities or var()). Values here are the default design, Departures;
+ * another design overrides the same names under [data-theme='<name>'] (see themes/).
+ *
+ * Tailwind defaults are reset so no raw palette, size or radius utility exists by accident.
+ */
+@theme {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
+
+  /* Colour roles. */
+  --color-surface: var(--ref-raven-800); /* page ground */
+  --color-surface-panel: var(--ref-raven-900); /* platforms, flap tiles, score tiles */
+  --color-surface-raised: var(--ref-raven-700); /* hover and pressed fills */
+  --color-surface-done: var(--ref-raven-900); /* finished boards: the dark panel tone */
+  --color-fg: var(--ref-seagrass-400); /* body text, icons */
+  --color-fg-disabled: var(--ref-seagrass-600); /* unavailable controls, ≥ 3:1 on surfaces */
+  --color-fg-strong: var(--ref-chalk-100); /* emphasis, current player */
+  --color-line: var(--ref-seagrass-600); /* secondary strokes, ≥ 3:1 on every surface */
+  --color-line-strong: var(--ref-seagrass-400); /* primary strokes */
+  --color-accent: var(--ref-apricot-500); /* the one action colour */
+  --color-on-accent: var(--ref-raven-800); /* text and icons on accent */
+  --color-focus: var(--ref-chalk-100); /* keyboard focus ring, never the accent */
+
+  /* Game roles. */
+  --color-mark-x: var(--ref-seagrass-400);
+  --color-mark-o: var(
+    --ref-seagrass-400
+  ); /* brand: X and O share Seagrass; shape tells them apart */
+  --color-target: var(--ref-apricot-500); /* forced board and its number */
+  --color-last-move: var(--ref-chalk-100); /* chalk: the accent stays for the departure */
+  --color-preview: var(--ref-chalk-100); /* board a hovered cell would send to */
+  --color-win: var(--ref-apricot-500);
+
+  /* Atmosphere: light and shade (torn strips come from artwork, see Backdrop). Decorative only; never carries information. */
+  --color-glow: color-mix(in srgb, var(--ref-raven-700) 85%, transparent); /* soft light */
+  --color-shade: color-mix(in srgb, var(--ref-ink) 70%, transparent); /* vignette, shadows */
+
+  /* Type by function (size + line height). */
+  --font-sans: var(--ref-family-sans);
+  --text-caption: var(--ref-size-14);
+  --text-caption--line-height: 1.3;
+  --text-body: var(--ref-size-18);
+  --text-body--line-height: 1.4;
+  --text-title: var(--ref-size-24);
+  --text-title--line-height: 1.15;
+  --text-score: var(--ref-size-36);
+  --text-score--line-height: 1;
+  --text-flap: clamp(var(--ref-size-36), 11vw, var(--ref-size-60));
+  --text-flap--line-height: 1;
+
+  /* Radius by hierarchy: smaller parts get smaller radii. */
+  --radius-cell: var(--ref-radius-1);
+  --radius-tile: var(--ref-radius-2);
+  --radius-panel: var(--ref-radius-3);
+  --radius-control: var(--ref-radius-4);
+  --radius-pill: var(--ref-radius-full);
+
+  /* Space by role, on top of Tailwind's 4 px `--spacing` multiplier (p-4 = 16 px). */
+  --spacing-gutter: var(--ref-space-4); /* page side gutter */
+  --spacing-stack: var(--ref-space-4); /* between blocks */
+  --spacing-stack-tight: var(--ref-space-2); /* inside a block */
+  --spacing-stack-loose: var(--ref-space-8); /* between sections */
+  --spacing-board-gap: clamp(var(--ref-space-2), 2.5vw, var(--ref-space-4)); /* between boards */
+  --spacing-cell-gap: var(--ref-stroke-2); /* between cells: drawn as the grid line */
+  --spacing-panel-pad: clamp(var(--ref-space-1), 1.5vw, var(--ref-space-3));
+
+  /* Motion. */
+  --ease-flap: cubic-bezier(0.3, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tokens Tailwind has no namespace for. Same contract: themes may override them. */
+:root {
+  --border-hairline: var(--ref-stroke-1);
+  --border-line: var(--ref-stroke-2);
+  --border-emphasis: var(--ref-stroke-3); /* forced board, focus ring */
+  --duration-quick: var(--ref-duration-150); /* a piece being drawn */
+  --duration-frame: var(--ref-duration-240); /* board closing */
+  --duration-step: var(--ref-duration-60); /* one character step of a flap cycling to its word */
+  --duration-zoom: var(--ref-duration-420); /* a board opening from, or closing into, the grid */
+  --duration-draw: var(--ref-duration-600); /* the winning line being drawn */
+  --shadow-panel: 0 0.375rem 1.25rem -0.25rem var(--color-shade); /* platforms over the page */
+  --backdrop-opacity: 0.2; /* torn-paper strips behind everything; 0 hides them */
+  --backdrop-blur: 0.6px;
+}

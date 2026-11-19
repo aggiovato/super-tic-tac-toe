@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyMove, initialState, legalMoves } from './engine';
-import type { GameState, Move } from './types';
+import type { GameState, Move } from './models';
 import {
   CLOSES_OWN_TARGET,
   GLOBAL_DIAGONAL_WIN,

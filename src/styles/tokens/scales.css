@@ -1,0 +1,45 @@
+/*
+ * Layer 1 · Scales. Raw, design-agnostic steps. Never used by components directly: semantic
+ * tokens (semantic.css) and themes pick from them.
+ */
+:root {
+  /* Type ramp: the classic typographic scale, in rem (16 px root). */
+  --ref-size-14: 0.875rem;
+  --ref-size-16: 1rem;
+  --ref-size-18: 1.125rem;
+  --ref-size-21: 1.3125rem;
+  --ref-size-24: 1.5rem;
+  --ref-size-36: 2.25rem;
+  --ref-size-48: 3rem;
+  --ref-size-60: 3.75rem;
+
+  /* Space: 4 px steps. */
+  --ref-space-0-5: 0.125rem;
+  --ref-space-1: 0.25rem;
+  --ref-space-2: 0.5rem;
+  --ref-space-3: 0.75rem;
+  --ref-space-4: 1rem;
+  --ref-space-6: 1.5rem;
+  --ref-space-8: 2rem;
+  --ref-space-12: 3rem;
+
+  /* Radius steps. */
+  --ref-radius-0: 0;
+  --ref-radius-1: 0.125rem;
+  --ref-radius-2: 0.25rem;
+  --ref-radius-3: 0.5rem;
+  --ref-radius-4: 0.75rem;
+  --ref-radius-full: 9999px;
+
+  /* Stroke widths. */
+  --ref-stroke-1: 1px;
+  --ref-stroke-2: 2px;
+  --ref-stroke-3: 3px;
+
+  /* Durations. */
+  --ref-duration-150: 150ms;
+  --ref-duration-240: 240ms;
+  --ref-duration-60: 60ms;
+  --ref-duration-420: 420ms;
+  --ref-duration-600: 600ms;
+}

@@ -6,7 +6,7 @@ const angular = require('angular-eslint');
 const prettier = require('eslint-config-prettier');
 
 // Functional blocks of the app. Each one has an index.ts and a tsconfig `paths` alias.
-const BLOCKS = 'core|ai|session|state|ui|history|storage';
+const BLOCKS = 'core|ai|session|state|ui|history|storage|i18n|settings|kit';
 
 const BLOCK_BOUNDARIES = [
   {
@@ -25,7 +25,7 @@ const PLAIN_TYPESCRIPT = {
 };
 
 const NO_APP_LAYERS = {
-  regex: '^@(?:session|state|ui|history|storage)(?:/|$)',
+  regex: '^@(?:session|state|ui|history|storage|i18n|settings|kit)(?:/|$)',
   message: 'core and ai must not import app layers.',
 };
 
@@ -41,6 +41,7 @@ module.exports = defineConfig([
       'blob-report/',
       'docs/',
       '.claude/skills/',
+      '.impeccable/',
     ],
   },
   {
@@ -62,9 +63,11 @@ module.exports = defineConfig([
         'error',
         { type: 'attribute', prefix: 'app', style: 'camelCase' },
       ],
+      // Components may also enhance a native element through an attribute selector
+      // (`button[app-button]`), like Angular Material's `mat-button`.
       '@angular-eslint/component-selector': [
         'error',
-        { type: 'element', prefix: 'app', style: 'kebab-case' },
+        { type: ['element', 'attribute'], prefix: 'app', style: 'kebab-case' },
       ],
     },
   },

@@ -1,0 +1,46 @@
+:host {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--backdrop-opacity);
+  filter: blur(var(--backdrop-blur));
+}
+
+.tear {
+  position: absolute;
+  display: block;
+  background: center / contain no-repeat;
+}
+
+/* Low on the left, in the free space under the reading column, running off the edge. */
+.open-paper {
+  bottom: 2%;
+  left: -18%;
+  width: clamp(36rem, 60vw, 64rem);
+  aspect-ratio: 1536 / 365;
+  background-image: url('/textures/tears/open-paper.svg');
+  transform: rotate(-6deg);
+}
+
+/* High on the right, narrowing to a point back into the page, half behind the board. */
+.pointed-tear {
+  top: 3%;
+  right: -14%;
+  width: clamp(30rem, 48vw, 52rem);
+  aspect-ratio: 1536 / 250;
+  background-image: url('/textures/tears/pointed-tear.svg');
+  transform: rotate(-6deg) scaleX(-1);
+}
+
+/* Narrow screens: only the low strip, along the very bottom, below the score. */
+@media (max-width: 34.99rem) {
+  .open-paper {
+    bottom: -3%;
+  }
+
+  .pointed-tear {
+    display: none;
+  }
+}

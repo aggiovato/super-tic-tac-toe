@@ -1,0 +1,280 @@
+/* Platforms: a numbered head over a classic 3×3 grid. */
+:host {
+  /* Component tokens, built only from semantic tokens. */
+  --platform-bg: var(--color-surface-panel);
+  --platform-pad: var(--spacing-panel-pad);
+  --platform-radius: var(--radius-panel);
+  --grid-line: var(--color-line);
+  --head-size: clamp(0.875rem, 4.4cqmin, 1.5rem);
+
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: calc(var(--platform-pad) * 0.75);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--platform-pad);
+  border: var(--border-emphasis) solid transparent;
+  border-radius: var(--platform-radius);
+  background: var(--platform-bg);
+  box-shadow: var(--shadow-panel);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  transition:
+    border-color var(--duration-quick) var(--ease-out),
+    background-color var(--duration-quick) var(--ease-out);
+}
+
+:host(button) {
+  cursor: default;
+}
+
+:host(button.playable) {
+  cursor: pointer;
+}
+
+.platform-head {
+  /* Above the game's strike line: the board numbers stay readable on a win. */
+  position: relative;
+  z-index: 3;
+  display: flex;
+  font-size: var(--head-size);
+}
+
+.platform-number {
+  transition: box-shadow var(--duration-quick) var(--ease-out);
+}
+
+/* Lines between cells, not boxes: the grid shows through the gaps. */
+.cells {
+  position: relative;
+  display: grid;
+  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-cell-gap);
+  min-height: 0;
+  background: var(--grid-line);
+}
+
+.cell {
+  --flap-bg: var(--platform-bg);
+  --flap-split: transparent;
+
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: var(--platform-bg);
+  color: inherit;
+  container-type: size;
+}
+
+:host(.playable) {
+  --platform-bg: var(--color-surface-raised);
+}
+
+/* Boards that cannot be played this turn keep their marks but fade their grid. */
+:host(:not(.playable, .closed)) {
+  --grid-line: var(--color-surface-raised);
+}
+
+button.cell.legal {
+  cursor: pointer;
+}
+
+button.cell:focus-visible {
+  outline: none;
+}
+
+/* Rings above the flap tile, which covers the button: last move, hover, keyboard focus. */
+.cell::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: max(2px, 4cqmin);
+  border: var(--border-line) solid transparent;
+  border-radius: var(--radius-tile);
+  pointer-events: none;
+  transition: border-color var(--duration-quick) var(--ease-out);
+}
+
+.cell.last::after {
+  border-color: var(--color-last-move);
+}
+
+button.cell:focus-visible::after {
+  border: var(--border-emphasis) solid var(--color-focus);
+}
+
+.cell-number {
+  position: absolute;
+  z-index: 1;
+  inset: 0.3em auto auto 0.4em;
+  font-size: clamp(0.625rem, 24cqmin, 1.125rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-fg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-quick) var(--ease-out);
+}
+
+.cell-number.always,
+button.cell:focus-visible .cell-number {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  button.cell.legal:hover::after {
+    border-color: var(--color-line-strong);
+  }
+
+  button.cell.legal:hover .cell-number {
+    opacity: 1;
+  }
+
+  :host(button.playable:hover) {
+    border-color: var(--color-line-strong);
+  }
+}
+
+/* The departure, the only accent border: thick outline and accent number. */
+:host(.forced) {
+  border-color: var(--color-target);
+}
+
+/* A free choice (the opening included): neutral outline on every playable board. */
+:host(.free-pick:not(.forced)) {
+  border-color: var(--color-line);
+}
+
+/* Where a hovered or focused cell would send the opponent: its number lights up softly. */
+:host(.preview) .platform-number {
+  box-shadow: 0 0 0 var(--border-line) var(--color-preview);
+  border-radius: var(--radius-tile);
+}
+
+/* Finished boards go dark; their large mark carries the result. */
+:host(.closed) {
+  --platform-bg: var(--color-surface-done);
+  --grid-line: var(--color-surface-raised);
+}
+
+/* A closed board: small marks step back, the strike line crosses them, the large mark tops both. */
+:host(.closed) .cell app-split-flap {
+  opacity: 0.7;
+}
+
+:host(.closed) .cell.last::after {
+  border-color: transparent;
+}
+
+.closing {
+  position: absolute;
+  z-index: 4;
+  inset: 12%;
+  width: 76%;
+  height: 76%;
+  fill: none;
+  stroke-linecap: round;
+  pointer-events: none;
+  filter: drop-shadow(0 0.25rem 0.5rem var(--color-shade));
+}
+
+.closing.mark-x {
+  --mark-width: 0.7;
+
+  stroke: var(--color-mark-x);
+}
+
+.closing.mark-o {
+  --mark-width: 0.8;
+
+  stroke: var(--color-mark-o);
+}
+
+.closing.drawn {
+  --mark-width: 0.6;
+
+  stroke: var(--color-line-strong);
+}
+
+:host(.win) .closing .halo {
+  stroke: var(--platform-bg);
+}
+
+/* The winner's three boards: their large marks turn to the win colour. */
+:host(.win) .closing {
+  stroke: var(--color-win);
+}
+
+/* A halo in the board colour behind each large mark, so any line passes beneath it. */
+.closing .halo {
+  stroke: var(--platform-bg);
+  stroke-width: calc(var(--mark-width) + 1.2);
+}
+
+.closing .ink {
+  stroke-width: var(--mark-width);
+}
+
+/* Drawn on; the dash only exists while animating, so the finished stroke has no seam. */
+.closing .ink {
+  animation: draw-mark var(--duration-draw) var(--ease-out) backwards;
+}
+
+@keyframes draw-mark {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .closing .ink {
+    animation: none;
+  }
+}
+
+/* Variants set by the board: the thumbnail's tiny platforms and the open board. */
+:host(.mini) {
+  --platform-pad: 1px;
+  --platform-radius: var(--radius-cell);
+
+  display: block;
+  border-width: var(--border-line);
+  box-shadow: none;
+}
+
+:host(.mini) .platform-head {
+  display: none;
+}
+
+:host(.mini) .cells {
+  height: 100%;
+  gap: 1px;
+}
+
+:host(.current) {
+  border-color: var(--color-fg-strong);
+}
+
+/* The forced board keeps its departure colour in the thumbnail too, even while open. */
+:host(.mini.forced) {
+  border-color: var(--color-target);
+}
+
+:host(.zoom) {
+  --head-size: clamp(1.25rem, 7cqmin, 2.25rem);
+
+  justify-self: center;
+  width: min(100%, 100cqh);
+  height: 100%;
+}

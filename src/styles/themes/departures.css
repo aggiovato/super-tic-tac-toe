@@ -1,0 +1,18 @@
+/*
+ * Layer 3 · Design "Departures" (PRODUCT.md brand commitments). Its palette primitives; the
+ * semantic tokens already default to it. A new design adds a file like this one with its own
+ * primitives plus a [data-theme='<name>'] block overriding every semantic token it changes.
+ */
+:root {
+  --ref-ink: #050b0c; /* derived: deepest shade, for shadows only */
+  --ref-raven-950: #0a1516; /* derived shade */
+  --ref-raven-900: #0f1f21; /* derived shade */
+  --ref-raven-800: #16292b; /* Raven Teal, 60 % */
+  --ref-raven-700: #1d3437; /* derived tint */
+  --ref-seagrass-600: #657874; /* derived: 3.2:1 on raven-800, 3.6:1 on raven-900 */
+  --ref-seagrass-400: #9fb3ab; /* Seagrass Grey, 30 % */
+  --ref-chalk-100: #dce6e1; /* derived tint */
+  --ref-apricot-500: #ff8a1f; /* Apricot Flare, 10 % */
+
+  --ref-family-sans: 'Barlow Semi Condensed', ui-sans-serif, system-ui, sans-serif;
+}

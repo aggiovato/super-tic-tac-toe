@@ -1,0 +1,57 @@
+/*
+ * Sized from the arena container (`container-type: size` on the page), so the board takes the
+ * largest area the screen allows in every layout.
+ */
+:host {
+  display: block;
+  height: 100%;
+}
+
+.board {
+  position: relative;
+  display: grid;
+  grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-board-gap);
+  /* Square where height is short; on tall phones up to 18 % taller. */
+  width: min(100cqw, 100cqh);
+  height: min(100cqh, min(100cqw, 100cqh) * 1.18);
+  margin-inline: auto;
+}
+
+.board-zoom {
+  grid-template: auto minmax(0, 1fr) / minmax(0, 1fr);
+  gap: var(--spacing-stack-tight);
+  width: 100%;
+  height: 100%;
+}
+
+/* Narrow screens, one board open: the thumbnail leads back to the whole board. */
+.thumbnail {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-stack);
+  justify-self: start;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-cell-gap);
+  width: clamp(5.5rem, 28cqmin, 8.5rem);
+  aspect-ratio: 1;
+}
+
+.thumbnail-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-stack-tight);
+  font-size: var(--text-body);
+  font-weight: 600;
+}

@@ -1,0 +1,74 @@
+<div
+  class="board"
+  [class.board-zoom]="mode() === 'zoom'"
+  role="group"
+  [attr.aria-label]="t().boardLabel"
+  (keydown)="onKeydown($event)"
+>
+  @switch (mode()) {
+    @case ('zoom') {
+      @let board = zoomed() ?? 0;
+      @let view = platforms()[board];
+      <button type="button" class="thumbnail" (click)="back()">
+        <span class="thumbnail-grid" aria-hidden="true">
+          @for (thumb of platforms(); track thumb.board) {
+            <span
+              class="mini"
+              [class.current]="thumb.board === board"
+              [app-board-platform]="thumb"
+            ></span>
+          }
+        </span>
+        <span class="thumbnail-label"><app-icon name="grid" />{{ t().showAll }}</span>
+      </button>
+      <div
+        class="zoom"
+        role="group"
+        [attr.aria-label]="view.label"
+        [app-board-platform]="view"
+        [interactive]="true"
+        [numbered]="true"
+        [hints]="preferences.hints()"
+        [rovingIndex]="roving()"
+        (cellPlay)="play(board, $event)"
+        (cellEnter)="onCellEnter(board, $event)"
+        (cellLeave)="onCellLeave()"
+        (cellFocus)="onCellFocus(board, $event)"
+      ></div>
+    }
+    @case ('pick') {
+      @for (view of platforms(); track view.board) {
+        <button
+          type="button"
+          [app-board-platform]="view"
+          [attr.data-board]="view.board"
+          [attr.data-roving]="view.board"
+          [attr.tabindex]="roving() === view.board ? 0 : -1"
+          [attr.aria-disabled]="!view.playable"
+          [attr.aria-label]="view.playable ? t().openBoard(view.board + 1) : view.label"
+          (click)="open(view.board)"
+          (focus)="roving.set(view.board)"
+        ></button>
+      }
+    }
+    @default {
+      @for (view of platforms(); track view.board) {
+        <div
+          role="group"
+          [attr.aria-label]="view.label"
+          [app-board-platform]="view"
+          [interactive]="true"
+          [hints]="preferences.hints()"
+          [rovingIndex]="roving()"
+          (cellPlay)="play(view.board, $event)"
+          (cellEnter)="onCellEnter(view.board, $event)"
+          (cellLeave)="onCellLeave()"
+          (cellFocus)="onCellFocus(view.board, $event)"
+        ></div>
+      }
+    }
+  }
+  @if (mode() !== 'zoom' && store.game().status.kind === 'won') {
+    <app-strike-line variant="game" />
+  }
+</div>

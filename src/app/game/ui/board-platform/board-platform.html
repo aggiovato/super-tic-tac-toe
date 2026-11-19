@@ -1,0 +1,63 @@
+<span class="platform-head" aria-hidden="true">
+  <app-split-flap
+    class="platform-number"
+    [char]="view().number"
+    [accent]="view().forced"
+    [spin]="view().spin"
+    [maxSteps]="4"
+  />
+</span>
+<div class="cells" [attr.data-cells]="view().board">
+  @for (cell of view().cells; track cell.cell) {
+    @if (interactive()) {
+      <button
+        type="button"
+        class="cell"
+        [class.last]="cell.last"
+        [class.legal]="cell.legal"
+        [attr.data-roving]="cell.roving"
+        [attr.tabindex]="cell.roving === rovingIndex() ? 0 : -1"
+        [attr.aria-disabled]="!cell.legal"
+        [attr.aria-label]="cell.label"
+        (click)="cellPlay.emit(cell.cell)"
+        (pointerenter)="cellEnter.emit({ cell: cell.cell, event: $event })"
+        (pointerleave)="cellLeave.emit()"
+        (focus)="cellFocus.emit(cell.cell)"
+        (blur)="cellLeave.emit()"
+      >
+        <app-split-flap class="fill" [char]="cell.glyph" [maxSteps]="1" />
+        @if (hints() && cell.mark === null && cell.legal) {
+          <span class="cell-number" [class.always]="numbered()" aria-hidden="true">
+            {{ cell.cell + 1 }}
+          </span>
+        }
+      </button>
+    } @else {
+      <span class="cell" [class.last]="cell.last">
+        <app-split-flap class="fill" [char]="cell.glyph" [maxSteps]="1" />
+      </span>
+    }
+  }
+  @if (view().strike; as line) {
+    <app-strike-line [segment]="line" />
+  }
+  @switch (view().closing) {
+    @case ('X') {
+      <svg class="closing mark-x" viewBox="0 0 10 10" aria-hidden="true">
+        <path class="halo" d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" />
+        <path class="ink" d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
+      </svg>
+    }
+    @case ('O') {
+      <svg class="closing mark-o" viewBox="0 0 10 10" aria-hidden="true">
+        <circle class="halo" cx="5" cy="5" r="3" />
+        <circle class="ink" cx="5" cy="5" r="3" pathLength="1" />
+      </svg>
+    }
+    @case ('=') {
+      <svg class="closing drawn" viewBox="0 0 10 10" aria-hidden="true">
+        <path class="ink" d="M2.5 4h5M2.5 6h5" pathLength="1" />
+      </svg>
+    }
+  }
+</div>

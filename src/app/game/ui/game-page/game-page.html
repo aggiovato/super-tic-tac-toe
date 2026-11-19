@@ -1,0 +1,49 @@
+<app-backdrop />
+<div class="game">
+  <header class="masthead">
+    <h1 class="text-title font-semibold text-fg-strong">Super Tic Tac Toe</h1>
+    <app-settings-panel />
+  </header>
+
+  <section class="departures" aria-labelledby="departure-heading">
+    <h2 id="departure-heading" class="sr-only">{{ t().departureLabel }}</h2>
+    <app-departure-board class="text-flap" [tiles]="tiles()" [label]="status()" />
+    <p class="why" [class.refused]="store.lastRejection()">{{ why() }}</p>
+  </section>
+
+  <p class="sr-only" role="status">{{ status() }}</p>
+
+  <section class="arena" [attr.aria-label]="t().boardLabel">
+    <app-game-board />
+  </section>
+
+  <footer class="controls">
+    <dl class="score" [attr.aria-label]="t().score">
+      @for (entry of score(); track $index) {
+        <div class="score-entry" [class.active]="entry.active">
+          <dt>
+            @if (entry.glyph) {
+              <app-split-flap class="score-glyph" [char]="entry.glyph" [maxSteps]="1" />
+            }
+            <span class="truncate">{{ entry.label }}</span>
+          </dt>
+          <dd class="text-score">
+            <span class="sr-only">{{ entry.digits.join('') }}</span>
+            @for (digit of entry.digits; track $index) {
+              <app-split-flap [char]="digit" [index]="$index" [maxSteps]="10" />
+            }
+          </dd>
+        </div>
+      }
+    </dl>
+    <div class="actions">
+      <button app-button="secondary" [disabled]="!canUndo()" (click)="store.undo()">
+        <app-icon name="undo" />
+        {{ t().undo }}
+      </button>
+      @if (store.isOver()) {
+        <button app-button="primary" (click)="store.rematch()">{{ t().rematch }}</button>
+      }
+    </div>
+  </footer>
+</div>

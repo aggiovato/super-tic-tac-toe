@@ -1,1 +1,46 @@
-/* Global tokens. Tailwind and the final palette arrive in phase 2. */
+@import 'tailwindcss';
+@import '@fontsource/barlow-semi-condensed/latin-500.css';
+@import '@fontsource/barlow-semi-condensed/latin-600.css';
+@import '@fontsource/barlow-semi-condensed/latin-700.css';
+
+/* Design tokens: scales → semantic contract → design. See .claude/rules/design-tokens.md. */
+@import './styles/tokens/scales.css';
+@import './styles/themes/departures.css';
+@import './styles/tokens/semantic.css';
+@import './styles/themes/departures-contrast.css';
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    background:
+      radial-gradient(ellipse 70% 55% at 25% 15%, var(--color-glow), transparent 70%),
+      radial-gradient(ellipse 80% 55% at 95% 120%, var(--color-shade), transparent 70%),
+      var(--color-surface);
+    background-attachment: fixed;
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  :focus-visible {
+    outline: var(--border-emphasis) solid var(--color-focus);
+    outline-offset: var(--border-emphasis);
+  }
+
+  /* The player's motion setting overrides the system one in both directions. */
+  [data-motion='reduced'] *,
+  [data-motion='reduced'] *::before,
+  [data-motion='reduced'] *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -2,7 +2,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { applyMove, initialState, legalMoves } from './engine';
 import { replay } from './replay';
-import { RULES_VERSION, type GameState, type Move } from './types';
+import { RULES_VERSION, type GameState, type Move } from './models';
 
 /**
  * One step of a generated history: either pick a legal move by index, or send a raw intent that

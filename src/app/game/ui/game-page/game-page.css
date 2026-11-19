@@ -1,0 +1,127 @@
+:host {
+  display: block;
+}
+
+/*
+ * One column on phones: everything fits one screen, the arena flexes and the controls sit in the
+ * thumb zone. Wide screens: a side column for the departure row, score and actions; the board
+ * takes the full height on the right.
+ */
+.game {
+  display: grid;
+  grid-template:
+    'masthead' auto
+    'departures' auto
+    'arena' minmax(0, 1fr)
+    'controls' auto / minmax(0, 1fr);
+  gap: var(--spacing-stack);
+  max-width: 80rem;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: var(--spacing-stack) var(--spacing-gutter);
+}
+
+@media (min-height: 34rem) {
+  .game {
+    height: 100dvh;
+  }
+}
+
+.masthead {
+  grid-area: masthead;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-stack);
+}
+
+.departures {
+  grid-area: departures;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+}
+
+.why {
+  /* Fixed height: a preview or refusal replacing the sentence never moves anything below. */
+  max-width: 60ch;
+  height: calc(3 * var(--text-body) * var(--text-body--line-height));
+  overflow: hidden;
+  text-wrap: pretty;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+.why.refused {
+  color: var(--color-fg-strong);
+}
+
+.arena {
+  grid-area: arena;
+  min-height: 18rem;
+  container-type: size;
+}
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack);
+}
+
+.score {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-stack-tight);
+}
+
+.score-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+  min-width: 0;
+}
+
+.score-entry dt {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  min-width: 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.score-entry.active dt {
+  color: var(--color-fg-strong);
+}
+
+.score-glyph {
+  font-size: var(--text-body);
+}
+
+.score-entry dd {
+  display: flex;
+  gap: 0.08em;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--spacing-stack-tight);
+}
+
+/* Any landscape screen from tablet width up: board on the right at full height. */
+@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
+  .game {
+    grid-template:
+      'masthead arena' auto
+      'departures arena' auto
+      'controls arena' auto
+      '. arena' minmax(0, 1fr) / minmax(18rem, 26rem) minmax(0, 1fr);
+    row-gap: var(--spacing-stack-loose);
+    column-gap: var(--spacing-stack-loose);
+    padding-block: var(--spacing-stack-loose);
+  }
+}

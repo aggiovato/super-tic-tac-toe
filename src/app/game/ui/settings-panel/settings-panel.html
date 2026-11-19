@@ -1,0 +1,115 @@
+<button app-button="quiet" size="small" popovertarget="settings-panel">
+  <app-icon name="settings" />
+  {{ t().settings.open }}
+</button>
+
+<div id="settings-panel" class="sheet" popover aria-labelledby="settings-title">
+  <header class="sheet-head">
+    <h2 id="settings-title" class="text-title font-semibold text-fg-strong">
+      {{ t().settings.title }}
+    </h2>
+    <button
+      app-button="quiet"
+      popovertarget="settings-panel"
+      popovertargetaction="hide"
+      [attr.aria-label]="t().settings.close"
+    >
+      <app-icon name="close" />
+    </button>
+  </header>
+
+  <fieldset>
+    <legend>{{ t().settings.players }}</legend>
+    @for (index of [0, 1]; track index) {
+      <label class="field">
+        <span>{{ t().settings.playerName(index + 1) }}</span>
+        <input
+          type="text"
+          autocomplete="off"
+          [maxLength]="nameMaxLength"
+          [placeholder]="t().defaultName(index + 1)"
+          [value]="preferences.names()[index]"
+          (input)="onName(index === 0 ? 0 : 1, $event)"
+        />
+      </label>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t().settings.language }}</legend>
+    @for (lang of translator.languages; track lang) {
+      <label class="choice" [attr.lang]="lang">
+        <input
+          type="radio"
+          name="language"
+          [checked]="translator.lang() === lang"
+          (change)="translator.setLang(lang)"
+        />
+        {{ messages[lang].langName }}
+      </label>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t().settings.motion }}</legend>
+    @for (motion of motions; track motion) {
+      <label class="choice">
+        <input
+          type="radio"
+          name="motion"
+          [checked]="preferences.motion() === motion"
+          (change)="preferences.setMotion(motion)"
+        />
+        {{ motionLabel(motion) }}
+      </label>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t().settings.design }}</legend>
+    @for (design of designs; track design) {
+      <label class="choice">
+        <input
+          type="radio"
+          name="design"
+          [checked]="preferences.design() === design"
+          (change)="preferences.setDesign(design)"
+        />
+        {{ t().settings.designs[design] }}
+      </label>
+    }
+  </fieldset>
+
+  <div class="toggles">
+    <label class="choice">
+      <input
+        type="checkbox"
+        [checked]="preferences.autoZoom()"
+        (change)="preferences.setAutoZoom(!preferences.autoZoom())"
+      />
+      <span>
+        {{ t().settings.autoZoom }}
+        <small>{{ t().settings.autoZoomHint }}</small>
+      </span>
+    </label>
+    <label class="choice">
+      <input
+        type="checkbox"
+        [checked]="preferences.hints()"
+        (change)="preferences.setHints(!preferences.hints())"
+      />
+      <span>
+        {{ t().settings.hints }}
+        <small>{{ t().settings.hintsHint }}</small>
+      </span>
+    </label>
+  </div>
+
+  <button
+    [app-button]="confirmingReset() ? 'primary' : 'secondary'"
+    class="w-full"
+    (click)="newSeries()"
+  >
+    {{ confirmingReset() ? t().settings.confirmNewSeries : t().settings.newSeries }}
+  </button>
+</div>

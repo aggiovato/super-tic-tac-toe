@@ -1,4 +1,4 @@
-import type { Line, Player } from './types';
+import type { Line, Player } from './models';
 
 /** The eight lines of a 3×3 grid: three rows, three columns and two diagonals. */
 export const LINES: readonly Line[] = [

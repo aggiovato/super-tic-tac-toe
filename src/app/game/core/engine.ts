@@ -7,7 +7,7 @@ import {
   type MoveResult,
   type RejectionReason,
   type Target,
-} from './types';
+} from './models';
 
 const SIZE = 9;
 const INDICES = Array.from({ length: SIZE }, (_, index) => index);

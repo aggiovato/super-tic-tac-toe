@@ -38,3 +38,6 @@ docs/
 .env.*
 .DS_Store
 Thumbs.db
+
+# Impeccable decision sketches (local)
+.impeccable/sketches/
