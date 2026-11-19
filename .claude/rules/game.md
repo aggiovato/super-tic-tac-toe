@@ -69,6 +69,21 @@ opponent the game. Seeing that is what the intermediate level adds.
 | `ai/random.ts`   | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                 |
 | `ai/models/`     | `Level`, `OpponentOptions`                                                                     |
 
+Playing it (`@session`, `@state`): `Opponent` (`reply`, `cancel`) is provided on the game route as
+`WorkerOpponent`, a module Worker (`session/opponent.worker.ts`, built with `tsconfig.worker.json`)
+that replays the moves and calls `chooseMove`; no reply shows before `OPPONENT_PACE_MS` (450 ms),
+and cancelling a busy Worker terminates it. `GameStore` asks after each move of the person (and
+when the opponent opens as X) and only acts on the reply to its latest request: every request,
+undo, new game and leaving the route moves a ticket on, so a cancelled reply (null) or one asked
+before an undo and replay reached the same revision is dropped. It revalidates every reply with
+the engine and plays the first legal move if it is illegal or the opponent fails; a Worker that
+fails is dropped and the next request starts a fresh one. Changing mode or level with a score or a
+game under way asks for a second press, like "New series".
+Against the computer participant 1 is the opponent, the person plays X first and symbols swap on
+each rematch; undo returns to the person's turn (two moves, or one while the opponent thinks).
+The mode and level are preferences (`@settings`), so they survive a reload; the game itself does
+not yet (phase 4).
+
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
 
