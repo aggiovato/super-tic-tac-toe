@@ -56,6 +56,19 @@ Consumes `core` and always returns a legal move. Prepare a fallback move before 
 terminal global result outranks any local gain. Tests use a deterministic node limit; real runs
 use a monotonic clock. Search budgets: 50 / 200 / 600 ms (beginner / intermediate / advanced).
 
+Levels are built one at a time, weakest first; `Level` lists only the ones that exist, and an
+unknown level is refused. The beginner is the one exception to "a terminal global result outranks
+any local gain": it never looks at the reply its move allows, so it may win a board that hands the
+opponent the game. Seeing that is what the intermediate level adds.
+
+| File             | Contents                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| `ai/opponent.ts` | `chooseMove(state, { level, seed })`: a legal move, or null when it is over; integer game seed |
+| `ai/beginner.ts` | Wins the game, else a board, in one move; else a weighted random legal move                    |
+| `ai/tactics.ts`  | `winningMoves`: game and board wins in one pass, each legal move applied once                  |
+| `ai/random.ts`   | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                 |
+| `ai/models/`     | `Level`, `OpponentOptions`                                                                     |
+
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
 

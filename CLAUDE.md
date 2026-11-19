@@ -34,8 +34,10 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 2 · Two humans: done.** Finish review: ship. `DESIGN.md` records the built system. Next: the
-first production deploy (Netlify, see below), then **phase 3 · Opponent**.
+**Phase 3 · Opponent: in progress** (`phase/3-opponent`). Phase 2 shipped as v0.1.0 (Netlify
+production). Levels land weakest first: beginner (pure `@ai`, tested in Node) is done; next the
+Worker, session and mode picker so it can be played, then intermediate and advanced. Saving and
+resuming (phase 4) is designed to follow.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
