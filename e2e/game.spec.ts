@@ -224,3 +224,99 @@ test('the three boards that win the game flash', async ({ page }) => {
   );
   expect(translates).toEqual(['none', 'none', 'none']);
 });
+
+/** Switches to playing against the computer from the settings panel. */
+async function againstOpponent(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('radio', { name: 'Against the opponent' }).check();
+  await page.getByRole('button', { name: 'Close settings' }).click();
+}
+
+/**
+ * Plays the first empty cell of the board the status asks for (board 5 on a free choice). A forced
+ * board opens by itself on narrow screens (auto-open is on by default), so it is waited for rather
+ * than opened by hand while its own opening may be under way.
+ */
+async function playAnyLegal(page: Page): Promise<void> {
+  const text = (await status(page).textContent()) ?? '';
+  const forced = /board (\d)/.exec(text);
+  const board = forced ? Number(forced[1]) - 1 : 4;
+  const target = page
+    .getByRole('button', { name: new RegExp(`^Board ${board + 1}, cell \\d, empty`) })
+    .first();
+  if (!forced) {
+    const open = openBoard(page, board);
+    await expect(target.or(open).first()).toBeVisible();
+    if (await open.isVisible()) {
+      await open.click();
+    }
+  }
+  await target.click();
+}
+
+test.describe('against the opponent', () => {
+  test('every move of yours gets a legal reply, then it is your turn again', async ({
+    page,
+    isMobile,
+  }) => {
+    await againstOpponent(page);
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
+    for (let round = 0; round < 3; round++) {
+      await playAnyLegal(page);
+      await expect(status(page)).toHaveText(/^Opponent to move/);
+      await expect(status(page)).toHaveText(/^X to move/);
+    }
+    if (isMobile) {
+      // Narrow screens: after the reply your forced board opens by itself; a reply that sends you
+      // to a closed board leaves a free choice on the whole board.
+      const forced = ((await status(page).textContent()) ?? '').includes('Must play on board');
+      await expect(
+        forced
+          ? page.getByRole('button', { name: 'Show all' })
+          : page.getByRole('button', { name: /^Open board/ }).first(),
+      ).toBeVisible();
+    } else {
+      await expect(page.locator('[aria-label$=", O"]')).toHaveCount(3);
+      await expect(page.locator('[aria-label$=", X"]')).toHaveCount(3);
+    }
+  });
+
+  test('undo takes back the reply and your move', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'The board counts are read on the whole board');
+    await againstOpponent(page);
+    const undo = page.getByRole('button', { name: 'Undo' });
+    await expect(undo).toBeDisabled();
+    await playAnyLegal(page);
+    await expect(status(page)).toHaveText(/^X to move/);
+    await undo.click();
+    await expect(status(page)).toHaveText('X to move. May pick any open board.');
+    await expect(page.locator('[aria-label$=", O"], [aria-label$=", X"]')).toHaveCount(0);
+  });
+
+  test('switching mode with a game under way asks once more before clearing it', async ({
+    page,
+  }) => {
+    await play(page, 4, 2);
+    await expect(status(page)).toHaveText('O to move. Must play on board 3.');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('radio', { name: 'Against the opponent' }).check();
+    const confirm = page.getByRole('button', { name: 'Switch and clear the score' });
+    await expect(confirm).toBeVisible();
+    // Nothing changed yet: the game in progress is still there.
+    await expect(status(page)).toHaveText('O to move. Must play on board 3.');
+    await confirm.click();
+    await expect(confirm).toHaveCount(0);
+    await expect(status(page)).toHaveText('X to move. May pick any open board.');
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
+  });
+
+  test('the mode is remembered after a reload', async ({ page }) => {
+    await againstOpponent(page);
+    await page.reload();
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Beginner' })).toBeChecked();
+    await expect(page.getByLabel('Player 2 name')).toHaveCount(0);
+  });
+});

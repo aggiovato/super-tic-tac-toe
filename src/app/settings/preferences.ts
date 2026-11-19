@@ -1,18 +1,31 @@
 import { computed, DestroyRef, DOCUMENT, effect, inject, Injectable, signal } from '@angular/core';
-import type { Design, MotionSetting, PreferencesState } from './preferences.model';
+import type {
+  Design,
+  MotionSetting,
+  OpponentLevel,
+  PlayMode,
+  PreferencesState,
+} from './preferences.model';
 
 export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
+export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
+export const OPPONENT_LEVELS: readonly OpponentLevel[] = ['beginner'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 
 const isDesign = (value: unknown): value is Design => DESIGNS.some((design) => design === value);
+const isMode = (value: unknown): value is PlayMode => PLAY_MODES.some((mode) => mode === value);
+const isLevel = (value: unknown): value is OpponentLevel =>
+  OPPONENT_LEVELS.some((level) => level === value);
 const DEFAULTS: PreferencesState = {
   names: ['', ''],
   motion: 'system',
   autoZoom: true,
   hints: true,
   design: 'departures',
+  mode: 'humans',
+  level: 'beginner',
 };
 
 /**
@@ -29,6 +42,8 @@ export class Preferences {
   readonly autoZoom = computed(() => this.state().autoZoom);
   readonly hints = computed(() => this.state().hints);
   readonly design = computed(() => this.state().design);
+  readonly mode = computed(() => this.state().mode);
+  readonly level = computed(() => this.state().level);
 
   private readonly systemReducedMotion = signal(false);
 
@@ -81,6 +96,14 @@ export class Preferences {
     this.update({ design });
   }
 
+  setMode(mode: PlayMode): void {
+    this.update({ mode });
+  }
+
+  setLevel(level: OpponentLevel): void {
+    this.update({ level });
+  }
+
   private update(change: Partial<PreferencesState>): void {
     this.state.update((state) => ({ ...state, ...change }));
     try {
@@ -107,6 +130,8 @@ export class Preferences {
         autoZoom: saved.autoZoom ?? DEFAULTS.autoZoom,
         hints: saved.hints ?? DEFAULTS.hints,
         design: isDesign(saved.design) ? saved.design : DEFAULTS.design,
+        mode: isMode(saved.mode) ? saved.mode : DEFAULTS.mode,
+        level: isLevel(saved.level) ? saved.level : DEFAULTS.level,
       };
     } catch {
       return DEFAULTS;

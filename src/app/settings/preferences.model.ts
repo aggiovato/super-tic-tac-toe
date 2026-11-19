@@ -1,5 +1,9 @@
 export type MotionSetting = 'system' | 'full' | 'reduced';
 export type Design = 'departures' | 'departures-contrast';
+/** Two people on one device, or a person against the computer. */
+export type PlayMode = 'humans' | 'opponent';
+/** Opponent levels the app offers; grows as levels are built. */
+export type OpponentLevel = 'beginner';
 
 export interface PreferencesState {
   /** Custom names for the two participants; empty means the default "Player 1/2". */
@@ -10,4 +14,6 @@ export interface PreferencesState {
   /** Cell numbers and the departure preview on hover and focus. */
   readonly hints: boolean;
   readonly design: Design;
+  readonly mode: PlayMode;
+  readonly level: OpponentLevel;
 }
