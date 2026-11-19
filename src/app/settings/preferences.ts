@@ -10,7 +10,7 @@ import type {
 export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
 export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
-export const OPPONENT_LEVELS: readonly OpponentLevel[] = ['beginner'];
+export const OPPONENT_LEVELS: readonly OpponentLevel[] = ['beginner', 'intermediate'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 

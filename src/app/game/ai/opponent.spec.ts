@@ -5,6 +5,7 @@ import { CLOSES_OWN_TARGET, GLOBAL_DIAGONAL_WIN, parseMoves, play } from '@core/
 import type { Level } from './models';
 import { chooseMove } from './opponent';
 import { winningMoves } from './tactics';
+import { LONG_GAME } from './testing';
 
 const beginner = (state: GameState, seed: number) => chooseMove(state, { level: 'beginner', seed });
 const notation = (move: Move | null) => (move ? `${move.board}.${move.cell}` : null);
@@ -26,15 +27,6 @@ const advance = (state: GameState, move: Move): GameState => {
 };
 
 const SEEDS = Array.from({ length: 50 }, (_, index) => index + 1);
-
-/**
- * X to move with a free choice: 8.0 wins board 8 only, 4.2 wins board 4 and with it the game.
- * Found by playing seeded random games with the engine.
- */
-const BOARD_OR_GAME_WIN =
-  '5.5 5.0 0.4 4.8 8.8 8.2 2.5 5.7 7.3 3.8 8.4 4.3 3.1 1.3 3.2 2.1 1.4 4.0 0.3 3.6 6.2 2.2 2.0 ' +
-  '0.2 2.6 6.7 7.2 2.3 3.5 5.4 4.6 6.1 1.7 7.5 5.6 6.8 8.1 1.6 6.0 0.1 1.2 2.4 4.1 1.5 5.3 3.0 ' +
-  '0.5 5.1 1.1 8.3 3.3 3.7 7.7 7.4 4.4 4.7 7.8 8.7 7.6 6.6';
 
 /** The eight rotations and reflections of a 3×3 grid, as index maps. */
 const SYMMETRIES: readonly (readonly number[])[] = (() => {
@@ -69,7 +61,7 @@ describe('beginner opponent', () => {
   });
 
   it('wins the game rather than just another board', () => {
-    const state = play(BOARD_OR_GAME_WIN);
+    const state = play(LONG_GAME);
     for (const seed of SEEDS) {
       expect(notation(beginner(state, seed))).toBe('4.2');
     }

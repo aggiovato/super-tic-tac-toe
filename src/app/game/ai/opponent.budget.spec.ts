@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { applyMove, initialState, legalMoves, type GameState } from '@core';
 import { parseMoves } from '@core/testing';
+import type { Level } from './models';
 import { chooseMove } from './opponent';
+import { LONG_GAME } from './testing';
 
 // Counts the engine's work instead of timing it: a deterministic budget that does not depend on the
 // machine (`.claude/rules/game.md`: tests use a node limit; real runs use a clock).
@@ -10,15 +12,9 @@ vi.mock('@core', async (importOriginal) => {
   return { ...core, applyMove: vi.fn(core.applyMove) };
 });
 
-/** A 60-move game that keeps both players busy (see BOARD_OR_GAME_WIN in opponent.spec.ts). */
-const LONG_GAME =
-  '5.5 5.0 0.4 4.8 8.8 8.2 2.5 5.7 7.3 3.8 8.4 4.3 3.1 1.3 3.2 2.1 1.4 4.0 0.3 3.6 6.2 2.2 2.0 ' +
-  '0.2 2.6 6.7 7.2 2.3 3.5 5.4 4.6 6.1 1.7 7.5 5.6 6.8 8.1 1.6 6.0 0.1 1.2 2.4 4.1 1.5 5.3 3.0 ' +
-  '0.5 5.1 1.1 8.3 3.3 3.7 7.7 7.4 4.4 4.7 7.8 8.7 7.6 6.6';
-
-const engineCalls = (state: GameState): number => {
+const engineCalls = (state: GameState, level: Level = 'beginner'): number => {
   vi.mocked(applyMove).mockClear();
-  chooseMove(state, { level: 'beginner', seed: 1 });
+  chooseMove(state, { level, seed: 1 });
   return vi.mocked(applyMove).mock.calls.length;
 };
 
@@ -44,5 +40,24 @@ describe('beginner budget', () => {
     }, initialState());
     expect(over.status.kind).toBe('won');
     expect(engineCalls(over)).toBe(0);
+  });
+
+  it('lets the intermediate level look one reply ahead and no further', () => {
+    // Each legal move once, then each reply to it once: one ply of lookahead.
+    let state = initialState();
+    for (const move of parseMoves(LONG_GAME)) {
+      const replies = legalMoves(state).reduce((sum, mine) => {
+        const result = applyMove(state, mine);
+        return sum + (result.ok ? legalMoves(result.state).length : 0);
+      }, 0);
+      expect(engineCalls(state, 'intermediate')).toBeLessThanOrEqual(
+        legalMoves(state).length + replies,
+      );
+      const result = applyMove(state, move);
+      if (!result.ok) {
+        throw new Error(`Fixture move rejected: ${result.reason}`);
+      }
+      state = result.state;
+    }
   });
 });

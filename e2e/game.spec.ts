@@ -310,6 +310,19 @@ test.describe('against the opponent', () => {
     await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
   });
 
+  test('the intermediate level answers too, and is remembered', async ({ page }) => {
+    await againstOpponent(page);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('radio', { name: 'Intermediate' }).check();
+    await page.getByRole('button', { name: 'Close settings' }).click();
+    await playAnyLegal(page);
+    await expect(status(page)).toHaveText(/^Opponent to move/);
+    await expect(status(page)).toHaveText(/^X to move/);
+    await page.reload();
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await expect(page.getByRole('radio', { name: 'Intermediate' })).toBeChecked();
+  });
+
   test('the mode is remembered after a reload', async ({ page }) => {
     await againstOpponent(page);
     await page.reload();
