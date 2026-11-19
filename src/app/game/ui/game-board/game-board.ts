@@ -5,11 +5,13 @@ import {
   computed,
   DestroyRef,
   DOCUMENT,
+  effect,
   ElementRef,
   inject,
   Injector,
   linkedSignal,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { BoardStatus, Move } from '@core';
@@ -134,6 +136,8 @@ export class GameBoard {
   private readonly seenAt = signal(-1);
   /** True while the boards around the one being opened fade out. */
   private opening = false;
+  /** Settles when the board movement in flight (a move settling, a board opening) has ended. */
+  private idle: Promise<void> = Promise.resolve();
 
   private pendingOpen: ReturnType<typeof setTimeout> | undefined;
   private pendingPreview: ReturnType<typeof setTimeout> | undefined;
@@ -235,6 +239,16 @@ export class GameBoard {
         }
       },
     });
+    // Against the computer: once its reply lands, the player's forced board opens as after any
+    // move. Only schedules; the view changes in the timer.
+    let followed = untracked(this.store.opponentMoves);
+    effect(() => {
+      const replies = this.store.opponentMoves();
+      if (replies !== followed) {
+        followed = replies;
+        untracked(() => this.followOpponent());
+      }
+    });
     inject(DestroyRef).onDestroy(() => {
       clearTimeout(this.pendingOpen);
       clearTimeout(this.pendingPreview);
@@ -251,6 +265,10 @@ export class GameBoard {
 
   /** Illegal cells still reach the store, so the reason is shown instead of nothing happening. */
   protected play(board: number, cell: number): void {
+    // The opponent's turn: the board waits for its reply.
+    if (this.store.opponentTurn()) {
+      return;
+    }
     clearTimeout(this.pendingOpen);
     const move = { board, cell };
     if (!this.isLegal(board, cell)) {
@@ -270,27 +288,61 @@ export class GameBoard {
     // beat, the forced board grows out of its own slot.
     const from = this.zoomElement()?.getBoundingClientRect();
     let stays = false;
-    void renderChange(this.injector, () => {
-      this.store.play(move);
-      const target = this.store.game().target;
-      stays = target.kind === 'forced' && target.board === board && this.preferences.autoZoom();
-      if (stays) {
-        this.store.openBoard(board);
-      }
-    }).then(() => {
-      if (stays) {
-        this.focusRovingIfKeyboard();
-        return;
-      }
-      void this.settleInto(board, from).then(() => {
+    this.track(
+      renderChange(this.injector, () => {
+        this.store.play(move);
         const target = this.store.game().target;
-        if (target.kind !== 'forced' || !this.preferences.autoZoom()) {
+        stays =
+          !this.store.opponentTurn() &&
+          target.kind === 'forced' &&
+          target.board === board &&
+          this.preferences.autoZoom();
+        if (stays) {
+          this.store.openBoard(board);
+        }
+      }).then(() => {
+        if (stays) {
           this.focusRovingIfKeyboard();
           return;
         }
-        const pause = this.preferences.reducedMotion() ? 0 : PAUSE_BEFORE_OPEN_MS;
-        this.pendingOpen = setTimeout(() => this.open(target.board), pause);
-      });
+        return this.settleInto(board, from).then(() => {
+          const target = this.store.game().target;
+          // Against the computer the next board opens after its reply (`followOpponent`).
+          if (this.store.mode() === 'opponent') {
+            return;
+          }
+          if (target.kind !== 'forced' || !this.preferences.autoZoom()) {
+            this.focusRovingIfKeyboard();
+            return;
+          }
+          const pause = this.preferences.reducedMotion() ? 0 : PAUSE_BEFORE_OPEN_MS;
+          this.pendingOpen = setTimeout(() => this.open(target.board), pause);
+        });
+      }),
+    );
+  }
+
+  /**
+   * After the opponent's reply: on narrow screens the player's forced board opens as after a move,
+   * once the movement in flight (their own move settling into its slot) has ended, so the opening
+   * is never swallowed by a board that is still moving.
+   */
+  private followOpponent(): void {
+    clearTimeout(this.pendingOpen);
+    if (!this.compact() || !this.preferences.autoZoom()) {
+      if (this.usingKeyboard) {
+        this.focusRovingAfterRender();
+      }
+      return;
+    }
+    void this.idle.then(() => {
+      const target = this.store.game().target;
+      if (target.kind !== 'forced') {
+        this.focusRovingIfKeyboard();
+        return;
+      }
+      const pause = this.preferences.reducedMotion() ? 0 : PAUSE_BEFORE_OPEN_MS;
+      this.pendingOpen = setTimeout(() => this.open(target.board), pause);
     });
   }
 
@@ -309,29 +361,31 @@ export class GameBoard {
       ? fadeOut(this.slotsExcept(board), motion, motion.duration * 0.4)
       : { finished: Promise.resolve(), cancel: () => undefined };
     this.opening = true;
-    void leaving.finished
-      .then(() => {
-        this.opening = false;
-        // The game may have moved on while the others faded (an undo, a restart).
-        if (!this.store.playableBoards().has(board)) {
-          leaving.cancel();
-          return;
-        }
-        const from = this.slotElement(board)?.getBoundingClientRect();
-        return renderChange(this.injector, () => this.store.openBoard(board)).then(() => {
-          const zoom = this.zoomElement();
-          if (!zoom || !from || !motion) {
+    this.track(
+      leaving.finished
+        .then(() => {
+          this.opening = false;
+          // The game may have moved on while the others faded (an undo, a restart).
+          if (!this.store.playableBoards().has(board)) {
+            leaving.cancel();
             return;
           }
-          fadeIn(
-            this.host.nativeElement.querySelectorAll('.thumbnail'),
-            motion,
-            motion.duration * 0.55,
-          );
-          return flipFrom(zoom, from, motion);
-        });
-      })
-      .then(() => this.focusRovingIfKeyboard());
+          const from = this.slotElement(board)?.getBoundingClientRect();
+          return renderChange(this.injector, () => this.store.openBoard(board)).then(() => {
+            const zoom = this.zoomElement();
+            if (!zoom || !from || !motion) {
+              return;
+            }
+            fadeIn(
+              this.host.nativeElement.querySelectorAll('.thumbnail'),
+              motion,
+              motion.duration * 0.55,
+            );
+            return flipFrom(zoom, from, motion);
+          });
+        })
+        .then(() => this.focusRovingIfKeyboard()),
+    );
   }
 
   protected back(): void {
@@ -339,14 +393,24 @@ export class GameBoard {
     this.markSeen();
     const board = this.zoomed();
     const from = this.zoomElement()?.getBoundingClientRect();
-    void renderChange(this.injector, () => this.store.showGlobal())
-      .then(() => (board === null ? undefined : this.settleInto(board, from)))
-      .then(() => {
-        if (board !== null) {
-          this.roving.set(board);
-        }
-        this.focusRovingIfKeyboard();
-      });
+    this.track(
+      renderChange(this.injector, () => this.store.showGlobal())
+        .then(() => (board === null ? undefined : this.settleInto(board, from)))
+        .then(() => {
+          if (board !== null) {
+            this.roving.set(board);
+          }
+          this.focusRovingIfKeyboard();
+        }),
+    );
+  }
+
+  /** Records a board movement, so work that must wait for the board to be still can follow it. */
+  private track(movement: Promise<unknown>): void {
+    this.idle = movement.then(
+      () => undefined,
+      () => undefined,
+    );
   }
 
   /** Previews follow a real mouse pointer, once it settles on a cell. */

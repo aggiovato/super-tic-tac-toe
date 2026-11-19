@@ -16,9 +16,11 @@ const CLEAR_MS = 450;
 const FLAP_STEPS = 5;
 
 /**
- * The app's name, "Super 3T". Each time a player wins a board, two split-flap tiles unfold after
- * the T and spell the three words the name stands for (TIP, TAP, TOE), then turn blank and fold
- * away. They stay in the DOM while hidden, so they flip from blank instead of popping in.
+ * The app's name: the word "Super" followed by the 3T mark, which stands for "3T" (its alt text, so
+ * the heading reads "Super 3T"). Each time a player wins a board, two split-flap tiles unfold right
+ * after the mark's T, as two more tiles of the same board, and spell the three words the name
+ * stands for (TIP, TAP, TOE), then turn blank and fold away. They stay in the DOM while hidden, so
+ * they flip from blank instead of popping in.
  */
 @Component({
   selector: 'app-brand-title',
@@ -26,7 +28,8 @@ const FLAP_STEPS = 5;
   styleUrl: './brand-title.css',
   template: `
     <h1 class="brand">
-      Super 3T
+      Super
+      <img class="mark" src="icons/mark-small.svg" alt="3T" width="40" height="40" />
       <span class="flaps" [class.shown]="shown()" aria-hidden="true">
         @for (char of letters(); track $index) {
           <app-split-flap [char]="char" [index]="$index" [maxSteps]="flapSteps" />

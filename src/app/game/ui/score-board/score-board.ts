@@ -4,6 +4,7 @@ import { Translator } from '@i18n';
 import { SplitFlap } from '@kit';
 import { Preferences } from '@settings';
 import { GameStore, type Participant } from '@state';
+import { participantName } from '../participant-name';
 import type { ScoreEntry } from './score-entry.model';
 
 const glyph = (player: Player): string => (player === 'X' ? 'x' : 'o');
@@ -28,7 +29,8 @@ export class ScoreBoard {
     const names = this.preferences.names();
     const toMove = this.store.isOver() ? null : this.store.toMove();
     const player = (participant: Participant): ScoreEntry => ({
-      label: names[participant] || t.defaultName(participant + 1),
+      label:
+        participantName(t, names, this.store.mode(), participant) ?? t.defaultName(participant + 1),
       glyph: glyph(this.store.symbolOf(participant)),
       digits: digits(wins[participant]),
       active: toMove === participant,
