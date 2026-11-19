@@ -31,12 +31,14 @@ Copied unmodified.
 | ESLint / angular-eslint / typescript-eslint    | 10.15.0 / 22.8.0 / 8.73.0                   |
 | Prettier                                       | 3.10.1                                      |
 | Task                                           | 3.54.0                                      |
+| netlify-cli (deploy job, via npx)              | 27.20.0                                     |
 
 ## GitHub Actions (pinned by SHA)
 
-| Action                  | Version | SHA                                        |
-| ----------------------- | ------- | ------------------------------------------ |
-| actions/checkout        | v7.0.1  | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
-| actions/setup-node      | v7.1.0  | `949feb2413d6458794dcd2491c4babbbce0c15c1` |
-| go-task/setup-task      | v2.2.0  | `a00fbb05ce67b35648be3c78cbc9fd85354c757e` |
-| actions/upload-artifact | v7.0.2  | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` |
+| Action                    | Version | SHA                                        |
+| ------------------------- | ------- | ------------------------------------------ |
+| actions/checkout          | v7.0.1  | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
+| actions/setup-node        | v7.1.0  | `949feb2413d6458794dcd2491c4babbbce0c15c1` |
+| go-task/setup-task        | v2.2.0  | `a00fbb05ce67b35648be3c78cbc9fd85354c757e` |
+| actions/download-artifact | v8.0.2  | `9000827ccba6bdab643e8b6fd33ac0654aef8333` |
+| actions/upload-artifact   | v7.0.2  | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` |
