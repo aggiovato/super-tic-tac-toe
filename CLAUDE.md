@@ -1,4 +1,4 @@
-# Super Tic Tac Toe
+# Super 3T
 
 Ultimate Tic Tac Toe in Angular 22: a local SPA for two people on one device or against a
 three-level opponent. Later deliveries: offline PWA, private online rooms and accounts.
@@ -27,7 +27,8 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 - **One branch per phase, created from `main`** (`phase/<n>-<slug>`, e.g. `phase/1-engine`),
   merged through a PR so CI validates it. Never commit directly to `main`.
 - Conventional Commits, **header only**: `type(scope): summary`, lowercase, imperative, no body,
-  no `Co-Authored-By` trailer. Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`,
+  no `Co-Authored-By` trailer, at most 100 characters. Enforced by the `commit-msg` hook
+  (commitlint, `commitlint.config.mjs`). Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`,
   `build`, `perf`. Example: `feat(core): apply a move and resolve the local board`.
 - Commit or push only when asked.
 
@@ -58,11 +59,15 @@ Update this table when a phase closes.
 | `task unit`                        | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
 | `task build`                       | Production build with budgets                                                            |
 | `task e2e`                         | Production build + Playwright (desktop and mobile Chromium)                              |
-| `task check`                       | All of the above, in CI order                                                            |
+| `task e2e:ui`                      | Build + Playwright UI mode: run and replay each flow step by step                        |
+| `task e2e:headed`                  | Build + flows in a visible browser, one at a time, 300 ms per action (`SLOW_MO`)         |
+| `task check`                       | `fmt-check`, `lint`, `unit` and `e2e`, in CI order                                       |
 | `task release:patch\|minor\|major` | Bump, commit `chore(release): vX.Y.Z` and tag, from an up-to-date main                   |
 | `task ci`                          | `setup` + `check` (what the workflow runs)                                               |
 
-A change is not done until `task check` is green.
+Both watch modes take Playwright arguments after `--` (`task e2e:headed -- --project=mobile -g "won"`)
+and `E2E_MOTION=full` to play the animations. A change is not done until `task check` is green. Committing runs a pre-commit hook (husky +
+lint-staged): ESLint with fixes, Prettier and the token check on the staged files.
 
 ## Deploy
 

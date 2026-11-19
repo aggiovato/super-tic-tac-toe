@@ -30,6 +30,8 @@ Copied unmodified.
 | @types/node                                    | 24.19.2                                     |
 | ESLint / angular-eslint / typescript-eslint    | 10.15.0 / 22.8.0 / 8.73.0                   |
 | Prettier                                       | 3.10.1                                      |
+| husky / lint-staged (pre-commit, 2026-11-19)   | 9.1.7 / 17.6.1                              |
+| @commitlint/cli / config-conventional          | 21.2.4 / 21.2.4                             |
 | Task                                           | 3.54.0                                      |
 | netlify-cli (deploy job, via npx)              | 27.20.0                                     |
 

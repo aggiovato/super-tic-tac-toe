@@ -36,7 +36,7 @@ bold with tabular figures on every flap. Mini boards are numbered platforms 1–
 players); the number is a flap tile on the board. Flat surfaces and components; the page ground
 carries a soft light-and-shade wash and two softened torn-paper strips from the owner's artwork
 (user decision, 2026-11-18/19: "diseños que den vida al fondo… sombreado… desgarros"). No glow on
-components except a win.
+components except a win and the brief electric spark of a board closing (user decision, 2026-11-19).
 
 STORY: the player reads the flap row ("O → 2"), sees platform 2 lit, plays a cell, watches the row
 flip to the board that cell sends to, and understands the rule without being told it.

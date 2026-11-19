@@ -63,7 +63,8 @@ as a PWA in a later phase, and only then adds online play.
 
 Binding unless the author changes them later:
 
-- **Name:** Super Tic Tac Toe.
+- **Name:** Super 3T (Tip, Tap, Toe). Each time a player wins a board, two flap tiles unfold
+  after the T, spell IP, AP and OE, then fold away; at rest the name is just Super 3T.
 - **Palette:** Raven Teal `#16292B` (about 60 %: background, surfaces, space between boards),
   Seagrass Grey `#9FB3AB` (about 30 %: text, X/O, strokes), Apricot Flare `#FF8A1F` (about 10 %:
   forced target, action focus, primary control). Only derived tints and shades are added.

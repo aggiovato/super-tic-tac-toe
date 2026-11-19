@@ -1,5 +1,5 @@
 ---
-name: Super Tic Tac Toe
+name: Super 3T
 description: Ultimate Tic Tac Toe told as a split-flap departure board, where every move announces the board your opponent departs to.
 colors:
   raven-teal: '#16292b'
@@ -109,7 +109,7 @@ components:
     width: 'min(24rem, 100vw)'
 ---
 
-# Design System: Super Tic Tac Toe
+# Design System: Super 3T
 
 ## Overview
 
@@ -186,7 +186,7 @@ Platform numbers and cell numbers scale with their container (platform number cl
 
 One screen, no scroll during play. Phones use a single column (masthead, departure row with its sentence, the board arena flexing to fill, then score and actions in the thumb zone) inside a 16px gutter. From 48rem wide in landscape (aspect at least 5:4) the page becomes two columns: a side column of 18–26rem for masthead, departures, score and actions, and the board on the right at full viewport height; gaps and block padding open up to 32px. The page is capped at 80rem and centred.
 
-The board sizes from its arena as a size container: square where height is short, up to 18% taller on tall phones. Platforms sit on a 3×3 grid with a fluid 8–16px gap; inside each, the 3×3 cells are separated by 2px gaps through which the grid line colour shows. On narrow screens a single platform opens zoomed with a global thumbnail above it that leads back to the full board; the move is followed by the board closing into its slot and the forced board opening from its own slot (view transitions).
+The board sizes from its arena as a size container. Every platform's 3×3 grid is square, so a platform is a card one number row taller than it is wide, and the board is three number rows taller than wide: full width on phones, as wide as the height allows on short screens. Platforms sit on a 3×3 grid with a fluid 8–16px gap; inside each, the 3×3 cells are separated by 2px gaps through which the grid line colour shows. On narrow screens a single platform opens zoomed (its grid square too) with a global thumbnail above it that leads back to the full board. Movements run one after another, never crossing: after a move the open board shrinks into its slot and the other boards fade in as it lands; after a beat, the others fade out and the forced board grows from its own slot (520ms, eased in and out). A closed board draws its large mark and line once, when it closes; views rebuilt later show them already drawn.
 
 Spacing rhythm is 4px-based: 8px inside a block, 16px between blocks, 32px between sections. Touch targets are at least 44×44px.
 
@@ -204,7 +204,7 @@ Components are flat; depth is tonal. The ground is Raven Teal under a fixed radi
 
 **The Atmosphere Carries No Information Rule.** The wash and the torn strips are decoration only. The high-contrast design removes them (backdrop opacity 0, no glow), and nothing is lost.
 
-**The No Glow Rule.** No component glows. State is shown by borders, rings and tone; the only spectacle is a win (orange line and marks).
+**The No Glow Rule.** No component glows. State is shown by borders, rings and tone; the only spectacle is a win (orange line and marks). One transient exception, by the author's decision: a board closing crackles once, an uneven chalk flicker of its outline (`--color-spark`) with a brief shake (about 600ms), and a won game flashes its three winning boards three times in the accent (about 1s). Both are skipped with reduced motion; nothing stays lit.
 
 ## Shapes
 

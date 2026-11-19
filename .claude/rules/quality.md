@@ -32,6 +32,15 @@ paths:
   last in `eslint.config.js`.
 - ESLint `--max-warnings=0`: a new warning fails CI. Active: type-aware TS
   (`no-floating-promises`, `no-explicit-any`), templates, accessibility and layer boundaries.
+- Size limits (`SIZE_LIMITS` in `eslint.config.js`, effective lines: no blanks or comments):
+  500 lines per `.ts` or `.html` file, 80 per function, complexity 15, depth 4, 4 parameters,
+  3 nested callbacks. Specs and e2e: 1000 lines, no function limit, 5 nested callbacks. Past a
+  limit, split into components or helpers; do not raise it.
+- Pre-commit hook (husky + lint-staged, `lint-staged.config.mjs`): ESLint `--fix` and Prettier on
+  staged files, plus the token check. Installed by `npm ci` (`prepare`). It never replaces
+  `task check`.
+- Commit-msg hook (commitlint, `commitlint.config.mjs`): Conventional Commits header only, the
+  project's types, lowercase, no full stop, at most 100 characters, no body or trailers.
 - Never disable a rule inline without a comment explaining why.
 - All comments in English.
 

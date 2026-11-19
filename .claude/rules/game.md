@@ -63,7 +63,7 @@ the previous version are read.
 
 | File              | Contents                                                                          |
 | ----------------- | --------------------------------------------------------------------------------- |
-| `core/types.ts`   | `GameState`, `Move`, statuses, `Target`, results, `RULES_VERSION`                 |
+| `core/models/`    | `GameState`, `Move`, statuses, `Target`, results, `RULES_VERSION`; one file each  |
 | `core/lines.ts`   | The eight lines and `findLine`, shared by both levels                             |
 | `core/resolve.ts` | `resolveBoard` (local) and `resolveGame` (global)                                 |
 | `core/engine.ts`  | `initialState`, `legalMoves`, `applyMove`; rejection order follows rule 2         |
