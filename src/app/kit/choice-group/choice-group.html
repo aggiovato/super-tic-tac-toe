@@ -1,0 +1,14 @@
+<fieldset>
+  <legend>{{ legend() }}</legend>
+  @for (option of options(); track option.value) {
+    <app-choice
+      type="radio"
+      [name]="name()"
+      [lang]="option.lang"
+      [checked]="option.value === selected()"
+      (changed)="chosen.emit(option.value)"
+    >
+      {{ option.label }}
+    </app-choice>
+  }
+</fieldset>

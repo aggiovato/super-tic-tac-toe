@@ -9,7 +9,11 @@ import type { Segment } from './segment.model';
 @Component({
   selector: 'app-strike-line',
   styleUrl: './strike-line.css',
-  host: { 'aria-hidden': 'true', '[class.game]': "variant() === 'game'" },
+  host: {
+    'aria-hidden': 'true',
+    '[class.game]': "variant() === 'game'",
+    '[class.still]': '!animate()',
+  },
   template: `
     <svg viewBox="0 0 100 100" preserveAspectRatio="none">
       <line
@@ -26,6 +30,8 @@ import type { Segment } from './segment.model';
 export class StrikeLine {
   readonly segment = input<Segment>();
   readonly variant = input<'local' | 'game'>('local');
+  /** Draws on when it appears; false shows a line that was already drawn. */
+  readonly animate = input(true);
 
   private readonly line = viewChild.required<ElementRef<SVGLineElement>>('line');
 
