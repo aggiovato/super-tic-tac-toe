@@ -33,11 +33,8 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 2 · Two humans: in progress** on `phase/2-two-humans`. Built: GameStore with undo, local session,
-departure-board UI (platforms with flap numbers, cells as flaps, flap rows that cycle to their
-word, win lines), two-column desktop, narrow screens that open boards from their place with view
-transitions, keyboard play, settings (names, language, motion, auto-open, hints, design), i18n
-(es/en) with boards numbered 1–9 for players, design tokens, Playwright. Pending: `DESIGN.md`.
+**Phase 2 · Two humans: done.** Finish review: ship. `DESIGN.md` records the built system. Next: the
+first production deploy (Netlify, see below), then **phase 3 · Opponent**.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |

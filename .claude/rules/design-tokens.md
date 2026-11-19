@@ -40,14 +40,14 @@ the semantic layer's values point at its primitives.
 
 ## Semantic contract
 
-| Group  | Tokens                                                                                                                                                                 |
-| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Colour | `surface`, `surface-panel`, `surface-raised`, `surface-done`, `fg-disabled`, `glow`, `shade`, `fg`, `fg-strong`, `line`, `line-strong`, `accent`, `on-accent`, `focus` |
-| Game   | `mark-x`, `mark-o`, `target`, `last-move`, `preview`, `win`                                                                                                            |
-| Type   | `caption` 14, `body` 18, `title` 24, `score` 36, `flap` fluid 36–60 (each with its line height)                                                                        |
-| Radius | `cell` < `tile` < `panel` < `control` < `pill`: smaller parts get smaller radii                                                                                        |
-| Border | `--border-hairline` 1, `--border-line` 2, `--border-emphasis` 3 (forced board, focus ring)                                                                             |
-| Motion | `--duration-flap`, `--duration-quick`, `--duration-frame`, `--ease-flap`, `--ease-out`                                                                                 |
+| Group  | Tokens                                                                                                                                                                           |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Colour | `surface`, `surface-panel`, `surface-raised`, `surface-done`, `fg-disabled`, `glow`, `shade`, `fg`, `fg-strong`, `line`, `line-strong`, `accent`, `on-accent`, `focus`           |
+| Game   | `mark-x`, `mark-o`, `target`, `last-move`, `preview`, `win`                                                                                                                      |
+| Type   | `caption` 14, `body` 18, `title` 24, `score` 36, `flap` fluid 36–60 (each with its line height)                                                                                  |
+| Radius | `cell` < `tile` < `panel` < `control` < `pill`: smaller parts get smaller radii                                                                                                  |
+| Border | `--border-hairline` 1, `--border-line` 2, `--border-emphasis` 3 (forced board, focus ring)                                                                                       |
+| Motion | `--duration-step` (one flap character), `--duration-quick`, `--duration-frame`, `--duration-zoom` (board opening), `--duration-draw` (strike lines), `--ease-flap`, `--ease-out` |
 
 Accessibility is part of the contract: `fg` on every surface ≥ 4.5:1, `line` ≥ 3:1 on `surface`
 and `surface-panel`, `focus` never equal to `accent` or `target`, and the target always carries a

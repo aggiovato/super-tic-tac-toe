@@ -78,7 +78,6 @@
   --border-hairline: var(--ref-stroke-1);
   --border-line: var(--ref-stroke-2);
   --border-emphasis: var(--ref-stroke-3); /* forced board, focus ring */
-  --duration-flap: var(--ref-duration-90); /* one half of a flap fall */
   --duration-quick: var(--ref-duration-150); /* a piece being drawn */
   --duration-frame: var(--ref-duration-240); /* board closing */
   --duration-step: var(--ref-duration-60); /* one character step of a flap cycling to its word */
