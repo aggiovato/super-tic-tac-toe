@@ -1,0 +1,2 @@
+# Netlify redirects (static SPA, no server): every route is served by the app shell.
+/*  /index.html  200
