@@ -41,3 +41,7 @@ Thumbs.db
 
 # Impeccable decision sketches (local)
 .impeccable/sketches/
+
+# Impeccable local runtime state (per-machine caches and live sessions)
+.impeccable/hook.cache.json
+.impeccable/live/
