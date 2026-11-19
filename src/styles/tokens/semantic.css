@@ -85,6 +85,6 @@
   --duration-zoom: var(--ref-duration-420); /* a board opening from, or closing into, the grid */
   --duration-draw: var(--ref-duration-600); /* the winning line being drawn */
   --shadow-panel: 0 0.375rem 1.25rem -0.25rem var(--color-shade); /* platforms over the page */
-  --backdrop-opacity: 0.45; /* torn-paper strips behind everything; 0 hides them */
+  --backdrop-opacity: 0.2; /* torn-paper strips behind everything; 0 hides them */
   --backdrop-blur: 0.6px;
 }
