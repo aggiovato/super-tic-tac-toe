@@ -61,13 +61,27 @@ unknown level is refused. The beginner is the one exception to "a terminal globa
 any local gain": it never looks at the reply its move allows, so it may win a board that hands the
 opponent the game. Seeing that is what the intermediate level adds.
 
-| File             | Contents                                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------------------- |
-| `ai/opponent.ts` | `chooseMove(state, { level, seed })`: a legal move, or null when it is over; integer game seed |
-| `ai/beginner.ts` | Wins the game, else a board, in one move; else a weighted random legal move                    |
-| `ai/tactics.ts`  | `winningMoves`: game and board wins in one pass, each legal move applied once                  |
-| `ai/random.ts`   | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                 |
-| `ai/models/`     | `Level`, `OpponentOptions`                                                                     |
+| File                 | Contents                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------- |
+| `ai/opponent.ts`     | `chooseMove(state, { level, seed, now? })`: fallback first, then the level within `BUDGET_MS` |
+| `ai/beginner.ts`     | Wins the game, else a board, in one move; else a weighted random legal move                   |
+| `ai/intermediate.ts` | Wins the game; never hands it over while a safe move is left; scores the rest (see `SCORE`)   |
+| `ai/tactics.ts`      | `outcomes` (each legal move applied once) and `winningMoves` (game and board wins)            |
+| `ai/threats.ts`      | `completions` on either level: `cellThreats` (a board) and `boardThreats` (the game)          |
+| `ai/random.ts`       | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                |
+| `ai/weights.ts`      | `cellWeight`: centre, corners, edges; every level's random picks and tie-breaks               |
+| `ai/models/`         | `Level`, `OpponentOptions`, `MoveOutcome`, `SearchLimits` (fallback and `expired`)            |
+| `ai/testing/`        | Positions found by seeded games (`LONG_GAME` and cuts of it); test-only, internal to `ai`     |
+
+`chooseMove` prepares a legal fallback (a weighted random move, no engine work) and gives the level
+a deadline on a monotonic clock (`now`, `performance.now` by default). Tests freeze the clock, or
+spend it on purpose; budgets are checked by counting engine calls. The intermediate level looks one
+reply ahead (each legal move, then each reply once: the budget spec counts it) and, out of time,
+plays the best move scored so far or the fallback. It scores board wins, global threats, taking a
+board the opponent needs, blocking the opponent's only winning cell on a board (more if that board
+wins them the game; with two, a block is idle and earns nothing), and penalises sending the
+opponent to a board it can win or to a free choice. Over 40 seeded games against the beginner it must win at least 30 and
+lose at most 3 (it wins 36, draws 4).
 
 Playing it (`@session`, `@state`): `Opponent` (`reply`, `cancel`) is provided on the game route as
 `WorkerOpponent`, a module Worker (`session/opponent.worker.ts`, built with `tsconfig.worker.json`)
