@@ -1,7 +1,8 @@
 :host {
   /*
-   * Component tokens with defaults; a parent may set --flap-bg, --flap-fg, --flap-accent or
-   * --flap-split (e.g. a board cell), so they are read with fallbacks and never set here.
+   * Component tokens with defaults; a parent may set --flap-bg, --flap-fg, --flap-accent,
+   * --flap-split or --flap-radius (e.g. a board cell, the brand mark's flaps), so they are read with
+   * fallbacks and never set here.
    */
   --flap-half: calc(var(--duration-step) / 2);
 
@@ -38,7 +39,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  border-radius: var(--radius-tile);
+  border-radius: var(--flap-radius, var(--radius-tile));
   background: var(--flap-bg, var(--color-surface-panel));
   backface-visibility: hidden;
 }

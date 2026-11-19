@@ -181,7 +181,7 @@ test('a closed board draws its mark once, not each time the views switch', async
 });
 
 test('winning a board spells TIP, TAP and TOE beside the name', async ({ page }) => {
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Super 3T');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Super 3T');
   const ending = page.locator('app-brand-title .flaps');
   // Folded away until a board is won.
   await expect(ending).toBeHidden();
