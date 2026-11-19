@@ -34,8 +34,10 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 2 · Two humans: done.** Finish review: ship. `DESIGN.md` records the built system. Next: the
-first production deploy (Netlify, see below), then **phase 3 · Opponent**.
+**Phase 3 · Opponent: in progress** (`phase/3-opponent`). Phase 2 shipped as v0.1.0 (Netlify
+production). Done: the three levels, beginner, intermediate and advanced (pure `@ai`, tested in
+Node), and playing them (Worker, `Opponent` session, mode and level in the settings). Next: the
+tutorial and the tactical challenge close the phase. Saving and resuming (phase 4) follows.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -74,7 +76,9 @@ lint-staged): ESLint with fixes, Prettier and the token check on the staged file
 Netlify, static SPA. `.github/workflows/ci.yml` runs quality → build → e2e → deploy: a PR gets a
 preview (alias `pr-N`, linked in a PR comment), a push to `main` is tested only, and a version tag
 `vX.Y.Z` (from `task release:*` on an up-to-date `main`, then `git push --follow-tags`) is checked
-against `package.json` and deployed to production. The very `dist/` the build job produced is what
+against `package.json` and deployed to production. Notable changes go under `## [Unreleased]` in
+`CHANGELOG.md` as they land; the release turns that section into the new version and date
+(`scripts/changelog-release.mjs`, npm's `version` script) and refuses an empty one. The very `dist/` the build job produced is what
 gets deployed; Netlify never builds on its own. Secrets: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
 `public/_redirects` (SPA fallback) and `public/_headers` (cache and security headers) ship in the
 build output.

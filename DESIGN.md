@@ -107,6 +107,18 @@ components:
     textColor: '{colors.seagrass-grey}'
     padding: '1rem'
     width: 'min(24rem, 100vw)'
+  brand-mark:
+    backgroundColor: '{colors.raven-deep}'
+    textColor: '{colors.apricot-flare}'
+    width: '180px'
+  brand-mark-small:
+    backgroundColor: '{colors.raven-deep}'
+    textColor: '{colors.apricot-flare}'
+    width: '16px'
+  brand-lockup:
+    textColor: '{colors.chalk}'
+    typography: '{typography.title}'
+    height: '1.6em'
 ---
 
 # Design System: Super 3T
@@ -135,7 +147,7 @@ A dark teal world with one warm signal: the palette is nearly monochrome so that
 
 ### Primary
 
-- **Apricot Flare** (apricot-flare): the departure. The forced platform's border and its flap number, the accent characters in the departure row, the primary button, the winning line and the winner's large marks. Also the text selection fill. Nothing else.
+- **Apricot Flare** (apricot-flare): the departure. The forced platform's border and its flap number, the accent characters in the departure row, the primary button, the winning line and the winner's large marks. Also the text selection fill and the T of the brand mark (see the exception under the One Departure Rule). Nothing else.
 
 ### Neutral
 
@@ -150,7 +162,7 @@ A dark teal world with one warm signal: the palette is nearly monochrome so that
 
 ### Named Rules
 
-**The One Departure Rule.** Apricot Flare marks where the next move may go, the one primary action, and a win. A second use of orange on a screen is a bug.
+**The One Departure Rule.** Apricot Flare marks where the next move may go, the one primary action, and a win. A second use of orange on a screen is a bug. One sanctioned exception, by the owner's decision: the Apricot T of the brand mark in the header lockup, because the mark is drawn in the win accent and lives in the header. It is the only one; the mark appears once per screen, never inside the board, the departure row or a control, and nothing else may cite it to add orange.
 
 **The Shared Ink Rule.** X and O are both drawn in Seagrass Grey (Chalk in high contrast). Shape tells them apart, never colour; the accent is reserved for the departure.
 
@@ -258,6 +270,22 @@ A round-capped Apricot line drawn on across three cells or three boards, with a 
 
 Authored line icons on a 24px grid, 2px stroke, round caps and joins, 1.1em, in currentColor, always beside a text label.
 
+### Brand Mark (signature)
+
+The name as a departure board in miniature: a T that is a split-flap tile just landed, and a smaller 3 tile falling onto it. One source draws it and writes every asset (`scripts/build-icons.mjs`, `npm run icons` / `task icons`); edit the drawing there, never the outputs.
+
+- **Full mark** (100-unit box, `public/icons/mark.svg`): the whole square is the T's flap tile in Raven Deep, its top half a step lighter (#172c2f), split by a hairline in Ink at 85% (0.8 units) that runs edge to edge and crosses the T's stem. The T is Apricot Flare, round caps (stroke 11, bar at a third down, stem ending near the bottom fifth, right of centre), on a halo in the tile colour (stroke 16) with the mark drop shadow, and a faint light (#ffc07a at 50%, stroke 3) along the top edge of the bar only. The 3 is Chalk, a single round-capped, round-joined stroke, on its own small two-tone tile (#1a3033, top half #22393c, radius 4.5 on 26×30) rotated −12°, top left, resting on the left end of the T's bar and casting its drop shadow on it. The tile's hairline crosses the 3's tile too (Ink at 85%). No other colour, no gradient beyond the two flap halves.
+- **Small drawings** (16-unit grid, strokes on half pixels): both drop the 3 tile, the halo and the light and keep the rounded Raven Deep tile (radius 3.5 of 16). The T is Apricot (stroke 2.5, bar from 8.25 to 14.5 at 3.75, stem at 11.4 from 3.75 to 13); the 3 is Chalk alone (stroke 1.8 in its scaled space), about 78% of the T's height (scale 0.86) and tilted −10°. Each must read "3T" at its size.
+  - **Small flat** (`public/favicon.svg`, which tabs render at 16 CSS px, and the 16px frame of `favicon.ico`): plain tile, no tone split, no hairline; at 16px the split blurs the 3.
+  - **Small flap** (`public/icons/mark-small.svg`, the 32 and 48px frames of `favicon.ico`, the header lockup): the flap tile's two halves (Raven Deep, top half #172c2f) with the split hairline (Ink at 85%) running behind the T only (from x 8.4 to the right edge), never through the 3. Shown large (the social preview) the 3 cannot blur, so there the split runs edge to edge, the 3 drawn above it.
+- **Size rule:** the full mark above 48px (the smallest shipped is the 180px apple-touch icon); at 48px and below the small flap drawing, except at 16px, where the small flat drawing is used. At 48px and below the full mark collapses into a cube that reads "³T". Where the mark stands for "3T" inside the title (header lockup, social preview) it is always the small flap drawing, at any size: there it is letters, and the full mark's small 3 would sit in superscript ("Super³T").
+- **Platform variants:** "any" manifest icons (192, 512) and `mark.svg` keep the rounded tile (radius 22 of 100). Apple-touch (180, drawing at 0.9) and maskable icons (192, 512, drawing at 0.7) are full bleed and let the platform mask them; maskable content stays inside the central 80% safe circle. The edge-to-edge hairline keeps its full width at every scale. Manifest background and theme colour are Raven Teal.
+- **Header lockup:** the heading reads "Super" (title size and weight, Chalk) followed by the small flap drawing (`icons/mark-small.svg`) at 1.6em, 0.3em after the word, centred on the text line. The mark is the "3T" of the name: there is no "3T" text, the image carries alt "3T", and the heading's accessible name is "Super 3T".
+- **Brand flaps (TIP/TAP/TOE):** when a board is won, two split-flap tiles unfold right after the mark's T as two more tiles of the mark's board, as tall as the mark (flap font size 1.6em ÷ 1.18, since a tile is 1.18em tall), 0.06em apart, in the mark's two halves (`--flap-bg`: Raven Teal over Raven Deep, half and half) with its corner radius (`--flap-radius`: 3.5 of 16 at the mark's 1.6em, 0.258em at the flaps' size), a split in the shade colour and Chalk letters, like the mark's 3. `--flap-radius` is a SplitFlap component token like `--flap-bg`, defaulting to the tile radius. They spell TIP, TAP, TOE, turn blank and fold away; at rest they are folded (zero width, transparent) but stay in place so they flip from blank.
+- **Social preview** (`public/og.png`, 1200×630), language-neutral and centred: on the page ground (Raven Teal with the soft Raven Lift wash, upper left), the title set exactly as the header sets it: "Super" (600, 150px, Chalk) followed by the small flap drawing at 1.6em (240px) as its "3T" (its split edge to edge at this size), 0.3em after the word, with a soft Ink drop shadow, so the 3 fills the word's cap height and the T drops below the baseline; "Ultimate Tic Tac Toe" (600, 54px, Seagrass Grey) centred 44px below. No sentence, normal tracking. `og:image:alt` is "Super 3T: Ultimate Tic Tac Toe".
+- **Static metadata copy:** the manifest description and the page `description` / `og:description` meta stay in Spanish, the default language. They are static texts the app cannot translate at runtime, so they are the documented exception to user-facing copy living only in the app's message catalogue.
+- **Depth:** the halo, the drop shadows and the bar's light belong to the mark only; they are not a licence for glows or highlights on components (see the No Glow Rule).
+
 ## Do's and Don'ts
 
 ### Do:
@@ -269,6 +297,7 @@ Authored line icons on a 24px grid, 2px stroke, round caps and joins, 1.1em, in 
 - **Do** use role tokens only in components; add a design as a theme file that overrides roles.
 - **Do** keep the sentence under the departure row at a fixed three-line height so previews and refusals never move the board.
 - **Do** provide an instant equivalent for every animation and honour the player's motion setting over the system one.
+- **Do** use the full brand mark above 48px, the small flap drawing at 48px and below and the small flat drawing at 16px, regenerating every asset from `scripts/build-icons.mjs`.
 
 ### Don't:
 
@@ -278,3 +307,4 @@ Authored line icons on a 24px grid, 2px stroke, round caps and joins, 1.1em, in 
 - **Don't** put information in the backdrop wash or torn strips; they vanish in the high-contrast design.
 - **Don't** move a dashed or accent outline from platform to platform while hovering; the preview lives on the destination's number tile.
 - **Don't** introduce a second typeface, raw hex values or Tailwind default palette, size or radius utilities in app code.
+- **Don't** show the brand mark in the app more than once per screen or anywhere but the header lockup; its Apricot T is the One Departure Rule's only exception.

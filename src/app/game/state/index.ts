@@ -1,2 +1,2 @@
 export { GameStore } from './game-store';
-export type { Participant, View } from './view.model';
+export type { Mode, Participant, View } from './view.model';

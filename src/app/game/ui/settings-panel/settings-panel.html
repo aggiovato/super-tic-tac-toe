@@ -18,9 +18,33 @@
     </button>
   </header>
 
+  <app-choice-group
+    name="mode"
+    [legend]="t().settings.mode"
+    [options]="modeOptions()"
+    [selected]="shownMode()"
+    (chosen)="setMode($event)"
+  />
+
+  @if (shownMode() === 'opponent') {
+    <app-choice-group
+      name="level"
+      [legend]="t().settings.level"
+      [options]="levelOptions()"
+      [selected]="shownLevel()"
+      (chosen)="setLevel($event)"
+    />
+  }
+
+  @if (pendingChange()) {
+    <button app-button="primary" class="w-full" (click)="confirmChange()">
+      {{ t().settings.confirmModeChange }}
+    </button>
+  }
+
   <fieldset>
     <legend>{{ t().settings.players }}</legend>
-    @for (index of [0, 1]; track index) {
+    @for (index of nameFields(); track index) {
       <label class="field">
         <span>{{ t().settings.playerName(index + 1) }}</span>
         <input
@@ -29,7 +53,7 @@
           [maxLength]="nameMaxLength"
           [placeholder]="t().defaultName(index + 1)"
           [value]="preferences.names()[index]"
-          (input)="onName(index === 0 ? 0 : 1, $event)"
+          (input)="onName(index, $event)"
         />
       </label>
     }

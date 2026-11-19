@@ -1,4 +1,4 @@
-<button app-button="secondary" [disabled]="!canUndo()" (click)="store.undo()">
+<button app-button="secondary" [disabled]="!store.canUndo()" (click)="store.undo()">
   <app-icon name="undo" />
   {{ t().undo }}
 </button>

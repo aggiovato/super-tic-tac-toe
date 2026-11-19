@@ -3,11 +3,10 @@
   min-width: 0;
 }
 
-/* The flaps sit right after the T, at the title's size, as if part of the word. */
+/* "Super", then the 3T mark standing for the rest of the name, then the flaps after its T. */
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.04em;
   margin: 0;
   font-size: var(--text-title);
   font-weight: 600;
@@ -16,19 +15,45 @@
   white-space: nowrap;
 }
 
-/* Folded away at rest; unfolds to fit both tiles (0.78em each, see kit/split-flap) when shown. */
+/*
+ * The mark is the "3T" of the name, a little taller than the word so it reads as a tile. Below
+ * 48 px the full mark reads as a cube ("³T"), so the header uses the small flap drawing.
+ */
+.mark {
+  --mark-size: 1.6em;
+
+  width: var(--mark-size);
+  height: var(--mark-size);
+  margin-inline-start: 0.3em;
+}
+
+/*
+ * Two more tiles of the mark's board: as tall as the mark (a flap tile is 1.18em of its own font
+ * size, see kit/split-flap), in the mark's two halves (the lighter top, the panel bottom) with a
+ * dark split, its corner radius (3.5 of 16 at the mark's 1.6em is 0.35em of the title, 0.258em at
+ * the flaps' size) and Chalk letters like its 3. Folded away at rest.
+ */
 .flaps {
+  --flap-fg: var(--color-fg-strong);
+  --flap-split: var(--color-shade);
+  --flap-bg: linear-gradient(var(--color-surface) 50%, var(--color-surface-panel) 50%);
+  --flap-radius: 0.258em;
+
   display: inline-flex;
-  gap: 0.08em;
+  gap: 0.06em;
   max-width: 0;
+  margin-inline-start: 0;
   overflow: hidden;
+  font-size: calc(1.6em / 1.18);
   opacity: 0;
   transition:
     max-width var(--duration-frame) var(--ease-out),
+    margin var(--duration-frame) var(--ease-out),
     opacity var(--duration-frame) var(--ease-out);
 }
 
 .flaps.shown {
   max-width: 2em;
+  margin-inline-start: 0.06em;
   opacity: 1;
 }

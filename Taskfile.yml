@@ -43,6 +43,9 @@ tasks:
     cmds:
       - task: build
       - npm run test:e2e:headed -- {{.CLI_ARGS}}
+  icons:
+    desc: Redraw the Super 3T mark and every icon, favicon and social image made from it
+    cmds: [npm run icons]
   check:
     desc: Full verification, same as CI
     cmds:

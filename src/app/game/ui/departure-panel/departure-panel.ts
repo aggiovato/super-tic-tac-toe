@@ -5,6 +5,7 @@ import { Preferences } from '@settings';
 import { GameStore, type Participant } from '@state';
 import { DepartureBoard } from '../departure-board/departure-board';
 import type { FlapTile } from '../departure-board/flap-tile.model';
+import { participantName } from '../participant-name';
 
 const WORD_LENGTH = 5;
 /** The result cascades through more characters than an ordinary turn. */
@@ -34,7 +35,9 @@ export class DeparturePanel {
   private who(player: Player): string {
     const x = this.store.xPlayer();
     const participant: Participant = player === 'X' ? x : x === 0 ? 1 : 0;
-    return this.preferences.names()[participant] || player;
+    return (
+      participantName(this.t(), this.preferences.names(), this.store.mode(), participant) ?? player
+    );
   }
 
   /** Departure row: [player][arrow][destination…], or the result once the game ends. */

@@ -8,6 +8,8 @@ describe('App routes', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
     const harness = await RouterTestingHarness.create('/');
     const heading = harness.routeNativeElement?.querySelector('h1');
-    expect(heading?.textContent).toContain('Super 3T');
+    // "Super" in text, "3T" as the mark's alt text: the heading reads "Super 3T".
+    expect(heading?.textContent).toContain('Super');
+    expect(heading?.querySelector('img')?.getAttribute('alt')).toBe('3T');
   });
 });

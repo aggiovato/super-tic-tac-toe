@@ -32,6 +32,8 @@ export interface Messages {
   readonly closedDrawn: (board: number) => string;
   readonly showAll: string;
   readonly defaultName: (index: number) => string;
+  /** How the computer player is named in sentences and the score. */
+  readonly opponent: string;
   readonly draws: string;
   readonly score: string;
   readonly rematch: string;
@@ -40,6 +42,14 @@ export interface Messages {
     readonly open: string;
     readonly title: string;
     readonly close: string;
+    readonly mode: string;
+    readonly modes: { readonly humans: string; readonly opponent: string };
+    readonly level: string;
+    readonly levels: {
+      readonly beginner: string;
+      readonly intermediate: string;
+      readonly advanced: string;
+    };
     readonly players: string;
     readonly playerName: (index: number) => string;
     readonly language: string;
@@ -55,5 +65,7 @@ export interface Messages {
     readonly designs: { readonly departures: string; readonly 'departures-contrast': string };
     readonly newSeries: string;
     readonly confirmNewSeries: string;
+    /** Second press that applies a new mode or level and clears the score. */
+    readonly confirmModeChange: string;
   };
 }
