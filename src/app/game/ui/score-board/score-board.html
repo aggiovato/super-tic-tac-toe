@@ -1,0 +1,18 @@
+<dl class="score" [attr.aria-label]="t().score">
+  @for (entry of entries(); track $index) {
+    <div class="score-entry" [class.active]="entry.active">
+      <dt>
+        @if (entry.glyph) {
+          <app-split-flap class="score-glyph" [char]="entry.glyph" [maxSteps]="1" />
+        }
+        <span class="truncate">{{ entry.label }}</span>
+      </dt>
+      <dd class="text-score">
+        <span class="sr-only">{{ entry.digits.join('') }}</span>
+        @for (digit of entry.digits; track $index) {
+          <app-split-flap [char]="digit" [index]="$index" [maxSteps]="10" />
+        }
+      </dd>
+    </div>
+  }
+</dl>

@@ -1,0 +1,33 @@
+/* Sized by `--thumbnail-size`, set by the board, which also leaves room for it above the open board. */
+:host {
+  display: block;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-stack);
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-cell-gap);
+  width: var(--thumbnail-size);
+  aspect-ratio: 1;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-stack-tight);
+  font-size: var(--text-body);
+  font-weight: 600;
+}

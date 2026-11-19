@@ -31,6 +31,18 @@ tasks:
     cmds:
       - task: build
       - npm run test:e2e
+  e2e:ui:
+    desc: 'Build, then Playwright UI mode to run and replay each flow (e.g. E2E_MOTION=full task e2e:ui)'
+    cmds:
+      - task: build
+      - npm run test:e2e:ui -- {{.CLI_ARGS}}
+  e2e:headed:
+    desc: 'Build, then watch the flows in a browser, one at a time, 300 ms per action (task e2e:headed -- --project=mobile -g "won game")'
+    env:
+      SLOW_MO: '{{.SLOW_MO | default "300"}}'
+    cmds:
+      - task: build
+      - npm run test:e2e:headed -- {{.CLI_ARGS}}
   check:
     desc: Full verification, same as CI
     cmds:

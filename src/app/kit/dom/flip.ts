@@ -39,14 +39,43 @@ export function flipFrom(element: HTMLElement, from: DOMRect, options: FlipOptio
   );
 }
 
-/** Fades elements in, slightly after the main movement starts. */
+/** Fades elements in over the rest of the movement, starting after `delay`. */
 export function fadeIn(elements: Iterable<Element>, options: FlipOptions, delay = 0): void {
   for (const element of elements) {
     element.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: options.duration * 0.7,
+      duration: Math.max(options.duration - delay, options.duration * 0.4),
       delay,
-      easing: options.easing,
+      easing: 'ease-out',
       fill: 'backwards',
     });
   }
+}
+
+export interface FadeOut {
+  /** Settles when every element has faded, or when the fade is cancelled. */
+  readonly finished: Promise<void>;
+  /** Restores the elements' opacity, e.g. when they stay on screen after all. */
+  readonly cancel: () => void;
+}
+
+/** Fades elements out and keeps them hidden until they are removed or the fade is cancelled. */
+export function fadeOut(
+  elements: Iterable<Element>,
+  options: FlipOptions,
+  duration: number,
+): FadeOut {
+  const animations = [...elements].map((element) =>
+    element.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration,
+      easing: options.easing,
+      fill: 'forwards',
+    }),
+  );
+  return {
+    finished: Promise.all(animations.map((animation) => animation.finished)).then(
+      () => undefined,
+      () => undefined,
+    ),
+    cancel: () => animations.forEach((animation) => animation.cancel()),
+  };
 }

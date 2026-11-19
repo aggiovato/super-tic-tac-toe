@@ -8,6 +8,6 @@ describe('App routes', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
     const harness = await RouterTestingHarness.create('/');
     const heading = harness.routeNativeElement?.querySelector('h1');
-    expect(heading?.textContent).toContain('Super Tic Tac Toe');
+    expect(heading?.textContent).toContain('Super 3T');
   });
 });

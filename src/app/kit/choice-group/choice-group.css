@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-bottom: var(--spacing-stack-tight);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--color-fg-strong);
+}

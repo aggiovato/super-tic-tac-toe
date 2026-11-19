@@ -1,0 +1,15 @@
+<svg viewBox="0 0 10 10">
+  @switch (mark()) {
+    @case ('X') {
+      <path class="halo" d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" />
+      <path class="ink" d="M2.2 2.2l5.6 5.6M7.8 2.2l-5.6 5.6" pathLength="1" />
+    }
+    @case ('O') {
+      <circle class="halo" cx="5" cy="5" r="3" />
+      <circle class="ink" cx="5" cy="5" r="3" pathLength="1" />
+    }
+    @case ('=') {
+      <path class="ink" d="M2.5 4h5M2.5 6h5" pathLength="1" />
+    }
+  }
+</svg>

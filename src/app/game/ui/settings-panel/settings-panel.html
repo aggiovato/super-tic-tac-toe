@@ -35,74 +35,45 @@
     }
   </fieldset>
 
-  <fieldset>
-    <legend>{{ t().settings.language }}</legend>
-    @for (lang of translator.languages; track lang) {
-      <label class="choice" [attr.lang]="lang">
-        <input
-          type="radio"
-          name="language"
-          [checked]="translator.lang() === lang"
-          (change)="translator.setLang(lang)"
-        />
-        {{ messages[lang].langName }}
-      </label>
-    }
-  </fieldset>
+  <app-choice-group
+    name="language"
+    [legend]="t().settings.language"
+    [options]="languageOptions()"
+    [selected]="translator.lang()"
+    (chosen)="translator.setLang($event)"
+  />
 
-  <fieldset>
-    <legend>{{ t().settings.motion }}</legend>
-    @for (motion of motions; track motion) {
-      <label class="choice">
-        <input
-          type="radio"
-          name="motion"
-          [checked]="preferences.motion() === motion"
-          (change)="preferences.setMotion(motion)"
-        />
-        {{ motionLabel(motion) }}
-      </label>
-    }
-  </fieldset>
+  <app-choice-group
+    name="motion"
+    [legend]="t().settings.motion"
+    [options]="motionOptions()"
+    [selected]="preferences.motion()"
+    (chosen)="preferences.setMotion($event)"
+  />
 
-  <fieldset>
-    <legend>{{ t().settings.design }}</legend>
-    @for (design of designs; track design) {
-      <label class="choice">
-        <input
-          type="radio"
-          name="design"
-          [checked]="preferences.design() === design"
-          (change)="preferences.setDesign(design)"
-        />
-        {{ t().settings.designs[design] }}
-      </label>
-    }
-  </fieldset>
+  <app-choice-group
+    name="design"
+    [legend]="t().settings.design"
+    [options]="designOptions()"
+    [selected]="preferences.design()"
+    (chosen)="preferences.setDesign($event)"
+  />
 
   <div class="toggles">
-    <label class="choice">
-      <input
-        type="checkbox"
-        [checked]="preferences.autoZoom()"
-        (change)="preferences.setAutoZoom(!preferences.autoZoom())"
-      />
-      <span>
-        {{ t().settings.autoZoom }}
-        <small>{{ t().settings.autoZoomHint }}</small>
-      </span>
-    </label>
-    <label class="choice">
-      <input
-        type="checkbox"
-        [checked]="preferences.hints()"
-        (change)="preferences.setHints(!preferences.hints())"
-      />
-      <span>
-        {{ t().settings.hints }}
-        <small>{{ t().settings.hintsHint }}</small>
-      </span>
-    </label>
+    <app-choice
+      [checked]="preferences.autoZoom()"
+      [hint]="t().settings.autoZoomHint"
+      (changed)="preferences.setAutoZoom(!preferences.autoZoom())"
+    >
+      {{ t().settings.autoZoom }}
+    </app-choice>
+    <app-choice
+      [checked]="preferences.hints()"
+      [hint]="t().settings.hintsHint"
+      (changed)="preferences.setHints(!preferences.hints())"
+    >
+      {{ t().settings.hints }}
+    </app-choice>
   </div>
 
   <button

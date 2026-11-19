@@ -29,6 +29,19 @@ const NO_APP_LAYERS = {
   message: 'core and ai must not import app layers.',
 };
 
+// Lines that count are code: blank lines and comments are skipped.
+const EFFECTIVE = { skipBlankLines: true, skipComments: true };
+
+// Size and shape limits. A file past them is split into components or helpers, not raised.
+const SIZE_LIMITS = {
+  'max-lines': ['error', { max: 500, ...EFFECTIVE }],
+  'max-lines-per-function': ['error', { max: 80, ...EFFECTIVE }],
+  complexity: ['error', 15],
+  'max-depth': ['error', 4],
+  'max-params': ['error', 4],
+  'max-nested-callbacks': ['error', 3],
+};
+
 module.exports = defineConfig([
   {
     ignores: [
@@ -57,6 +70,10 @@ module.exports = defineConfig([
     },
     processor: angular.processInlineTemplates,
     rules: {
+      ...SIZE_LIMITS,
+      eqeqeq: ['error', 'always'],
+      // Only the bootstrap reports a fatal error to the console.
+      'no-console': ['error', { allow: ['error'] }],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@angular-eslint/directive-selector': [
@@ -104,8 +121,18 @@ module.exports = defineConfig([
     },
   },
   {
+    // Specs read as one long `describe` of scenarios: longer files and callbacks, nested suites.
+    files: ['**/*.spec.ts', 'e2e/**/*.ts'],
+    rules: {
+      'max-lines': ['error', { max: 1000, ...EFFECTIVE }],
+      'max-lines-per-function': 'off',
+      'max-nested-callbacks': ['error', 5],
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
+    rules: { 'max-lines': SIZE_LIMITS['max-lines'] },
   },
   {
     files: ['**/*.js'],

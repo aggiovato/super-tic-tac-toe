@@ -30,6 +30,10 @@ line {
   animation: draw var(--strike-time) var(--ease-out) var(--strike-delay) backwards;
 }
 
+:host(.still) line {
+  animation: none;
+}
+
 /* The dash only exists while drawing, so the finished line has no seam. */
 @keyframes draw {
   from {

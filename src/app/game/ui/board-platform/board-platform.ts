@@ -1,5 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { SplitFlap, StrikeLine } from '@kit';
+import { BoardCell } from '../board-cell/board-cell';
+import { ClosingMark } from '../closing-mark/closing-mark';
 import type { PlatformView } from './platform-view.model';
 
 export interface CellPointer {
@@ -8,13 +10,13 @@ export interface CellPointer {
 }
 
 /**
- * One numbered platform: a flap number over a classic 3×3 grid, the line that closed it and its
- * large mark. Applied to the element that hosts it (`div`, `button` or `span`), so the board decides
+ * One numbered platform: a flap number over a classic 3×3 grid of cells (`BoardCell`), the line
+ * that closed it and its large mark (`ClosingMark`). Applied to the element that hosts it (`div`, `button` or `span`), so the board decides
  * the semantics. Cells are buttons only when `interactive`.
  */
 @Component({
   selector: '[app-board-platform]',
-  imports: [SplitFlap, StrikeLine],
+  imports: [BoardCell, ClosingMark, SplitFlap, StrikeLine],
   templateUrl: './board-platform.html',
   styleUrl: './board-platform.css',
   host: {
@@ -25,6 +27,9 @@ export interface CellPointer {
     '[class.closed]': 'view().closed',
     '[class.preview]': 'view().preview',
     '[class.win]': 'view().win',
+    '[class.fresh]': 'view().fresh',
+    '[class.spark]': 'view().spark',
+    '[class.win-spark]': 'view().winSpark',
   },
 })
 export class BoardPlatform {

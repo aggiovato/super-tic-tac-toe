@@ -1,0 +1,4 @@
+<app-split-flap class="fill" [char]="cell().glyph" [maxSteps]="1" />
+@if (showNumber()) {
+  <span class="number" [class.always]="numbered()" aria-hidden="true">{{ cell().cell + 1 }}</span>
+}

@@ -12,12 +12,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { Line, Mark, Move } from '@core';
-import { Translator } from '@i18n';
+import type { BoardStatus, Move } from '@core';
+import { type Messages, Translator } from '@i18n';
 import {
   fadeIn,
+  fadeOut,
   flipFrom,
-  Icon,
   injectMediaQuery,
   renderChange,
   StrikeLine,
@@ -26,7 +26,18 @@ import {
 } from '@kit';
 import { Preferences } from '@settings';
 import { GameStore } from '@state';
-import { BoardPlatform, type CellPointer } from '../board-platform/board-platform';
+import { type CellPointer, BoardPlatform } from '../board-platform/board-platform';
+import { BoardThumbnail } from '../board-thumbnail/board-thumbnail';
+import {
+  clampSegment,
+  GAME_OVERSHOOT,
+  globalIndex,
+  glyphOf,
+  gridStrike,
+  INDICES,
+  moveAt,
+  overshoot,
+} from './board-geometry';
 import type { PlatformView } from '../board-platform/platform-view.model';
 
 /** How the board is played right now. */
@@ -38,19 +49,12 @@ type Mode =
   /** Narrow layout, one board open with a thumbnail of the whole game. */
   | 'zoom';
 
-const INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
-
 /** Below this width a cell would be under 44 px: boards are picked, then played open. */
 const COMPACT_QUERY = '(max-width: 34.99rem)';
 /** Pause on the whole board after a move on narrow screens, before the next board opens. */
 const PAUSE_BEFORE_OPEN_MS = 480;
 /** Hover intent: a preview appears or clears only once the pointer settles. */
 const PREVIEW_DELAY_MS = 140;
-/** How far a board's strike line overshoots its outer marks, as a share of its length. */
-const OVERSHOOT = 0.22;
-/** The game's strike line overshoots less and stays inside the board grid. */
-const GAME_OVERSHOOT = 0.08;
-
 const ARROWS: Readonly<Record<string, readonly [number, number]>> = {
   ArrowUp: [-1, 0],
   ArrowDown: [1, 0],
@@ -58,58 +62,33 @@ const ARROWS: Readonly<Record<string, readonly [number, number]>> = {
   ArrowRight: [0, 1],
 };
 
-/** Index of a cell in the 9×9 reading order of the whole board. */
-const globalIndex = (board: number, cell: number): number =>
-  (Math.floor(board / 3) * 3 + Math.floor(cell / 3)) * 9 + (board % 3) * 3 + (cell % 3);
-
-/** Inverse of `globalIndex`. */
-const moveAt = (index: number): Move => {
-  const row = Math.floor(index / 9);
-  const col = index % 9;
-  return {
-    board: Math.floor(row / 3) * 3 + Math.floor(col / 3),
-    cell: (row % 3) * 3 + (col % 3),
-  };
+/** The large mark over a board: its winner, `=` for a draw, nothing while it is open. */
+const closingOf = (status: BoardStatus | undefined): PlatformView['closing'] => {
+  switch (status?.kind) {
+    case 'won':
+      return status.winner;
+    case 'drawn':
+      return '=';
+    default:
+      return null;
+  }
 };
 
-/** Flap character for a mark: players are drawn glyphs, empty is blank. */
-const glyphOf = (mark: Mark): string => (mark === 'X' ? 'x' : mark === 'O' ? 'o' : ' ');
-
-/** Segment from `a` to `b` (percent points), overshooting both ends. */
-const overshoot = (
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-  share = OVERSHOOT,
-): Segment => ({
-  x1: a.x - (b.x - a.x) * share,
-  y1: a.y - (b.y - a.y) * share,
-  x2: b.x + (b.x - a.x) * share,
-  y2: b.y + (b.y - a.y) * share,
-});
-
-/** Keeps a segment's ends inside its container (percent), so a line never runs onto the page. */
-const clampSegment = (segment: Segment): Segment => {
-  const clamp = (value: number): number => Math.min(99, Math.max(1, value));
-  return {
-    x1: clamp(segment.x1),
-    y1: clamp(segment.y1),
-    x2: clamp(segment.x2),
-    y2: clamp(segment.y2),
-  };
-};
-
-/** Segment through the centres of a line of a 3×3 grid, in percent of the grid. */
-const gridStrike = (line: Line): Segment => {
-  const centre = (i: number) => ({
-    x: ((i % 3) * 2 + 1) * (100 / 6),
-    y: (Math.floor(i / 3) * 2 + 1) * (100 / 6),
-  });
-  return overshoot(centre(line[0]), centre(line[2]));
+/** A board's accessible name, which says how it closed. */
+const boardLabel = (t: Messages, board: number, status: BoardStatus | undefined): string => {
+  switch (status?.kind) {
+    case 'won':
+      return t.closedWon(board + 1, status.winner);
+    case 'drawn':
+      return t.closedDrawn(board + 1);
+    default:
+      return t.board(board + 1);
+  }
 };
 
 const easingOf = (value: string | undefined): string => {
   const easing = value?.trim() ?? '';
-  return easing.length > 0 ? easing : 'ease-out';
+  return easing.length > 0 ? easing : 'ease-in-out';
 };
 
 /**
@@ -119,7 +98,7 @@ const easingOf = (value: string | undefined): string => {
  */
 @Component({
   selector: 'app-game-board',
-  imports: [BoardPlatform, Icon, StrikeLine],
+  imports: [BoardPlatform, BoardThumbnail, StrikeLine],
   templateUrl: './game-board.html',
   styleUrl: './game-board.css',
   host: {
@@ -147,6 +126,14 @@ export class GameBoard {
   protected usingKeyboard = false;
   /** Devices that can hover; on touch screens a tap plays at once, so nothing previews. */
   private readonly canHover = injectMediaQuery('(hover: hover)');
+
+  /**
+   * Revision at which the player last moved between views. A board closed by the last move draws
+   * its mark until then; after that it is shown already drawn, however often views are rebuilt.
+   */
+  private readonly seenAt = signal(-1);
+  /** True while the boards around the one being opened fade out. */
+  private opening = false;
 
   private pendingOpen: ReturnType<typeof setTimeout> | undefined;
   private pendingPreview: ReturnType<typeof setTimeout> | undefined;
@@ -179,33 +166,29 @@ export class GameBoard {
     const playable = this.store.playableBoards();
     const previewTarget = this.store.previewTarget();
     const { status, target } = game;
+    const freshBoard = game.revision === this.seenAt() ? null : (last?.board ?? null);
+    const motion = !this.preferences.reducedMotion();
     return INDICES.map((board) => {
       const boardStatus = game.boards[board];
       const forced = target.kind === 'forced' && target.board === board;
-      const closing =
-        boardStatus?.kind === 'won'
-          ? boardStatus.winner
-          : boardStatus?.kind === 'drawn'
-            ? '='
-            : null;
-      const label =
-        boardStatus?.kind === 'won'
-          ? t.closedWon(board + 1, boardStatus.winner)
-          : boardStatus?.kind === 'drawn'
-            ? t.closedDrawn(board + 1)
-            : t.board(board + 1);
+      const closing = closingOf(boardStatus);
+      const fresh = closing !== null && freshBoard === board;
+      const win = status.kind === 'won' && status.line.includes(board);
       return {
         board,
         number: String(board + 1),
-        label,
+        label: boardLabel(t, board, boardStatus),
         forced,
         freePick: target.kind === 'free' && playable.has(board),
         playable: playable.has(board),
         closed: boardStatus?.kind !== 'open',
         preview: previewTarget === board,
-        win: status.kind === 'won' && status.line.includes(board),
+        win,
+        winSpark: motion && win,
         spin: forced ? game.revision : 0,
         closing,
+        fresh,
+        spark: motion && fresh,
         strike: boardStatus?.kind === 'won' ? gridStrike(boardStatus.line) : null,
         cells: INDICES.map((cell) => {
           const mark = game.cells[board]?.[cell] ?? null;
@@ -311,31 +294,49 @@ export class GameBoard {
     });
   }
 
+  /**
+   * Opens a board in two beats that never overlap: the other boards fade out, then the board grows
+   * out of its slot and the thumbnail fades in as it lands.
+   */
   protected open(board: number): void {
     clearTimeout(this.pendingOpen);
-    if (!this.store.playableBoards().has(board)) {
+    if (this.opening || !this.store.playableBoards().has(board)) {
       return;
     }
-    const from = this.slotElement(board)?.getBoundingClientRect();
-    void renderChange(this.injector, () => this.store.openBoard(board))
+    this.markSeen();
+    const motion = this.motion();
+    const leaving = motion
+      ? fadeOut(this.slotsExcept(board), motion, motion.duration * 0.4)
+      : { finished: Promise.resolve(), cancel: () => undefined };
+    this.opening = true;
+    void leaving.finished
       .then(() => {
-        const zoom = this.zoomElement();
-        const motion = this.motion();
-        if (!zoom || !from || !motion) {
+        this.opening = false;
+        // The game may have moved on while the others faded (an undo, a restart).
+        if (!this.store.playableBoards().has(board)) {
+          leaving.cancel();
           return;
         }
-        fadeIn(
-          this.host.nativeElement.querySelectorAll('.thumbnail'),
-          motion,
-          motion.duration * 0.3,
-        );
-        return flipFrom(zoom, from, motion);
+        const from = this.slotElement(board)?.getBoundingClientRect();
+        return renderChange(this.injector, () => this.store.openBoard(board)).then(() => {
+          const zoom = this.zoomElement();
+          if (!zoom || !from || !motion) {
+            return;
+          }
+          fadeIn(
+            this.host.nativeElement.querySelectorAll('.thumbnail'),
+            motion,
+            motion.duration * 0.55,
+          );
+          return flipFrom(zoom, from, motion);
+        });
       })
       .then(() => this.focusRovingIfKeyboard());
   }
 
   protected back(): void {
     clearTimeout(this.pendingOpen);
+    this.markSeen();
     const board = this.zoomed();
     const from = this.zoomElement()?.getBoundingClientRect();
     void renderChange(this.injector, () => this.store.showGlobal())
@@ -445,21 +446,32 @@ export class GameBoard {
     return index;
   }
 
-  /** The open board shrinks back into its slot while the other boards fade in around it. */
+  /**
+   * The open board shrinks back into its slot; the other boards fade in only as it lands, so the
+   * two movements read one after the other instead of crossing.
+   */
   private settleInto(board: number, from: DOMRect | undefined): Promise<void> {
     const slot = this.slotElement(board);
     const motion = this.motion();
     if (!slot || !from || !motion) {
       return Promise.resolve();
     }
-    const others = [...this.host.nativeElement.querySelectorAll('[data-board]')].filter(
-      (element) => element !== slot,
-    );
-    fadeIn(others, motion, motion.duration * 0.25);
+    fadeIn(this.slotsExcept(board), motion, motion.duration * 0.6);
     slot.style.zIndex = '2';
     return flipFrom(slot, from, motion).then(() => {
       slot.style.zIndex = '';
     });
+  }
+
+  private markSeen(): void {
+    this.seenAt.set(this.store.game().revision);
+  }
+
+  private slotsExcept(board: number): Element[] {
+    const slot = this.slotElement(board);
+    return [...this.host.nativeElement.querySelectorAll('[data-board]')].filter(
+      (element) => element !== slot,
+    );
   }
 
   private slotElement(board: number): HTMLElement | null {
@@ -470,15 +482,15 @@ export class GameBoard {
     return this.host.nativeElement.querySelector<HTMLElement>('.zoom');
   }
 
-  /** Duration and easing from the `--duration-zoom` and `--ease-out` tokens; null without motion. */
+  /** Duration and easing from the `--duration-zoom` and `--ease-zoom` tokens; null without motion. */
   private motion(): FlipOptions | null {
     if (this.preferences.reducedMotion()) {
       return null;
     }
     const style = this.document.defaultView?.getComputedStyle(this.host.nativeElement);
     return {
-      duration: Number.parseFloat(style?.getPropertyValue('--duration-zoom') ?? '') || 420,
-      easing: easingOf(style?.getPropertyValue('--ease-out')),
+      duration: Number.parseFloat(style?.getPropertyValue('--duration-zoom') ?? '') || 520,
+      easing: easingOf(style?.getPropertyValue('--ease-zoom')),
     };
   }
 

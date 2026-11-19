@@ -1,4 +1,4 @@
-# Super Tic Tac Toe
+# Super 3T
 
 Ultimate Tic Tac Toe: a 3×3 board where every cell is another tic tac toe. The cell you play
 decides which board your opponent plays next.

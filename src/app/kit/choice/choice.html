@@ -1,0 +1,9 @@
+<label class="choice" [attr.lang]="lang()">
+  <input [type]="type()" [attr.name]="name()" [checked]="checked()" (change)="changed.emit()" />
+  <span>
+    <ng-content />
+    @if (hint(); as text) {
+      <small>{{ text }}</small>
+    }
+  </span>
+</label>
