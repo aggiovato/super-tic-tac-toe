@@ -35,9 +35,9 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 ## Current phase
 
 **Phase 3 · Opponent: in progress** (`phase/3-opponent`). Phase 2 shipped as v0.1.0 (Netlify
-production). Levels land weakest first. Done: beginner and intermediate (pure `@ai`, tested in
-Node) and playing them (Worker, `Opponent` session, mode and level in the settings). Next:
-advanced; tutorial and tactical challenge close the phase. Saving and resuming (phase 4) follows.
+production). Done: the three levels, beginner, intermediate and advanced (pure `@ai`, tested in
+Node), and playing them (Worker, `Opponent` session, mode and level in the settings). Next: the
+tutorial and the tactical challenge close the phase. Saving and resuming (phase 4) follows.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |

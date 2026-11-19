@@ -61,17 +61,19 @@ unknown level is refused. The beginner is the one exception to "a terminal globa
 any local gain": it never looks at the reply its move allows, so it may win a board that hands the
 opponent the game. Seeing that is what the intermediate level adds.
 
-| File                 | Contents                                                                                      |
-| -------------------- | --------------------------------------------------------------------------------------------- |
-| `ai/opponent.ts`     | `chooseMove(state, { level, seed, now? })`: fallback first, then the level within `BUDGET_MS` |
-| `ai/beginner.ts`     | Wins the game, else a board, in one move; else a weighted random legal move                   |
-| `ai/intermediate.ts` | Wins the game; never hands it over while a safe move is left; scores the rest (see `SCORE`)   |
-| `ai/tactics.ts`      | `outcomes` (each legal move applied once) and `winningMoves` (game and board wins)            |
-| `ai/threats.ts`      | `completions` on either level: `cellThreats` (a board) and `boardThreats` (the game)          |
-| `ai/random.ts`       | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                |
-| `ai/weights.ts`      | `cellWeight`: centre, corners, edges; every level's random picks and tie-breaks               |
-| `ai/models/`         | `Level`, `OpponentOptions`, `MoveOutcome`, `SearchLimits` (fallback and `expired`)            |
-| `ai/testing/`        | Positions found by seeded games (`LONG_GAME` and cuts of it); test-only, internal to `ai`     |
+| File                 | Contents                                                                                        |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `ai/opponent.ts`     | `chooseMove(state, { level, seed, now? })`: fallback first, then the level within `BUDGET_MS`   |
+| `ai/beginner.ts`     | Wins the game, else a board, in one move; else a weighted random legal move                     |
+| `ai/intermediate.ts` | Wins the game; never hands it over while a safe move is left; scores the rest (see `SCORE`)     |
+| `ai/advanced.ts`     | Negamax with alpha-beta, move ordering and iterative deepening; keeps the last complete round   |
+| `ai/evaluation.ts`   | `evaluate`: boards won by place, global threats, local threats (more on decisive boards); `WIN` |
+| `ai/tactics.ts`      | `outcomes` (each legal move applied once) and `winningMoves` (game and board wins)              |
+| `ai/threats.ts`      | `completions` on either level: `cellThreats` (a board) and `boardThreats` (the game)            |
+| `ai/random.ts`       | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                  |
+| `ai/weights.ts`      | `cellWeight`: centre, corners, edges; every level's random picks and tie-breaks                 |
+| `ai/models/`         | `Level`, `OpponentOptions`, `MoveOutcome`, `SearchLimits` (fallback and `expired`)              |
+| `ai/testing/`        | Positions found by seeded games (`LONG_GAME` and cuts of it); test-only, internal to `ai`       |
 
 `chooseMove` prepares a legal fallback (a weighted random move, no engine work) and gives the level
 a deadline on a monotonic clock (`now`, `performance.now` by default). Tests freeze the clock, or
@@ -82,6 +84,20 @@ board the opponent needs, blocking the opponent's only winning cell on a board (
 wins them the game; with two, a block is idle and earns nothing), and penalises sending the
 opponent to a board it can win or to a free choice. Over 40 seeded games against the beginner it must win at least 30 and
 lose at most 3 (it wins 36, draws 4).
+
+The advanced level searches one ply deeper per round within 600 ms and keeps the best move of the
+last round it completed (a round cut short is discarded; with none complete it plays the fallback).
+It stops deepening once a round is certain: a won or lost line, or no line reached the depth limit
+(a deeper round would search the same tree); depth is capped by the cells still playable. A node
+reads the clock before ordering its moves and before each move it applies, so a clock allowing N
+readings bounds the engine calls to N − 1 (one reading sets the deadline): tests use it instead of
+time. It orders the previous best first, then cells that win a board, then blocks, then centre,
+corners and edges, with a seeded jitter at the root. The leaf evaluator is injectable (`Evaluator`)
+to compare evaluations in offline batches; a side-to-move tempo bonus was tried that way and did not
+help (24 games at 1500 and 4000 nodes, within noise), so it is not used. About 170k nodes per
+second in Node; in the browser a reply takes ~850 ms from the click (600 ms of search), and a
+settled endgame answers in milliseconds. With 2000 readings it must beat the intermediate in at
+least 7 of 10 seeded games (it wins 9, draws 1).
 
 Playing it (`@session`, `@state`): `Opponent` (`reply`, `cancel`) is provided on the game route as
 `WorkerOpponent`, a module Worker (`session/opponent.worker.ts`, built with `tsconfig.worker.json`)
