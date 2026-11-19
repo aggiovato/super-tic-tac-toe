@@ -38,6 +38,31 @@ tasks:
       - task: lint
       - task: unit
       - task: e2e
+  # Releases: run on an up-to-date, clean main. `npm version` bumps package.json, commits
+  # "chore(release): vX.Y.Z" and tags it; `git push --follow-tags` then lets CI run the whole
+  # pipeline and deploy that tag to production.
+  release:guard:
+    internal: true
+    cmds:
+      - test "$(git branch --show-current)" = main || (echo "Release from main only." && exit 1)
+      - test -z "$(git status --porcelain)" || (echo "Working tree not clean." && exit 1)
+      - git fetch -q origin main
+      - test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || (echo "main is not up to date with origin." && exit 1)
+  release:patch:
+    desc: Release a patch version (fixes)
+    cmds:
+      - task: release:guard
+      - 'npm version patch -m "chore(release): v%s"'
+  release:minor:
+    desc: Release a minor version (new features)
+    cmds:
+      - task: release:guard
+      - 'npm version minor -m "chore(release): v%s"'
+  release:major:
+    desc: Release a major version
+    cmds:
+      - task: release:guard
+      - 'npm version major -m "chore(release): v%s"'
   ci:
     desc: Clean install and full verification
     cmds:
