@@ -3,26 +3,44 @@
   z-index: -1;
   inset: 0;
   overflow: hidden;
-  color: var(--color-tear);
   pointer-events: none;
   opacity: var(--backdrop-opacity);
+  filter: blur(var(--backdrop-blur));
 }
 
-/* One torn strip, low on the left, running down to a point: a mask filled with the tear colour. */
 .tear {
   position: absolute;
-  bottom: 6%;
-  left: -2%;
   display: block;
-  width: clamp(18rem, 42vw, 40rem);
-  aspect-ratio: 1000 / 160;
-  background: currentColor;
-  mask: url('/textures/tear-line.svg') center / 100% 100% no-repeat;
+  background: center / contain no-repeat;
 }
 
-/* Narrow screens: the score sits low, so the strip runs along the very bottom. */
+/* Low on the left, in the free space under the reading column, running off the edge. */
+.open-paper {
+  bottom: 2%;
+  left: -18%;
+  width: clamp(36rem, 60vw, 64rem);
+  aspect-ratio: 1536 / 365;
+  background-image: url('/textures/tears/open-paper.svg');
+  transform: rotate(-6deg);
+}
+
+/* High on the right, narrowing to a point back into the page, half behind the board. */
+.pointed-tear {
+  top: 3%;
+  right: -14%;
+  width: clamp(30rem, 48vw, 52rem);
+  aspect-ratio: 1536 / 250;
+  background-image: url('/textures/tears/pointed-tear.svg');
+  transform: rotate(-6deg) scaleX(-1);
+}
+
+/* Narrow screens: only the low strip, along the very bottom, below the score. */
 @media (max-width: 34.99rem) {
-  .tear {
-    bottom: 0.5%;
+  .open-paper {
+    bottom: -3%;
+  }
+
+  .pointed-tear {
+    display: none;
   }
 }

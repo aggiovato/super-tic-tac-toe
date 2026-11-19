@@ -35,8 +35,7 @@
   --color-preview: var(--ref-chalk-100); /* board a hovered cell would send to */
   --color-win: var(--ref-apricot-500);
 
-  /* Atmosphere: torn strips, light and shade. Decorative only; never carries information. */
-  --color-tear: var(--ref-seagrass-400); /* masked by the strip's own shading */
+  /* Atmosphere: light and shade (torn strips come from artwork, see Backdrop). Decorative only; never carries information. */
   --color-glow: color-mix(in srgb, var(--ref-raven-700) 85%, transparent); /* soft light */
   --color-shade: color-mix(in srgb, var(--ref-ink) 70%, transparent); /* vignette, shadows */
 
@@ -86,5 +85,6 @@
   --duration-zoom: var(--ref-duration-420); /* a board opening from, or closing into, the grid */
   --duration-draw: var(--ref-duration-600); /* the winning line being drawn */
   --shadow-panel: 0 0.375rem 1.25rem -0.25rem var(--color-shade); /* platforms over the page */
-  --backdrop-opacity: 1; /* the torn strip behind everything; 0 hides it */
+  --backdrop-opacity: 0.45; /* torn-paper strips behind everything; 0 hides them */
+  --backdrop-blur: 0.6px;
 }
