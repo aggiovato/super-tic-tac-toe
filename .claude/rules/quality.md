@@ -46,11 +46,12 @@ paths:
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every PR and every push to `main`: Node from `.nvmrc`, pinned
-Task, `task setup`, Playwright Chromium (installed after `npm ci` so it matches the lockfile) and
-`task check` (format, lint with the token check, unit tests, production build and e2e). Read-only
-permissions; the Playwright report and traces are uploaded when it fails. Each new Taskfile entry
-lands with the npm script it calls.
+`.github/workflows/ci.yml` runs on PRs, pushes to `main` and version tags, in jobs: quality (format,
+lint with the token check, unit tests), build (production build, uploaded as the `dist` artifact),
+e2e (Playwright against that artifact; report and traces uploaded on failure), release-check (tags:
+tag equals `package.json` version) and deploy (Netlify preview for PRs, production for tags; skipped
+without secrets). Actions are pinned by SHA. `task check` is the local equivalent. Each new
+Taskfile entry lands with the npm script it calls.
 
 E2E specs run against the production build served by `scripts/serve-dist.mjs` (SPA fallback) on
 desktop and Pixel 7 Chromium. They play through the UI with accessible names, never by reaching

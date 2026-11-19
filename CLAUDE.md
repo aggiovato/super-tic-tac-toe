@@ -49,19 +49,30 @@ Update this table when a phase closes.
 
 ## Commands
 
-| Task                          | What it does                                                                             |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `task setup`                  | `npm ci`                                                                                 |
-| `task dev`                    | `ng serve`                                                                               |
-| `task fmt` / `task fmt-check` | Prettier write / check                                                                   |
-| `task lint`                   | ESLint (TS, templates and accessibility), zero warnings                                  |
-| `task unit`                   | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
-| `task build`                  | Production build with budgets                                                            |
-| `task e2e`                    | Production build + Playwright (desktop and mobile Chromium)                              |
-| `task check`                  | All of the above, in CI order                                                            |
-| `task ci`                     | `setup` + `check` (what the workflow runs)                                               |
+| Task                               | What it does                                                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| `task setup`                       | `npm ci`                                                                                 |
+| `task dev`                         | `ng serve`                                                                               |
+| `task fmt` / `task fmt-check`      | Prettier write / check                                                                   |
+| `task lint`                        | ESLint (TS, templates and accessibility), zero warnings                                  |
+| `task unit`                        | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
+| `task build`                       | Production build with budgets                                                            |
+| `task e2e`                         | Production build + Playwright (desktop and mobile Chromium)                              |
+| `task check`                       | All of the above, in CI order                                                            |
+| `task release:patch\|minor\|major` | Bump, commit `chore(release): vX.Y.Z` and tag, from an up-to-date main                   |
+| `task ci`                          | `setup` + `check` (what the workflow runs)                                               |
 
 A change is not done until `task check` is green.
+
+## Deploy
+
+Netlify, static SPA. `.github/workflows/ci.yml` runs quality → build → e2e → deploy: a PR gets a
+preview (alias `pr-N`, linked in a PR comment), a push to `main` is tested only, and a version tag
+`vX.Y.Z` (from `task release:*` on an up-to-date `main`, then `git push --follow-tags`) is checked
+against `package.json` and deployed to production. The very `dist/` the build job produced is what
+gets deployed; Netlify never builds on its own. Secrets: `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`.
+`public/_redirects` (SPA fallback) and `public/_headers` (cache and security headers) ship in the
+build output.
 
 ## Layers and boundaries
 
