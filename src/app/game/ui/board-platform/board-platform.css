@@ -35,6 +35,9 @@
 }
 
 .platform-head {
+  /* Above the game's strike line: the board numbers stay readable on a win. */
+  position: relative;
+  z-index: 3;
   display: flex;
   font-size: var(--head-size);
 }
@@ -142,7 +145,7 @@ button.cell:focus-visible .cell-number {
   border-color: var(--color-target);
 }
 
-/* A free choice: neutral outline on every playable board. */
+/* A free choice (the opening included): neutral outline on every playable board. */
 :host(.free-pick:not(.forced)) {
   border-color: var(--color-line);
 }
@@ -261,6 +264,11 @@ button.cell:focus-visible .cell-number {
 
 :host(.current) {
   border-color: var(--color-fg-strong);
+}
+
+/* The forced board keeps its departure colour in the thumbnail too, even while open. */
+:host(.mini.forced) {
+  border-color: var(--color-target);
 }
 
 :host(.zoom) {

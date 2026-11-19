@@ -13,6 +13,9 @@ Visitor mode: experience. The work itself leads from the first viewport: the boa
 Audience and job: a newcomer on their first turn (portfolio visitor, friend, returning player) must
 see where they may play and, after playing, why the opponent must play where they do.
 
+Free choice, the opening included, shows a neutral light outline on every playable card (user:
+"las cards tenían todas como un borde clarito").
+
 Decided after the first critique (22/40): boards numbered 1–9 for players; mini boards are
 platforms with a flap number; cells are flap tiles; flap rows cycle through the drum to their word;
 narrow screens close the open board into the grid after a move, pause, then open the forced board
@@ -27,10 +30,13 @@ your opponent departs to next. Refuses the category default of a neutral 9×9 gr
 highlight and a turn bar.
 
 OWN-WORLD: Raven Teal ground; flap tiles in a darker teal with a hairline split across the middle;
-Seagrass Grey flap characters and X strokes; a lighter chalk tint for O rings; Apricot Flare only
+Seagrass Grey flap characters and both X and O strokes (user decision); Apricot Flare only
 for the departure (the forced board, its number and the primary control). Barlow Semi Condensed
-bold with tabular figures on every flap. Mini boards are numbered platforms 0–8; the number is part
-of the board, not a label above it. Flat surfaces, no gradients, no glow except a win.
+bold with tabular figures on every flap. Mini boards are numbered platforms 1–9 (as shown to
+players); the number is a flap tile on the board. Flat surfaces and components; the page ground
+carries a soft light-and-shade wash and two softened torn-paper strips from the owner's artwork
+(user decision, 2026-11-18/19: "diseños que den vida al fondo… sombreado… desgarros"). No glow on
+components except a win.
 
 STORY: the player reads the flap row ("O → 2"), sees platform 2 lit, plays a cell, watches the row
 flip to the board that cell sends to, and understands the rule without being told it.
@@ -41,9 +47,11 @@ forced platform outlined and numbered in Apricot and the rest dimmed; bottom, th
 tabular flap digits and the primary action. On narrow phones the forced platform opens zoomed with
 a global thumbnail; on desktop the whole board is played directly.
 
-SIGNATURE INTERACTION: hovering (mouse) or keyboard-focusing a legal cell previews its departure:
-the platform with the same number gets a dashed outline and the sentence under the row says where
-the opponent would go. The flap row stays still until the move is committed, then flips.
+SIGNATURE INTERACTION: hovering (mouse, after a 140 ms intent delay) or keyboard-focusing a legal
+cell previews its departure: the destination platform's number tile gets a soft ring and the
+sentence under the row says where the opponent would go. The flap row stays still until the move is
+committed, then flips. (User decision, 2026-11-18: a dashed outline jumping from card to card while
+hovering was "extremadamente molesto"; the preview moved to the number tile.)
 Motion grammar: flaps fall top-half then bottom-half, staggered left to right, 180–280 ms total;
 reduced motion swaps characters instantly. Closing a board drops a large X or O over it; winning
 the game cascades every flap to the result.

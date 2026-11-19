@@ -46,8 +46,10 @@ const COMPACT_QUERY = '(max-width: 34.99rem)';
 const PAUSE_BEFORE_OPEN_MS = 480;
 /** Hover intent: a preview appears or clears only once the pointer settles. */
 const PREVIEW_DELAY_MS = 140;
-/** How far a strike line overshoots the outer marks, as a share of its length. */
+/** How far a board's strike line overshoots its outer marks, as a share of its length. */
 const OVERSHOOT = 0.22;
+/** The game's strike line overshoots less and stays inside the board grid. */
+const GAME_OVERSHOOT = 0.08;
 
 const ARROWS: Readonly<Record<string, readonly [number, number]>> = {
   ArrowUp: [-1, 0],
@@ -74,12 +76,27 @@ const moveAt = (index: number): Move => {
 const glyphOf = (mark: Mark): string => (mark === 'X' ? 'x' : mark === 'O' ? 'o' : ' ');
 
 /** Segment from `a` to `b` (percent points), overshooting both ends. */
-const overshoot = (a: { x: number; y: number }, b: { x: number; y: number }): Segment => ({
-  x1: a.x - (b.x - a.x) * OVERSHOOT,
-  y1: a.y - (b.y - a.y) * OVERSHOOT,
-  x2: b.x + (b.x - a.x) * OVERSHOOT,
-  y2: b.y + (b.y - a.y) * OVERSHOOT,
+const overshoot = (
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  share = OVERSHOOT,
+): Segment => ({
+  x1: a.x - (b.x - a.x) * share,
+  y1: a.y - (b.y - a.y) * share,
+  x2: b.x + (b.x - a.x) * share,
+  y2: b.y + (b.y - a.y) * share,
 });
+
+/** Keeps a segment's ends inside its container (percent), so a line never runs onto the page. */
+const clampSegment = (segment: Segment): Segment => {
+  const clamp = (value: number): number => Math.min(99, Math.max(1, value));
+  return {
+    x1: clamp(segment.x1),
+    y1: clamp(segment.y1),
+    x2: clamp(segment.x2),
+    y2: clamp(segment.y2),
+  };
+};
 
 /** Segment through the centres of a line of a 3×3 grid, in percent of the grid. */
 const gridStrike = (line: Line): Segment => {
@@ -182,7 +199,7 @@ export class GameBoard {
         number: String(board + 1),
         label,
         forced,
-        freePick: target.kind === 'free' && game.moves.length > 0 && playable.has(board),
+        freePick: target.kind === 'free' && playable.has(board),
         playable: playable.has(board),
         closed: boardStatus?.kind !== 'open',
         preview: previewTarget === board,
@@ -399,7 +416,7 @@ export class GameBoard {
     };
     const a = centre(status.line[0]);
     const b = centre(status.line[2]);
-    return a && b ? overshoot(a, b) : null;
+    return a && b ? clampSegment(overshoot(a, b, GAME_OVERSHOOT)) : null;
   }
 
   /** Next legal option in the arrow's direction, or the current one when there is none. */
