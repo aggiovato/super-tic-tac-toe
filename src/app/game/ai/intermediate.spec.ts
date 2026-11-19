@@ -156,7 +156,7 @@ describe('intermediate opponent', () => {
   it('beats the beginner over a reproducible batch, playing either side', () => {
     const tally = { intermediate: 0, beginner: 0, draw: 0 };
     for (let game = 0; game < 40; game++) {
-      const levels: Record<'X' | 'O', Level> =
+      const levels: Record<'X' | 'O', 'intermediate' | 'beginner'> =
         game % 2 === 0
           ? { X: 'intermediate', O: 'beginner' }
           : { X: 'beginner', O: 'intermediate' };

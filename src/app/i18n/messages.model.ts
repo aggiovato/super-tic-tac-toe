@@ -45,7 +45,11 @@ export interface Messages {
     readonly mode: string;
     readonly modes: { readonly humans: string; readonly opponent: string };
     readonly level: string;
-    readonly levels: { readonly beginner: string; readonly intermediate: string };
+    readonly levels: {
+      readonly beginner: string;
+      readonly intermediate: string;
+      readonly advanced: string;
+    };
     readonly players: string;
     readonly playerName: (index: number) => string;
     readonly language: string;

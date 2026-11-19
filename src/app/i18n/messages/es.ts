@@ -57,7 +57,7 @@ export const es: Messages = {
     mode: 'Modo de juego',
     modes: { humans: 'Dos personas', opponent: 'Contra el rival' },
     level: 'Nivel del rival',
-    levels: { beginner: 'Principiante', intermediate: 'Intermedio' },
+    levels: { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' },
     players: 'Jugadores',
     playerName: (index) => `Nombre del jugador ${index}`,
     language: 'Idioma',

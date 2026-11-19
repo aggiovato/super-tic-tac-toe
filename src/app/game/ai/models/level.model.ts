@@ -1,2 +1,2 @@
-/** How strong the opponent plays. Stronger levels are added as they are built. */
-export type Level = 'beginner' | 'intermediate';
+/** How strong the opponent plays: the three levels of the guide, weakest first. */
+export type Level = 'beginner' | 'intermediate' | 'advanced';

@@ -18,7 +18,7 @@ const engineCalls = (state: GameState, level: Level = 'beginner'): number => {
   return vi.mocked(applyMove).mock.calls.length;
 };
 
-describe('beginner budget', () => {
+describe('opponent budgets', () => {
   it('applies the engine at most once per legal move, from every position of a long game', () => {
     let state = initialState();
     for (const move of parseMoves(LONG_GAME)) {
@@ -53,6 +53,26 @@ describe('beginner budget', () => {
       expect(engineCalls(state, 'intermediate')).toBeLessThanOrEqual(
         legalMoves(state).length + replies,
       );
+      const result = applyMove(state, move);
+      if (!result.ok) {
+        throw new Error(`Fixture move rejected: ${result.reason}`);
+      }
+      state = result.state;
+    }
+  });
+
+  it('keeps the advanced search within its clock: every engine call follows a reading', () => {
+    let state = initialState();
+    for (const move of parseMoves(LONG_GAME).slice(0, 40)) {
+      let readings = 0;
+      vi.mocked(applyMove).mockClear();
+      chooseMove(state, {
+        level: 'advanced',
+        seed: 1,
+        now: () => (readings++ < 500 ? 0 : Number.MAX_SAFE_INTEGER),
+      });
+      // One of the 500 readings sets the deadline; each engine call is preceded by its own reading.
+      expect(vi.mocked(applyMove).mock.calls.length).toBeLessThanOrEqual(499);
       const result = applyMove(state, move);
       if (!result.ok) {
         throw new Error(`Fixture move rejected: ${result.reason}`);

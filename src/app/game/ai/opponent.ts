@@ -1,4 +1,5 @@
 import { legalMoves, type GameState, type Move } from '@core';
+import { advancedMove } from './advanced';
 import { beginnerMove } from './beginner';
 import { intermediateMove } from './intermediate';
 import type { Level, OpponentOptions, SearchLimits } from './models';
@@ -6,7 +7,11 @@ import { createRandom, pickWeighted, turnSeed } from './random';
 import { cellWeight } from './weights';
 
 /** Time each level may think for, in milliseconds (`.claude/rules/game.md`). */
-export const BUDGET_MS: Readonly<Record<Level, number>> = { beginner: 50, intermediate: 200 };
+export const BUDGET_MS: Readonly<Record<Level, number>> = {
+  beginner: 50,
+  intermediate: 200,
+  advanced: 600,
+};
 
 /**
  * The opponent's reply for the player to move: always a legal move, or null when the game is over.
@@ -38,5 +43,7 @@ export function chooseMove(
       return beginnerMove(state, random);
     case 'intermediate':
       return intermediateMove(state, random, limits);
+    case 'advanced':
+      return advancedMove(state, random, limits);
   }
 }

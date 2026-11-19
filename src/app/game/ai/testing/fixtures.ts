@@ -31,5 +31,17 @@ export const IDLE_BLOCK = opening(LONG_GAME, 30);
 /** After 52 moves, forced to board 7: 7.0, 7.1 and 7.4 let the opponent win the game next. */
 export const CAN_HAND_THE_GAME = opening(LONG_GAME, 52);
 
-/** After 54 moves, forced to board 4: the opponent wins it, and the game, unless 4.4 blocks. */
+/**
+ * After 54 moves, forced to board 4, which would win the opponent the game: 4.4 takes its only
+ * winning cell there, 4.5 hands the game over, 4.2 is also safe (it sends the opponent elsewhere).
+ */
 export const MUST_BLOCK_THE_GAME = opening(LONG_GAME, 54);
+
+/**
+ * O to move, forced to board 8 after 55 moves of another seeded game: only 8.8 wins by force (every
+ * reply leaves O a game win). One reply ahead is not enough to see it: the intermediate plays 8.4.
+ */
+export const FORCED_WIN_IN_THREE =
+  '1.7 7.7 7.1 1.6 6.6 6.5 5.2 2.8 8.1 1.4 4.6 6.4 4.2 2.7 7.3 3.6 6.3 3.2 2.3 3.8 8.7 7.4 4.8 ' +
+  '8.2 2.5 5.3 3.0 0.7 7.2 2.2 2.1 1.0 0.6 6.7 7.0 0.0 0.3 3.3 3.5 5.4 4.4 8.6 6.2 2.0 0.4 2.4 ' +
+  '5.1 1.5 5.6 6.1 1.3 3.4 5.0 0.1 1.8';
