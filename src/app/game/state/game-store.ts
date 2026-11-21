@@ -151,15 +151,19 @@ export const GameStore = signalStore(
       patchState(store, { wins, scored: true });
     };
 
-    /** Applies the opponent's reply, revalidated by the engine; a failed reply plays a legal one. */
+    /**
+     * Applies the opponent's reply, revalidated by the engine: an illegal one plays a legal move
+     * instead. A null reply passes (nothing to play, or a challenge it no longer defends): the
+     * opponent's turn stays, so the board takes no moves.
+     */
     const applyReply = (move: Move | null): void => {
+      patchState(store, { thinking: false });
       const game = store.game();
       let result = move ? store._session.play(game, move) : null;
-      if (!result?.ok) {
+      if (move && !result?.ok) {
         const fallback = legalMoves(game)[0];
         result = fallback ? store._session.play(game, fallback) : null;
       }
-      patchState(store, { thinking: false });
       if (result?.ok) {
         accept(result.state);
         patchState(store, { opponentMoves: store.opponentMoves() + 1 });
@@ -191,7 +195,7 @@ export const GameStore = signalStore(
           (error: unknown) => {
             if (asked === ticket) {
               console.error('The opponent failed; playing a legal move instead.', error);
-              applyReply(null);
+              applyReply(legalMoves(store.game())[0] ?? null);
             }
           },
         );
