@@ -50,6 +50,20 @@ export const es: Messages = {
   score: 'Marcador de la serie',
   rematch: 'Revancha',
   undo: 'Deshacer',
+  howToPlay: {
+    title: 'Cómo se juega',
+    intro: 'Un tres en raya hecho de nueve tres en raya.',
+    board:
+      'Haz tres en raya dentro de un tablero pequeño y es tuyo. Si se llena sin línea, queda en tablas y no es de nadie.',
+    destination:
+      'Tu casilla elige el tablero de tu rival: la de arriba a la derecha le manda al de arriba a la derecha.',
+    target:
+      'Juega siempre en el tablero marcado en naranja. Si te mandan a uno ya cerrado, eliges tú cualquier tablero abierto.',
+    win: 'Gana la partida quien consiga tres tableros en línea.',
+    guide: 'El letrero de arriba te dice en todo momento a quién le toca y dónde.',
+    play: 'Jugar',
+    skip: 'Saltar',
+  },
   settings: {
     open: 'Ajustes',
     title: 'Ajustes',
@@ -74,5 +88,8 @@ export const es: Messages = {
     newSeries: 'Nueva serie',
     confirmNewSeries: 'Borrar marcador y empezar',
     confirmModeChange: 'Cambiar y borrar marcador',
+    howToPlay: 'Cómo se juega',
+    sections: 'Secciones de ajustes',
+    sectionNames: { game: 'Partida', app: 'Aplicación' },
   },
 };

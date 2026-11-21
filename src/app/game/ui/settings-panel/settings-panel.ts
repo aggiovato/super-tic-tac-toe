@@ -1,6 +1,24 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { type Lang, MESSAGES, Translator } from '@i18n';
-import { Button, Choice, ChoiceGroup, type ChoiceOption, Icon } from '@kit';
+import {
+  Button,
+  Choice,
+  ChoiceGroup,
+  type ChoiceOption,
+  Icon,
+  injectMediaQuery,
+  swipeToClose,
+} from '@kit';
 import {
   type Design,
   DESIGNS,
@@ -16,8 +34,13 @@ import { GameStore } from '@state';
 
 const CONFIRM_WINDOW_MS = 4000;
 const MOTIONS: readonly MotionSetting[] = ['system', 'full', 'reduced'];
+const SECTIONS = ['game', 'app'] as const;
+type Section = (typeof SECTIONS)[number];
 
-/** Game mode and opponent level, player names, language, motion, hints, design and a new series. */
+/**
+ * Settings in two tabs: this game (how to play, mode and level, names, hints, a new series) and
+ * the app (language, motion, design, opening the forced board).
+ */
 @Component({
   selector: 'app-settings-panel',
   imports: [Button, Choice, ChoiceGroup, Icon],
@@ -29,8 +52,19 @@ export class SettingsPanel {
   protected readonly t = this.translator.t;
   protected readonly preferences = inject(Preferences);
   private readonly store = inject(GameStore);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** Asks the page to show the how-to-play ticket again. */
+  readonly howToPlay = output();
 
   protected readonly nameMaxLength = NAME_MAX_LENGTH;
+
+  /** The open tab: this game's settings, or the app's. */
+  protected readonly section = signal<Section>('game');
+
+  protected readonly tabs = computed(() =>
+    SECTIONS.map((id) => ({ id, label: this.t().settings.sectionNames[id] })),
+  );
 
   /** Each language is offered in its own name and language. */
   protected readonly languageOptions = computed((): readonly ChoiceOption<Lang>[] =>
@@ -86,10 +120,26 @@ export class SettingsPanel {
     () => this.pendingChange()?.level ?? this.preferences.level(),
   );
 
+  private readonly sheet = viewChild.required<ElementRef<HTMLElement>>('sheet');
+  private readonly handle = viewChild.required<ElementRef<HTMLElement>>('handle');
+  /** Phones get a bottom sheet, which can be dragged down to close. */
+  private readonly narrow = injectMediaQuery('(max-width: 34.99rem)');
+
   constructor() {
-    inject(DestroyRef).onDestroy(() => {
+    const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => {
       clearTimeout(this.resetTimer);
       clearTimeout(this.changeTimer);
+    });
+    afterNextRender(() => {
+      const sheet = this.sheet().nativeElement;
+      const stop = swipeToClose(
+        this.handle().nativeElement,
+        sheet,
+        () => sheet.hidePopover(),
+        this.narrow,
+      );
+      destroyRef.onDestroy(stop);
     });
   }
 
@@ -137,6 +187,31 @@ export class SettingsPanel {
     if (event.target instanceof HTMLInputElement) {
       this.preferences.setName(index, event.target.value);
     }
+  }
+
+  /** Arrow keys, Home and End move between the tabs, which follow focus (ARIA tabs pattern). */
+  protected onTabKey(event: KeyboardEvent): void {
+    const current = SECTIONS.indexOf(this.section());
+    const last = SECTIONS.length - 1;
+    const next: Record<string, number> = {
+      ArrowRight: current === last ? 0 : current + 1,
+      ArrowLeft: current === 0 ? last : current - 1,
+      Home: 0,
+      End: last,
+    };
+    const index = next[event.key];
+    if (index === undefined) {
+      return;
+    }
+    event.preventDefault();
+    this.section.set(SECTIONS[index]);
+    this.host.nativeElement.querySelector<HTMLElement>(`#settings-tab-${SECTIONS[index]}`)?.focus();
+  }
+
+  /** Closes the sheet first: the ticket is a modal of its own, over the board. */
+  protected openHowToPlay(): void {
+    this.host.nativeElement.querySelector<HTMLElement>('[popover]')?.hidePopover();
+    this.howToPlay.emit();
   }
 
   protected newSeries(): void {

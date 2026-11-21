@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { afterNextRender, Component, inject, viewChild } from '@angular/core';
 import { Translator } from '@i18n';
 import { Preferences } from '@settings';
 import { GameStore } from '@state';
@@ -7,6 +7,7 @@ import { BrandTitle } from '../brand-title/brand-title';
 import { DeparturePanel } from '../departure-panel/departure-panel';
 import { GameActions } from '../game-actions/game-actions';
 import { GameBoard } from '../game-board/game-board';
+import { HowToPlay } from '../how-to-play/how-to-play';
 import { ScoreBoard } from '../score-board/score-board';
 import { SettingsPanel } from '../settings-panel/settings-panel';
 
@@ -19,6 +20,7 @@ import { SettingsPanel } from '../settings-panel/settings-panel';
     DeparturePanel,
     GameActions,
     GameBoard,
+    HowToPlay,
     ScoreBoard,
     SettingsPanel,
   ],
@@ -27,10 +29,17 @@ import { SettingsPanel } from '../settings-panel/settings-panel';
 })
 export class GamePage {
   protected readonly t = inject(Translator).t;
+  protected readonly howToPlay = viewChild.required(HowToPlay);
 
   constructor() {
     // The saved mode and level (two people or against the computer) shape the first series.
     const preferences = inject(Preferences);
     inject(GameStore).setMode(preferences.mode(), preferences.level());
+    // First visit: the how-to-play ticket, once; Settings reopens it.
+    afterNextRender(() => {
+      if (!preferences.tutorialSeen()) {
+        this.howToPlay().open();
+      }
+    });
   }
 }
