@@ -384,6 +384,13 @@ test.describe('how to play', () => {
     await expect(page.getByRole('dialog', { name: 'How to play' })).toBeHidden();
   });
 
+  test('links to the challenges before any game is under way', async ({ page }) => {
+    await firstVisit(page);
+    await page.getByRole('link', { name: /Practise with a tactical challenge/ }).click();
+    await expect(page).toHaveURL(/\/challenge\/diagonal-2026-11$/);
+    await expect(page.getByRole('dialog', { name: 'How to play' })).toBeHidden();
+  });
+
   test('closes with Skip or Escape and reopens from the settings', async ({ page }) => {
     await firstVisit(page);
     const ticket = page.getByRole('dialog', { name: 'How to play' });
@@ -432,4 +439,50 @@ test('on phones the settings sheet closes when dragged down by its head', async 
   await expect(sheet).toBeVisible();
   await dragHead(400);
   await expect(sheet).toBeHidden();
+});
+
+test.describe('tactical challenges', () => {
+  const progress = (page: Page) => page.locator('app-challenge-panel .progress');
+
+  test('a wrong move names the saving reply; the key move and the finish solve it, once', async ({
+    page,
+  }) => {
+    await page.goto('/challenge');
+    await expect(page).toHaveURL(/\/challenge\/diagonal-2026-11$/);
+    await expect(status(page)).toHaveText('X to move. Must play on board 3.');
+
+    await play(page, 2, 0);
+    await expect(progress(page)).toHaveText(
+      'The opponent would hold out on board 1, cell 9. Try another move.',
+    );
+    await page.getByRole('button', { name: 'Try again' }).click();
+    await expect(progress(page)).toHaveText('Find the key move.');
+
+    await play(page, 2, 8);
+    await expect(progress(page)).toHaveText(/That was it!/);
+    await expect(status(page)).toHaveText('X to move. May pick any open board.');
+    await play(page, 2, 5);
+    await expect(progress(page)).toHaveText('Challenge solved!');
+    await expect(page.getByRole('radio', { name: 'Easy ✓' })).toBeChecked();
+
+    await page.reload();
+    await expect(page.getByRole('radio', { name: 'Easy ✓' })).toBeChecked();
+    await expect(page.getByRole('button', { name: 'Next challenge' })).toHaveCount(0);
+    await page.getByRole('radio', { name: 'Medium' }).check();
+    await expect(page).toHaveURL(/\/challenge\/column-2026-11$/);
+    await expect(status(page)).toHaveText('X to move. May pick any open board.');
+  });
+
+  test('settings lead to the challenges, asking first when a game is under way', async ({
+    page,
+  }) => {
+    await play(page, 4, 2);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'Tactical challenges' }).click();
+    await page.getByRole('button', { name: 'Go and leave this game' }).click();
+    await expect(page).toHaveURL(/\/challenge\//);
+    await page.getByRole('button', { name: 'Back to the game' }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(status(page)).toHaveText('X to move. May pick any open board.');
+  });
 });

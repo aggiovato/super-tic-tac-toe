@@ -118,6 +118,17 @@ h2 {
   line-height: 1.35;
 }
 
+/* The way on to the challenges: a plain text link, Chalk and underlined. */
+.practise {
+  display: inline-block;
+  margin-bottom: var(--spacing-stack);
+  color: var(--color-fg-strong);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .pair {
   display: flex;
   align-items: center;

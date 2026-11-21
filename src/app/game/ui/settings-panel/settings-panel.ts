@@ -9,6 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { type Lang, MESSAGES, Translator } from '@i18n';
 import {
   Button,
@@ -53,6 +54,7 @@ export class SettingsPanel {
   protected readonly preferences = inject(Preferences);
   private readonly store = inject(GameStore);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly router = inject(Router);
 
   /** Asks the page to show the how-to-play ticket again. */
   readonly howToPlay = output();
@@ -102,6 +104,10 @@ export class SettingsPanel {
     DESIGNS.map((design) => ({ value: design, label: this.t().settings.designs[design] })),
   );
 
+  /** Leaving for the challenges drops a game under way (until phase 4 saves it): asks once more. */
+  protected readonly confirmingChallenges = signal(false);
+  private challengesTimer: ReturnType<typeof setTimeout> | undefined;
+
   /** "New series" asks once more before clearing the score; the question expires. */
   protected readonly confirmingReset = signal(false);
   private resetTimer: ReturnType<typeof setTimeout> | undefined;
@@ -130,6 +136,7 @@ export class SettingsPanel {
     destroyRef.onDestroy(() => {
       clearTimeout(this.resetTimer);
       clearTimeout(this.changeTimer);
+      clearTimeout(this.challengesTimer);
     });
     afterNextRender(() => {
       const sheet = this.sheet().nativeElement;
@@ -212,6 +219,21 @@ export class SettingsPanel {
   protected openHowToPlay(): void {
     this.host.nativeElement.querySelector<HTMLElement>('[popover]')?.hidePopover();
     this.howToPlay.emit();
+  }
+
+  protected openChallenges(): void {
+    if (this.store.seriesStarted() && !this.confirmingChallenges()) {
+      this.confirmingChallenges.set(true);
+      this.challengesTimer = setTimeout(
+        () => this.confirmingChallenges.set(false),
+        CONFIRM_WINDOW_MS,
+      );
+      return;
+    }
+    clearTimeout(this.challengesTimer);
+    this.confirmingChallenges.set(false);
+    this.sheet().nativeElement.hidePopover();
+    void this.router.navigate(['/challenge']);
   }
 
   protected newSeries(): void {

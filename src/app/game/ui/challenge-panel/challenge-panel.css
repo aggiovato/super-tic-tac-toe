@@ -1,0 +1,37 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack);
+}
+
+.goal {
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  color: var(--color-fg-strong);
+}
+
+/* The attempt: a quiet line that turns Chalk and bold when it matters. */
+.progress {
+  min-height: calc(2 * var(--text-body--line-height) * 1em);
+  padding-left: var(--spacing-stack);
+  border-left: var(--border-emphasis) solid var(--color-line);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+.progress.failed {
+  border-left-color: var(--color-fg-strong);
+  color: var(--color-fg-strong);
+}
+
+.progress.solved {
+  border-left-color: var(--color-win);
+  color: var(--color-fg-strong);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-stack-tight);
+}
