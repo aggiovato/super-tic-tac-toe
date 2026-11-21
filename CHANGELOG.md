@@ -9,6 +9,10 @@ new version and date.
 
 ### Added
 
+- Classic tic tac toe at `/classic`, for two people or against the computer at three levels (the
+  advanced one never loses). Switch games from Settings (Game); a game under way asks first. The
+  app opens on the last game played; Super 3T now lives at `/super-3t` (old links redirect).
+
 - Tactical challenges: three prepared positions (easy, medium, hard) where you play X and must
   send the opponent to a board where any reply hands you the game, then close it. A wrong move
   names the reply that would save the opponent; Try again restarts the position. Each challenge is

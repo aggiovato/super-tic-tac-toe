@@ -1,9 +1,10 @@
 ---
 paths:
-  - 'src/app/game/**'
+  - 'src/app/games/super-3t/**'
+  - 'src/app/games/tictac/**'
 ---
 
-# Executable rules · rulesVersion 1
+# Super 3T · executable rules · rulesVersion 1
 
 Mini boards and their cells are numbered 0–8, row by row from the top-left corner, with the same
 numbering on both levels. A move is `{ board, cell }`. X starts and players alternate. The piece
@@ -36,7 +37,7 @@ belongs to the player whose turn it is.
 | A move wins the third board of a global diagonal      | Immediate win even with empty cells left.                     |
 | Zooming into a mini board and back to the global view | History, turn and score unchanged (UI, phase 2).              |
 
-## Engine contract (`src/app/game/core/`)
+## Engine contract (`src/app/games/super-3t/core/`, `@super3t/core`)
 
 - `initialState()`, `legalMoves(state)`, `applyMove(state, move)` returning a typed success or
   rejection, and `replay(moves, rulesVersion)`.
@@ -50,7 +51,7 @@ belongs to the player whose turn it is.
 Each accepted move adds exactly one piece. A closed board never reopens. No history exceeds 81
 moves. A rejection does not change the state. Record the seed and shrink path of every failure.
 
-## Opponent (`src/app/game/ai/`)
+## Opponent (`src/app/games/super-3t/ai/`, `@super3t/ai`)
 
 Consumes `core` and always returns a legal move. Prepare a fallback move before searching. A
 terminal global result outranks any local gain. Tests use a deterministic node limit; real runs
@@ -99,7 +100,7 @@ second in Node; in the browser a reply takes ~850 ms from the click (600 ms of s
 settled endgame answers in milliseconds. With 2000 readings it must beat the intermediate in at
 least 7 of 10 seeded games (it wins 9, draws 1).
 
-Playing it (`@session`, `@state`): `Opponent` (`reply`, `cancel`) is provided on the game route as
+Playing it (`@super3t/session`, `@super3t/state`): `Opponent` (`reply`, `cancel`) is provided on the game route as
 `WorkerOpponent`, a module Worker (`session/opponent.worker.ts`, built with `tsconfig.worker.json`)
 that replays the moves and calls `chooseMove`; no reply shows before `OPPONENT_PACE_MS` (450 ms),
 and cancelling a busy Worker terminates it. `GameStore` asks after each move of the person (and
@@ -114,11 +115,11 @@ each rematch; undo returns to the person's turn (two moves, or one while the opp
 The mode and level are preferences (`@settings`), so they survive a reload; the game itself does
 not yet (phase 4).
 
-## Tactical challenges (`src/app/game/challenge/`, `@challenge`)
+## Tactical challenges (`src/app/games/super-3t/challenge/`, `@super3t/challenge`)
 
 A challenge is a prepared position (moves from the opening, an id, a level) where X to move wins in
 two of its own moves against any defence: one **key move** leaves the defender only replies after
-which X wins the game at once. `@ai` (`forcing.ts`) finds them: `keyMoves`, `refutations` (replies
+which X wins the game at once. `@super3t/ai` (`forcing.ts`) finds them: `keyMoves`, `refutations` (replies
 that hold out) and `defend` (a game win, else a reply that holds out, else any; ties by cell
 weight). `judge(start, state)` reads an attempt: `find-key`, `defending`, `finish`, `saved` (not the
 key: names the reply that holds out), `missed`, `solved`. `challenge.spec.ts` asserts each one: X
@@ -137,17 +138,23 @@ until phase 4 saves it, so Settings asks once more when a game is under way.
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
 
+## Shared base (`src/app/games/tictac/`, `@tictac`)
+
+What every game of the family shares, plain TypeScript that never imports a game: `Player`,
+`Mark`, `Line`, `BoardStatus`, the eight `LINES`, `findLine` and `resolveBoard` (how a 3×3 grid
+closes: a line beats a full grid). Super 3T uses it for its mini boards and, through `findLine`,
+for the global level; `@super3t/core` re-exports the types so its layers import one block.
+
 ## Implementation map
 
-| File              | Contents                                                                          |
-| ----------------- | --------------------------------------------------------------------------------- |
-| `core/models/`    | `GameState`, `Move`, statuses, `Target`, results, `RULES_VERSION`; one file each  |
-| `core/lines.ts`   | The eight lines and `findLine`, shared by both levels                             |
-| `core/resolve.ts` | `resolveBoard` (local) and `resolveGame` (global)                                 |
-| `core/engine.ts`  | `initialState`, `legalMoves`, `applyMove`; rejection order follows rule 2         |
-| `core/replay.ts`  | `replay(moves, rulesVersion)`                                                     |
-| `core/index.ts`   | Public API, imported by other blocks as `@core`                                   |
-| `core/testing/`   | Fixtures, `board.cell` notation, `formatState`; alias `@core/testing` (test-only) |
+| File              | Contents                                                                         |
+| ----------------- | -------------------------------------------------------------------------------- |
+| `core/models/`    | `GameState`, `Move`, statuses, `Target`, results, `RULES_VERSION`; one file each |
+| `core/resolve.ts` | `resolveGame` (global); a mini board closes with `@tictac`'s `resolveBoard`      |
+| `core/engine.ts`  | `initialState`, `legalMoves`, `applyMove`; rejection order follows rule 2        |
+| `core/replay.ts`  | `replay(moves, rulesVersion)`                                                    |
+| `core/index.ts`   | Public API, imported by other blocks as `@super3t/core`                          |
+| `core/testing/`   | Fixtures, `board.cell` notation, `formatState`; `@super3t/core/testing` (tests)  |
 
 Canonical fixtures (`core/testing/fixtures.ts`) were found by playing the engine itself; when one
 changes, re-check the property its spec asserts. `example-game.spec.ts` snapshots a full game as
