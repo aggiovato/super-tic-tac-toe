@@ -12,6 +12,7 @@ export {
   type FlipOptions,
 } from './dom/flip';
 export { injectMediaQuery } from './dom/media-query';
+export { swipeToClose } from './dom/swipe-to-close';
 export { Icon, type IconName } from './icon/icon';
 export { SplitFlap } from './split-flap/split-flap';
 export type { Segment } from './strike-line/segment.model';

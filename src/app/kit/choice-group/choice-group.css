@@ -1,5 +1,7 @@
 :host {
   display: block;
+  /* Space between the track's edge and its segments. */
+  --segment-inset: var(--spacing);
 }
 
 fieldset {
@@ -16,4 +18,59 @@ legend {
   font-size: var(--text-caption);
   font-weight: 700;
   color: var(--color-fg-strong);
+}
+
+/* Segmented: one track, the chosen segment raised in Chalk. */
+.track {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--segment-inset);
+  padding: var(--segment-inset);
+  border: var(--border-hairline) solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.segment {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 2.75rem;
+  padding: var(--segment-inset) var(--spacing-stack-tight);
+  border-radius: calc(var(--radius-control) - var(--segment-inset));
+  color: var(--color-fg);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-quick) var(--ease-out),
+    color var(--duration-quick) var(--ease-out);
+}
+
+/* The radio stays in the accessibility tree and takes the keyboard; the segment draws it. */
+.segment input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.segment:has(input:checked) {
+  background: var(--color-surface-raised);
+  color: var(--color-fg-strong);
+}
+
+.segment:has(input:focus-visible) {
+  outline: var(--border-emphasis) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--border-hairline));
+}
+
+@media (hover: hover) {
+  .segment:hover:not(:has(input:checked)) {
+    color: var(--color-fg-strong);
+  }
 }
