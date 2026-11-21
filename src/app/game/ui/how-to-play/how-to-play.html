@@ -53,6 +53,11 @@
         </li>
       </ol>
       <p class="guide">{{ t().howToPlay.guide }}</p>
+      @if (!store.seriesStarted()) {
+        <a class="practise" routerLink="/challenge" (click)="dismiss()">
+          {{ t().howToPlay.practise }} →
+        </a>
+      }
     </div>
     <div class="actions">
       <button app-button="quiet" (click)="dismiss()">{{ t().howToPlay.skip }}</button>

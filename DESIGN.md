@@ -270,6 +270,16 @@ A native popover. On wide screens a full-height sheet on the right (up to 24rem)
 - **Phones:** a 40×5px Seagrass Dim grip tops the sheet, and the head is its drag handle: dragging down follows the finger; releasing past a quarter of the sheet's height, or with a quick flick, closes it, otherwise it springs back (`swipeToClose` in `@kit`).
 - **Scrollbars:** across the app, thin Seagrass Dim rails on a clear track (`scrollbar-color`, with WebKit parts where it is unsupported).
 
+### Challenge Panel
+
+The tactical challenge (`/challenge/:id`) is the game screen around a prepared position, never a separate look: the same masthead, departure row and board, with "Back to the game" (es "Volver a la partida", a quiet button with the close icon) in place of Settings, and the challenge panel in place of the score and the game's actions.
+
+- **Picker:** a segmented choice, "Challenge" (es "Reto"), of Easy, Medium and Hard; a solved challenge reads "Easy ✓". Picking one navigates to its id.
+- **Goal:** one body-size Chalk sentence: you play X and must send the opponent where any reply hands you the game.
+- **Attempt line:** body size, Seagrass Grey behind a 3px Seagrass Dim left rule, reserving two lines so the panel never jumps. Going wrong (a move the opponent survives, or a missed finish) turns rule and text Chalk; solving turns the rule Apricot (`--color-win`) with Chalk semibold text. It is a polite live region; the departure row's status region still announces the moves.
+- **Actions:** "Try again" (secondary) once a move is played; "Next challenge" (primary, the one Apricot action) once solved.
+- **Entry points:** Settings → Game → "Tactical challenges" (a second press, "Go and leave this game", while a game is under way) and, while no game is under way, a Chalk underlined caption link at the foot of the how-to-play ticket's rules.
+
 ### How-to-play Ticket
 
 The rules arrive as a departure ticket handed over before boarding: four lines, each beside a tiny board drawing, then the player boards the real game behind it. Never a step-by-step tour over the board.

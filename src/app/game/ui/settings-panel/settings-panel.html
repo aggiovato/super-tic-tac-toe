@@ -50,6 +50,14 @@
         {{ t().settings.howToPlay }}
       </button>
 
+      <button
+        [app-button]="confirmingChallenges() ? 'primary' : 'secondary'"
+        class="w-full"
+        (click)="openChallenges()"
+      >
+        {{ confirmingChallenges() ? t().settings.confirmChallenges : t().settings.challenges }}
+      </button>
+
       <app-choice-group
         name="mode"
         layout="segmented"

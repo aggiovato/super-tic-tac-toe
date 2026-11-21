@@ -114,6 +114,26 @@ each rematch; undo returns to the person's turn (two moves, or one while the opp
 The mode and level are preferences (`@settings`), so they survive a reload; the game itself does
 not yet (phase 4).
 
+## Tactical challenges (`src/app/game/challenge/`, `@challenge`)
+
+A challenge is a prepared position (moves from the opening, an id, a level) where X to move wins in
+two of its own moves against any defence: one **key move** leaves the defender only replies after
+which X wins the game at once. `@ai` (`forcing.ts`) finds them: `keyMoves`, `refutations` (replies
+that hold out) and `defend` (a game win, else a reply that holds out, else any; ties by cell
+weight). `judge(start, state)` reads an attempt: `find-key`, `defending`, `finish`, `saved` (not the
+key: names the reply that holds out), `missed`, `solved`. `challenge.spec.ts` asserts each one: X
+to move, no win in one, exactly one key move in all eight rotations and reflections, every reply
+then loses at once, and every other move is refuted. Positions were found by seeded games of the
+beginner level against itself, keeping those with a single key move.
+
+Playing one (`/challenge/:id`): `provideChallenge()` gives the route a `ChallengeRun` (the challenge
+and its start), a `ChallengeSession` (games start at the position; a solving move calls
+`run.onSolved`) and a `ChallengeOpponent` (replies with `defend` after the key move, passes with
+null otherwise, at `OPPONENT_PACE_MS`). A null reply to the latest request is a pass in `GameStore`:
+the opponent's turn stays, so the board takes no moves until Retry (`newSeries`). Solved ids are
+kept once each in `Preferences.solvedChallenges`. Leaving the game route drops the game in progress
+until phase 4 saves it, so Settings asks once more when a game is under way.
+
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
 

@@ -27,6 +27,7 @@ const DEFAULTS: PreferencesState = {
   mode: 'humans',
   level: 'beginner',
   tutorialSeen: false,
+  solvedChallenges: [],
 };
 
 /**
@@ -46,6 +47,7 @@ export class Preferences {
   readonly mode = computed(() => this.state().mode);
   readonly level = computed(() => this.state().level);
   readonly tutorialSeen = computed(() => this.state().tutorialSeen);
+  readonly solvedChallenges = computed(() => new Set(this.state().solvedChallenges));
 
   private readonly systemReducedMotion = signal(false);
 
@@ -102,6 +104,13 @@ export class Preferences {
     this.update({ mode });
   }
 
+  /** Records a solved challenge once: solving it again changes nothing. */
+  markChallengeSolved(id: string): void {
+    if (!this.solvedChallenges().has(id)) {
+      this.update({ solvedChallenges: [...this.state().solvedChallenges, id] });
+    }
+  }
+
   markTutorialSeen(): void {
     this.update({ tutorialSeen: true });
   }
@@ -139,6 +148,9 @@ export class Preferences {
         mode: isMode(saved.mode) ? saved.mode : DEFAULTS.mode,
         level: isLevel(saved.level) ? saved.level : DEFAULTS.level,
         tutorialSeen: saved.tutorialSeen === true,
+        solvedChallenges: Array.isArray(saved.solvedChallenges)
+          ? saved.solvedChallenges.filter((id): id is string => typeof id === 'string')
+          : [],
       };
     } catch {
       return DEFAULTS;

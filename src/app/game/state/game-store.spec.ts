@@ -225,6 +225,17 @@ describe('GameStore', () => {
       expect(store.game().moves).toEqual([at('4.2'), at('2.4')]);
     });
 
+    it('lets the opponent pass: a null reply plays nothing and keeps the board locked', async () => {
+      const { store, opponent } = againstOpponent();
+      store.play(at('4.2'));
+      opponent.answer(null);
+      await flush();
+      expect(store.game().moves).toEqual([at('4.2')]);
+      expect(store.thinking()).toBe(false);
+      expect(store.opponentTurn()).toBe(true);
+      expect(store.legal()).toEqual([]);
+    });
+
     it('drops a reply that arrives after a rematch', async () => {
       const { store, opponent } = againstOpponent();
       store.play(at('4.2'));

@@ -1,0 +1,28 @@
+<app-choice-group
+  name="challenge"
+  layout="segmented"
+  [legend]="t().challenge.picker"
+  [options]="options()"
+  [selected]="run.challenge().id"
+  (chosen)="choose($event)"
+/>
+
+<p class="goal">{{ t().challenge.goal }}</p>
+
+<p
+  class="progress"
+  [class.failed]="failed()"
+  [class.solved]="progress().kind === 'solved'"
+  aria-live="polite"
+>
+  {{ message() }}
+</p>
+
+<div class="actions">
+  @if (next(); as following) {
+    <button app-button="primary" (click)="choose(following.id)">{{ t().challenge.next }}</button>
+  }
+  @if (progress().kind !== 'find-key') {
+    <button app-button="secondary" (click)="retry()">{{ t().challenge.retry }}</button>
+  }
+</div>

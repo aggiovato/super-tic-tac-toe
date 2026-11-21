@@ -52,8 +52,30 @@ export interface Messages {
     readonly win: string;
     /** The flap row says whose turn it is and where. */
     readonly guide: string;
+    /** A link to the tactical challenges. */
+    readonly practise: string;
     readonly play: string;
     readonly skip: string;
+  };
+  /** The tactical challenge screen. */
+  readonly challenge: {
+    readonly title: string;
+    /** The picker's legend and each level's name. */
+    readonly picker: string;
+    readonly levels: { readonly easy: string; readonly medium: string; readonly hard: string };
+    /** Appended to a solved challenge's name in the picker. */
+    readonly solvedMark: string;
+    readonly goal: string;
+    readonly findKey: string;
+    readonly defending: string;
+    readonly finish: string;
+    /** A wrong key move: where the defender would hold out (board and cell, 1–9). */
+    readonly saved: (board: number, cell: number) => string;
+    readonly missed: string;
+    readonly solved: string;
+    readonly retry: string;
+    readonly next: string;
+    readonly exit: string;
   };
   readonly settings: {
     readonly open: string;
@@ -86,6 +108,8 @@ export interface Messages {
     readonly confirmModeChange: string;
     /** Reopens the how-to-play ticket. */
     readonly howToPlay: string;
+    readonly challenges: string;
+    readonly confirmChallenges: string;
     /** The tab list's accessible name. */
     readonly sections: string;
     readonly sectionNames: { readonly game: string; readonly app: string };

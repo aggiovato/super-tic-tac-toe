@@ -9,6 +9,11 @@ new version and date.
 
 ### Added
 
+- Tactical challenges: three prepared positions (easy, medium, hard) where you play X and must
+  send the opponent to a board where any reply hands you the game, then close it. A wrong move
+  names the reply that would save the opponent; Try again restarts the position. Each challenge is
+  marked solved once. Reach them from Settings (Game) or from the how-to-play ticket.
+
 - How to play: on the first visit a departure ticket explains the game in four rules (winning a
   small board, how your cell picks your opponent's board, where you may play, winning the game),
   each beside a small board drawing, over the real game. Play, Skip or Escape closes it for good;
