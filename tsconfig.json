@@ -16,6 +16,7 @@
       "@core": ["./src/app/game/core/index.ts"],
       "@core/testing": ["./src/app/game/core/testing/index.ts"],
       "@ai": ["./src/app/game/ai/index.ts"],
+      "@challenge": ["./src/app/game/challenge/index.ts"],
       "@session": ["./src/app/game/session/index.ts"],
       "@state": ["./src/app/game/state/index.ts"],
       "@ui": ["./src/app/game/ui/index.ts"],

@@ -6,7 +6,7 @@ const angular = require('angular-eslint');
 const prettier = require('eslint-config-prettier');
 
 // Functional blocks of the app. Each one has an index.ts and a tsconfig `paths` alias.
-const BLOCKS = 'core|ai|session|state|ui|history|storage|i18n|settings|kit';
+const BLOCKS = 'core|ai|challenge|session|state|ui|history|storage|i18n|settings|kit';
 
 const BLOCK_BOUNDARIES = [
   {
@@ -21,12 +21,12 @@ const BLOCK_BOUNDARIES = [
 
 const PLAIN_TYPESCRIPT = {
   regex: '^(?:@angular/|@ngrx/|rxjs(?:/|$))',
-  message: 'core and ai are plain TypeScript.',
+  message: 'core, ai and challenge are plain TypeScript.',
 };
 
 const NO_APP_LAYERS = {
-  regex: '^@(?:session|state|ui|history|storage|i18n|settings|kit)(?:/|$)',
-  message: 'core and ai must not import app layers.',
+  regex: '^@(?:challenge|session|state|ui|history|storage|i18n|settings|kit)(?:/|$)',
+  message: 'core, ai and challenge must not import app layers.',
 };
 
 // Lines that count are code: blank lines and comments are skipped.
@@ -95,8 +95,8 @@ module.exports = defineConfig([
     rules: { 'no-restricted-imports': ['error', { patterns: BLOCK_BOUNDARIES }] },
   },
   {
-    // The opponent does not depend on Angular, NgRx, RxJS or app layers.
-    files: ['src/app/game/ai/**/*.ts'],
+    // The opponent and the challenges do not depend on Angular, NgRx, RxJS or app layers.
+    files: ['src/app/game/ai/**/*.ts', 'src/app/game/challenge/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
