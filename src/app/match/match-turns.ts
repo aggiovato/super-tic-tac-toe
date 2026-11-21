@@ -20,6 +20,8 @@ export interface MatchTurnsStore<S, M, R> extends WritableStateSource<MatchState
   readonly seed: Signal<number>;
   readonly canUndo: Signal<boolean>;
   readonly undoSteps: Signal<number>;
+  /** The saved match is back: until then the player's commands are ignored. */
+  readonly ready: Signal<boolean>;
 }
 
 export const other = (participant: Participant): Participant => (participant === 0 ? 1 : 0);
@@ -149,7 +151,7 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
 
   /** The player's move: refused moves are recorded, accepted ones may hand the turn over. */
   const play = (move: M): void => {
-    if (store.opponentTurn()) {
+    if (store.opponentTurn() || !store.ready()) {
       return;
     }
     const result = store._session.play(store.position(), move);
@@ -163,7 +165,7 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
 
   /** Takes back the last move while the game goes on; against the computer, its reply too. */
   const undo = (): void => {
-    if (store.canUndo()) {
+    if (store.canUndo() && store.ready()) {
       stopOpponent();
       takeBack(store, rules);
     }

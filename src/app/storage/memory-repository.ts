@@ -1,5 +1,5 @@
 import type { GameId } from '@settings';
-import { GameRepository, type StoredMatch } from './game-repository';
+import { GameRepository, type StoredMatch, type StoredSeries } from './game-repository';
 import { type GameRecord, SaveError, type SeriesRecord } from './records.model';
 
 /**
@@ -12,18 +12,32 @@ export class MemoryRepository extends GameRepository {
   /** Set by tests to make the next saves fail. */
   failWith: SaveError | null = null;
 
-  load(gameId: GameId): Promise<StoredMatch | null> {
-    const series = this.series.get(gameId);
-    const game = series && this.games.get(series.currentGameId);
-    return Promise.resolve(series && game ? { series, game } : null);
+  /** `persistent` lets a test stand in for the stored repository; the app's fallback is not. */
+  constructor(readonly persistent = false) {
+    super();
   }
 
-  save({ series, game }: StoredMatch, expectedVersion: number): Promise<void> {
+  load(gameId: GameId): Promise<StoredSeries | null> {
+    const series = this.series.get(gameId);
+    return Promise.resolve(
+      series ? { series, game: this.games.get(series.currentGameId) ?? null } : null,
+    );
+  }
+
+  /** Whether a game record is kept, finished or not (for tests). */
+  has(id: string): boolean {
+    return this.games.has(id);
+  }
+
+  save({ series, game, drop }: StoredMatch, expectedVersion: number): Promise<void> {
     if (this.failWith) {
       return Promise.reject(this.failWith);
     }
     if ((this.series.get(series.gameId)?.version ?? 0) !== expectedVersion) {
       return Promise.reject(new SaveError('conflict'));
+    }
+    if (drop && this.games.get(drop)?.finishedAt === null) {
+      this.games.delete(drop);
     }
     this.series.set(series.gameId, series);
     this.games.set(game.id, game);

@@ -1,5 +1,5 @@
 import type { GameId } from '@settings';
-import { GameRepository, type StoredMatch } from './game-repository';
+import { GameRepository, type StoredMatch, type StoredSeries } from './game-repository';
 import { type GameRecord, SaveError, type SeriesRecord } from './records.model';
 
 const DB_NAME = 'super-3t';
@@ -27,13 +27,14 @@ const failureOf = (error: unknown): SaveError =>
 
 /** Games kept in this browser's IndexedDB (database `super-3t`). */
 export class IndexedDbRepository extends GameRepository {
+  readonly persistent = true;
   private db: Promise<IDBDatabase> | undefined;
 
   constructor(private readonly factory: IDBFactory) {
     super();
   }
 
-  async load(gameId: GameId): Promise<StoredMatch | null> {
+  async load(gameId: GameId): Promise<StoredSeries | null> {
     const db = await this.open();
     const tx = db.transaction([SERIES, GAMES], 'readonly');
     const series = await asPromise<SeriesRecord | undefined>(tx.objectStore(SERIES).get(gameId));
@@ -43,10 +44,10 @@ export class IndexedDbRepository extends GameRepository {
     const game = await asPromise<GameRecord | undefined>(
       tx.objectStore(GAMES).get(series.currentGameId),
     );
-    return game ? { series, game } : null;
+    return { series, game: game ?? null };
   }
 
-  async save({ series, game }: StoredMatch, expectedVersion: number): Promise<void> {
+  async save({ series, game, drop }: StoredMatch, expectedVersion: number): Promise<void> {
     const db = await this.open().catch((error: unknown) => {
       throw new SaveError('unavailable', error);
     });
@@ -58,16 +59,30 @@ export class IndexedDbRepository extends GameRepository {
       tx.onerror = () => undefined;
       const stored = tx.objectStore(SERIES).get(series.gameId);
       stored.onsuccess = () => {
-        const current = (stored.result as SeriesRecord | undefined)?.version ?? 0;
-        if (current !== expectedVersion) {
+        const previous = stored.result as SeriesRecord | undefined;
+        if ((previous?.version ?? 0) !== expectedVersion) {
           failure = new SaveError('conflict');
           tx.abort();
           return;
+        }
+        if (drop) {
+          this.dropIfUnfinished(tx, drop);
         }
         tx.objectStore(SERIES).put(series);
         tx.objectStore(GAMES).put(game);
       };
     });
+  }
+
+  /** Deletes a game the series left behind, unless it finished (finished games are history). */
+  private dropIfUnfinished(tx: IDBTransaction, id: string): void {
+    const games = tx.objectStore(GAMES);
+    const left = games.get(id);
+    left.onsuccess = () => {
+      if ((left.result as GameRecord | undefined)?.finishedAt === null) {
+        games.delete(id);
+      }
+    };
   }
 
   async finished(gameId: GameId): Promise<GameRecord[]> {

@@ -16,9 +16,17 @@ import {
   SaveError,
   SCHEMA_VERSION,
   type StoredMatch,
+  type StoredSeries,
 } from '@storage';
-import type { Level, MatchGame, MatchRules, Mode, Participant, SaveStatus } from './match.model';
-import type { MatchTurnsStore } from './match-turns';
+import type {
+  MatchGame,
+  MatchRules,
+  MatchState,
+  Mode,
+  Participant,
+  SaveStatus,
+} from './match.model';
+import { type MatchTurnsStore, newId } from './match-turns';
 
 /** Which game a route's match is saved as. Routes without it (a challenge) save nothing. */
 export const MATCH_STORAGE = new InjectionToken<{ readonly gameId: GameId }>('MATCH_STORAGE');
@@ -36,7 +44,7 @@ export interface MatchStorageStore<S, M, R> extends MatchTurnsStore<S, M, R> {
   readonly mode: Signal<Mode>;
   readonly saveStatus: Signal<SaveStatus>;
   readonly _requestOpponent: () => void;
-  setMode(mode: Mode, level: Level): void;
+  readonly _startGame: (changes: Partial<MatchState<S, R>>) => void;
 }
 
 /** A finished game's result by participant, independent of the symbols. */
@@ -55,6 +63,8 @@ function resultOf(game: MatchGame<unknown>, xPlayer: Participant): GameResult | 
 interface StorageMemory {
   version: number;
   finished: { id: string; at: number | null };
+  /** The game this tab last saved or restored, if it was unfinished: dropped once left behind. */
+  unfinished: string | null;
 }
 
 /** The series and current game as they stand on the store, ready to save. */
@@ -95,7 +105,21 @@ function recordOf<S extends MatchGame<M>, M, R>(
     draws: store.draws(),
     version: memory.version + 1,
   };
-  return { series, game: saved };
+  const left = memory.unfinished;
+  return { series, game: saved, ...(left && left !== id ? { drop: left } : {}) };
+}
+
+/** A record's position, or null when it cannot be read: unknown schema, refused or damaged moves. */
+function replayRecord<S, M>(rules: MatchRules<S, M>, game: GameRecord) {
+  if (game.schemaVersion !== SCHEMA_VERSION) {
+    return null;
+  }
+  try {
+    return rules.replay(game.moves as readonly M[], game.rulesVersion);
+  } catch {
+    // Moves that are not moves (a damaged record) make the engine throw.
+    return null;
+  }
 }
 
 /** Puts a stored match back on the board; false when its record cannot be read. */
@@ -105,15 +129,12 @@ function restoreMatch<S extends MatchGame<M>, M, R>(
   { series, game }: StoredMatch,
   memory: StorageMemory,
 ): boolean {
-  memory.version = series.version;
-  const replayed =
-    game.schemaVersion === SCHEMA_VERSION
-      ? rules.replay(game.moves as readonly M[], game.rulesVersion)
-      : null;
+  const replayed = replayRecord(rules, game);
   if (!replayed?.ok || !replayed.state) {
     return false;
   }
   memory.finished = { id: game.id, at: game.finishedAt };
+  memory.unfinished = game.result === null ? game.id : null;
   patchState(store, {
     game: replayed.state,
     mode: game.mode,
@@ -145,7 +166,8 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
   const repository = config ? inject(GameRepository) : null;
   const preferences = inject(Preferences);
   const injector = inject(Injector);
-  const memory: StorageMemory = { version: 0, finished: { id: '', at: null } };
+  // An unreadable record is never `unfinished` here, so it is kept, never dropped.
+  const memory: StorageMemory = { version: 0, finished: { id: '', at: null }, unfinished: null };
   let queue = Promise.resolve();
   let stopped = false;
 
@@ -162,7 +184,9 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
         const match = recordOf(store, config.gameId, memory);
         await repository.save(match, memory.version);
         memory.version = match.series.version;
-        patchState(store, { saveStatus: 'saved' });
+        memory.unfinished = match.game.result === null ? match.game.id : null;
+        // Kept in memory only: say so instead of "Saved".
+        patchState(store, { saveStatus: repository.persistent ? 'saved' : 'unavailable' });
       } catch (error) {
         const failure = error instanceof SaveError ? error.failure : 'failed';
         stopped = failure === 'conflict';
@@ -177,12 +201,15 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
       return;
     }
     const { gameId } = config;
-    const begin = (stored: StoredMatch | null): void => {
-      if (stored && restoreMatch(store, rules, stored, memory)) {
+    const begin = (stored: StoredSeries | null): void => {
+      // The series' version, even when its game is missing or unreadable: the next save builds on it.
+      memory.version = stored?.series.version ?? 0;
+      const game = stored?.game;
+      if (stored && game && restoreMatch(store, rules, { series: stored.series, game }, memory)) {
         preferences.setPlay(gameId, { mode: store.mode(), level: store.level() });
       } else {
         const { mode, level } = preferences.play()[gameId];
-        store.setMode(mode, level);
+        store._startGame({ seriesId: newId(), mode, level, xPlayer: 0, wins: [0, 0], draws: 0 });
       }
       patchState(store, { ready: true });
       store._requestOpponent();
@@ -200,6 +227,8 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
       );
     };
     repository.load(gameId).then(begin, () => {
+      // The saved games cannot be read: play on, but never write over them.
+      stopped = true;
       begin(null);
       patchState(store, { saveStatus: 'unavailable' });
     });

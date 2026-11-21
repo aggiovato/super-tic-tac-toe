@@ -101,21 +101,18 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
     withMethods((store) => matchTurns<S, M, R>(store, rules)),
     // Leaving the route: a reply still on its way must not land in a store that is gone.
     withHooks({ onDestroy: (store) => store._stopOpponent() }),
-    // What the player does.
-    withMethods((store) => ({
-      /** Next game of the series: symbols swapped. */
-      rematch(): void {
-        store._startGame({ xPlayer: other(store.xPlayer()) });
-      },
-
-      newSeries(): void {
-        store._startGame({ seriesId: newId(), xPlayer: 0, wins: [0, 0], draws: 0 });
-      },
-
-      /** Two people or against the computer at `level`: a new series either way. */
-      setMode(mode: Mode, level: Level): void {
-        store._startGame({ seriesId: newId(), mode, level, xPlayer: 0, wins: [0, 0], draws: 0 });
-      },
-    })),
+    // What the player does; ignored until the saved match is back (`ready`).
+    withMethods((store) => {
+      const start: typeof store._startGame = (changes) =>
+        store.ready() ? store._startGame(changes) : undefined;
+      return {
+        /** Next game of the series: symbols swapped. */
+        rematch: (): void => start({ xPlayer: other(store.xPlayer()) }),
+        newSeries: (): void => start({ seriesId: newId(), xPlayer: 0, wins: [0, 0], draws: 0 }),
+        /** Two people or against the computer at `level`: a new series either way. */
+        setMode: (mode: Mode, level: Level): void =>
+          start({ seriesId: newId(), mode, level, xPlayer: 0, wins: [0, 0], draws: 0 }),
+      };
+    }),
   );
 }
