@@ -9,6 +9,16 @@ new version and date.
 
 ### Added
 
+- Games are saved on this device after every move and resume where they were after a reload or a
+  return, also on the opponent's turn. A finished game counts once, however often it is reopened.
+  A line under the actions says "Saved", or what went wrong with a way to try again.
+- History for each game: results against the computer by level, games for two people and the
+  latest finished games, from a History button beside Settings.
+
+### Changed
+
+- Leaving a game for the challenges or another game no longer asks first: nothing is lost.
+
 - Classic tic tac toe at `/classic`, for two people or against the computer at three levels (the
   advanced one never loses). Switch games from Settings (Game); a game under way asks first. The
   app opens on the last game played; Super 3T now lives at `/super-3t` (old links redirect).

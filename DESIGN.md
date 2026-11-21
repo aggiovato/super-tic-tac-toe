@@ -270,6 +270,12 @@ A native popover. On wide screens a full-height sheet on the right (up to 24rem)
 - **Phones:** a 40×5px Seagrass Dim grip tops the sheet, and the head is its drag handle: dragging down follows the finger; releasing past a quarter of the sheet's height, or with a quick flick, closes it, otherwise it springs back (`swipeToClose` in `@kit`).
 - **Scrollbars:** across the app, thin Seagrass Dim rails on a clear track (`scrollbar-color`, with WebKit parts where it is unsupported).
 
+### Save Notice and History
+
+- **Save notice:** a caption line under the game's actions, reserved so the controls never jump. It reads "Saved" (es "Guardado") with a check icon once the device confirms a save, and "Saving…" meanwhile. A failed save turns it into a notice: Chalk text behind a 3px Chalk left rule (the challenge attempt line's language), with "Try again" (secondary, small) for a full disk or a failure and "Reload" when another tab moved the game on. A browser that keeps nothing says so once.
+- **History button:** a quiet small button with a history icon, "History" (es "Historial"), beside Settings in the masthead of every game.
+- **History page** (`/<game>/history`): the masthead with "Back to the game", the title "Super 3T history" (es "Historial de Super 3T"), then a table of results against the computer by level (Wins, Draws, Losses; hairline rows, figures in semibold Chalk, tabular), the count of games for two people, and the ten latest finished games as hairline rows: the result in semibold Chalk on the left ("You won", "You lost", "Draw", or "Player 1 wins"), then the setup and, in caption size, the date and the number of moves. No accent colour: the page reports, it does not signal.
+
 ### Classic Board
 
 The classic tic tac toe (`/classic`) uses the same page as Super 3T (`GameLayout` in `@shell`: masthead, status row, arena, controls) and the same pieces: the departure row reads "X → PLAYS" (es "JUEGA") and turns to the result like Super 3T's, one sentence names the last move, and the score and actions are shared. The board is one large platform, square and as big as the arena allows (at most 34rem), in Raven Lift with the shared grid lines, cells (`BoardCell`), flap marks and the round-capped Apricot strike line through the winning line's centres; a finished game steps the board back to the done surface. Arrow keys move a single roving cell, Home and End jump to its corners.
