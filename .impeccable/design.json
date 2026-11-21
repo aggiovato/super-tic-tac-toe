@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-19T14:00:00+00:00",
-  "title": "Design System: Super Tic Tac Toe",
+  "generatedAt": "2026-11-21T12:00:00+00:00",
+  "title": "Design System: Super 3T",
   "extensions": {
     "colorMeta": {
       "raven-teal": {
@@ -177,6 +177,11 @@
         "name": "line-drop",
         "value": "drop-shadow(0 0.125rem 0.375rem var(--color-shade))",
         "purpose": "Filter under strike lines."
+      },
+      {
+        "name": "ticket-lift",
+        "value": "drop-shadow(0 -0.375rem 1.5rem var(--color-shade)) under 35rem; drop-shadow(0 0.375rem 1.25rem var(--color-shade)) from 35rem",
+        "purpose": "Filter on the how-to-play dialog: upward as a bottom sheet, the panel lift's offset and blur when centred. A filter because the card's notch mask would cut a box-shadow."
       }
     ],
     "motion": [
@@ -189,6 +194,11 @@
         "name": "ease-out",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
         "purpose": "State transitions, drawn marks and lines, board zoom."
+      },
+      {
+        "name": "ease-zoom",
+        "value": "cubic-bezier(0.45, 0, 0.2, 1)",
+        "purpose": "Board zoom in and out on narrow screens; the how-to-play ticket rising."
       },
       {
         "name": "duration-step",
@@ -207,7 +217,7 @@
       },
       {
         "name": "duration-zoom",
-        "value": "420ms",
+        "value": "520ms",
         "purpose": "A board opening from, or closing into, the grid on narrow screens."
       },
       {
@@ -219,13 +229,18 @@
         "name": "preview-delay",
         "value": "140ms",
         "purpose": "Hover intent before the departure preview appears."
+      },
+      {
+        "name": "ticket-rise",
+        "value": "translate 0 2rem + opacity 0 to rest, duration-zoom, ease-zoom (backdrop fades with ease-out)",
+        "purpose": "The how-to-play ticket opening; off under reduced motion, closing is instant."
       }
     ],
     "breakpoints": [
       {
         "name": "narrow",
         "value": "max-width: 34.99rem",
-        "purpose": "Bottom-sheet settings, single backdrop strip."
+        "purpose": "Bottom-sheet settings and how-to-play ticket, single backdrop strip."
       },
       {
         "name": "two-column",
@@ -305,6 +320,14 @@
       "css": ".ds-choice{font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;display:flex;align-items:flex-start;gap:.5rem;min-height:2rem;font-size:1.125rem;color:#9fb3ab;cursor:pointer;}.ds-choice input{appearance:none;display:grid;place-items:center;width:1.25rem;height:1.25rem;margin:.15em 0 0;border:2px solid #657874;border-radius:9999px;background:#16292b;cursor:pointer;transition:border-color 150ms;}.ds-choice input::before{content:'';width:.5rem;height:.5rem;border-radius:9999px;background:#dce6e1;transform:scale(0);transition:transform 150ms cubic-bezier(.16,1,.3,1);}.ds-choice input:checked{border-color:#dce6e1;}.ds-choice input:checked::before{transform:scale(1);}.ds-choice:hover input:not(:checked){border-color:#9fb3ab;}.ds-choice input:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}"
     },
     {
+      "name": "How-to-play Ticket",
+      "kind": "custom",
+      "refersTo": "how-to-play-ticket",
+      "description": "First-visit rules as a notched departure ticket with a tear line: four rules beside mini-board drawings in the board's own language, a note on the flap row, a quiet Skip and the one Apricot Play. Modal dialog; only the body scrolls on short screens; bottom sheet under 35rem, centred from 35rem; reopened from Settings.",
+      "html": "<div class=\"ds-ticket\"><h2>How to play</h2><p class=\"ds-intro\">A tic tac toe made of nine tic tac toes.</p><ol class=\"ds-rules\"><li><svg class=\"ds-mini\" viewBox=\"0 0 30 30\"><rect class=\"ds-tile\" x=\"1\" y=\"1\" width=\"28\" height=\"28\" rx=\"4\"/><path class=\"ds-grid\" d=\"M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25\"/><rect class=\"ds-forced\" x=\"1\" y=\"1\" width=\"28\" height=\"28\" rx=\"4\"/><text class=\"ds-n\" x=\"3.6\" y=\"11.6\">3</text></svg><p>Always play on the board marked in orange. If you are sent to a board that is already closed, pick any open board.</p></li><li><span class=\"ds-pair\"><svg class=\"ds-mini\" viewBox=\"0 0 30 30\"><rect class=\"ds-tile\" x=\"1\" y=\"1\" width=\"28\" height=\"28\" rx=\"4\"/><path class=\"ds-grid\" d=\"M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25\"/><rect class=\"ds-played\" x=\"18.25\" y=\"3.75\" width=\"7.5\" height=\"7.5\" rx=\"1.4\"/><text class=\"ds-cn\" x=\"22\" y=\"9.85\">3</text></svg><svg class=\"ds-arrow\" viewBox=\"0 0 24 24\"><path d=\"M4 12h15m-6-6 6 6-6 6\"/></svg><svg class=\"ds-mini\" viewBox=\"0 0 30 30\"><rect class=\"ds-tile\" x=\"1\" y=\"1\" width=\"28\" height=\"28\" rx=\"4\"/><path class=\"ds-grid\" d=\"M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25\"/><rect class=\"ds-forced\" x=\"1\" y=\"1\" width=\"28\" height=\"28\" rx=\"4\"/><text class=\"ds-n\" x=\"3.6\" y=\"11.6\">3</text></svg></span><p>Your cell picks the board your opponent plays next: the top-right cell sends them to the top-right board.</p></li><li><svg class=\"ds-mini\" viewBox=\"0 0 30 30\"><rect class=\"ds-tile\" x=\"1\" y=\"1\" width=\"28\" height=\"28\" rx=\"4\"/><path class=\"ds-grid\" d=\"M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25\"/><path class=\"ds-strike\" d=\"M6 24 L24 6\"/></svg><p>Whoever gets three boards in a line wins the game.</p></li></ol><div class=\"ds-actions\"><button class=\"ds-tb ds-tb-quiet\">Skip</button><button class=\"ds-tb ds-tb-primary\">Play</button></div></div>",
+      "css": ".ds-ticket{--notch:.65rem;--tear:4.8rem;--pad:2rem;font-family:'Barlow Semi Condensed',ui-sans-serif,system-ui,sans-serif;width:26rem;max-width:100%;padding:2rem var(--pad) 1rem;border-radius:1rem;background:#0f1f21;color:#9fb3ab;filter:drop-shadow(0 .375rem 1.25rem rgba(5,11,12,.7));mask:radial-gradient(circle var(--notch) at 0 calc(100% - var(--tear)),transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--notch) at 100% calc(100% - var(--tear)),transparent 98%,#000) right/51% 100% no-repeat;}.ds-ticket h2{margin:0;font-size:1.5rem;line-height:1.15;font-weight:600;color:#dce6e1;}.ds-intro{margin:.5rem 0 0;font-size:.875rem;line-height:1.35;}.ds-rules{display:flex;flex-direction:column;gap:1rem;margin:1rem 0;padding:0;list-style:none;}.ds-rules li{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:1rem;}.ds-rules p{margin:0;justify-self:stretch;font-size:1.125rem;line-height:1.4;font-weight:500;color:#dce6e1;}.ds-pair{display:flex;align-items:center;gap:.1rem;}.ds-mini{width:2.9rem;height:2.9rem;flex:none;}.ds-tile{fill:#16292b;stroke:#657874;stroke-width:1;}.ds-grid{fill:none;stroke:#657874;stroke-width:1;}.ds-forced{fill:none;stroke:#ff8a1f;stroke-width:2.4;}.ds-n{fill:#ff8a1f;font-size:10px;font-weight:700;}.ds-played{fill:#dce6e1;}.ds-cn{fill:#0f1f21;font-size:6.5px;font-weight:700;text-anchor:middle;}.ds-strike{fill:none;stroke:#ff8a1f;stroke-width:2.6;stroke-linecap:round;}.ds-arrow{width:.7rem;height:.7rem;fill:none;stroke:#9fb3ab;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}.ds-actions{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin:0 calc(-1 * var(--pad));padding:1rem var(--pad) 0;border-top:2px dashed #1d3437;}.ds-tb{font-family:inherit;display:inline-flex;align-items:center;min-height:2.75rem;border:2px solid transparent;border-radius:.75rem;font-size:1.125rem;font-weight:600;line-height:1;cursor:pointer;transition:background-color 150ms cubic-bezier(.16,1,.3,1);}.ds-tb-quiet{padding:0 .5rem;background:transparent;color:#9fb3ab;}.ds-tb-quiet:hover{background:#1d3437;}.ds-tb-primary{padding:0 1rem;background:#ff8a1f;color:#16292b;font-weight:700;}.ds-tb-primary:hover{box-shadow:inset 0 0 0 2px #16292b;}.ds-tb:focus-visible{outline:3px solid #dce6e1;outline-offset:3px;}"
+    },
+    {
       "name": "Brand Lockup",
       "kind": "custom",
       "refersTo": "brand-lockup",
@@ -381,10 +404,11 @@
       "**Do** use role tokens only in components; add a design as a theme file that overrides roles.",
       "**Do** keep the sentence under the departure row at a fixed three-line height so previews and refusals never move the board.",
       "**Do** provide an instant equivalent for every animation and honour the player's motion setting over the system one.",
-      "**Do** use the full brand mark above 48px, the small flap drawing at 48px and below and the small flat drawing at 16px, regenerating every asset from `scripts/build-icons.mjs`."
+      "**Do** use the full brand mark above 48px, the small flap drawing at 48px and below and the small flat drawing at 16px, regenerating every asset from `scripts/build-icons.mjs`.",
+      "**Do** draw any rule or help illustration in the board's own language: a Raven Teal tile with a Seagrass Dim grid, the departure as the forced board's Apricot outline and number, the played cell in Chalk, a win as an Apricot strike."
     ],
     "donts": [
-      "**Don't** add glows, gradients or shadows to components beyond the panel lift and the drop shadows under drawn marks and lines.",
+      "**Don't** add glows, gradients or shadows to components beyond the panel lift, the how-to-play ticket's lift and the drop shadows under drawn marks and lines.",
       "**Don't** use Apricot Flare for focus, hover, the last move or the preview; those are Chalk or Seagrass.",
       "**Don't** colour X and O differently.",
       "**Don't** put information in the backdrop wash or torn strips; they vanish in the high-contrast design.",
