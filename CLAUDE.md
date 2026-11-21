@@ -34,10 +34,12 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 3 · Opponent: in progress** (`phase/3-opponent`). Phase 2 shipped as v0.1.0 (Netlify
-production). Done: the three levels, beginner, intermediate and advanced (pure `@ai`, tested in
-Node), and playing them (Worker, `Opponent` session, mode and level in the settings). Next: the
-tutorial and the tactical challenge close the phase. Saving and resuming (phase 4) follows.
+**Phase 3 · Opponent and learning: closing.** Phase 2 shipped as v0.1.0 and the opponent as
+v0.2.0 (Netlify production). Done: the three levels, beginner, intermediate and advanced (pure
+`@ai`, tested in Node), and playing them (Worker, `Opponent` session, mode and level in the
+settings); the how-to-play ticket and the tabbed settings sheet (`phase/3-learning`, PR #7); the
+tactical challenges (`phase/3-challenge`: `@challenge`, `/challenge/:id`). Saving and resuming
+(phase 4) follows.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -85,26 +87,27 @@ build output.
 
 ## Layers and boundaries
 
-| Path                                   | Responsibility                                 | May import              |
-| -------------------------------------- | ---------------------------------------------- | ----------------------- |
-| `src/app/game/core/`                   | Types, rules, replay. Deterministic.           | Local TypeScript only   |
-| `src/app/game/ai/`                     | Evaluation, search, levels, Worker             | `core`                  |
-| `src/app/game/session/`                | Orchestrates commands, engine, storage, Worker | `core`, `ai`, `storage` |
-| `src/app/game/state/`                  | GameStore (SignalStore) provided on the route  | `core`, `session`       |
-| `src/app/game/ui/`                     | Board, mini board, score, controls             | `state`, `core` types   |
-| `src/app/history/`, `src/app/storage/` | History, stats, IndexedDB                      | `core`                  |
+| Path                                   | Responsibility                                 | May import                           |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------------ |
+| `src/app/game/core/`                   | Types, rules, replay. Deterministic.           | Local TypeScript only                |
+| `src/app/game/ai/`                     | Evaluation, search, levels, Worker             | `core`                               |
+| `src/app/game/challenge/`              | Tactical challenges: positions and judging     | `core`, `ai`                         |
+| `src/app/game/session/`                | Orchestrates commands, engine, storage, Worker | `core`, `ai`, `challenge`, `storage` |
+| `src/app/game/state/`                  | GameStore (SignalStore) provided on the route  | `core`, `session`                    |
+| `src/app/game/ui/`                     | Board, mini board, score, controls             | `state`, `core` types                |
+| `src/app/history/`, `src/app/storage/` | History, stats, IndexedDB                      | `core`                               |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
 `resolve.tsconfigPaths`):
 
-| Alias                                | Block                   |
-| ------------------------------------ | ----------------------- |
-| `@core`, `@core/testing` (test-only) | `src/app/game/core/`    |
-| `@ai`, `@session`, `@state`, `@ui`   | `src/app/game/<block>/` |
-| `@history`, `@storage`, `@i18n`      | `src/app/<block>/`      |
-| `@settings` (player preferences)     | `src/app/settings/`     |
-| `@kit` (shared UI: flap, button…)    | `src/app/kit/`          |
+| Alias                                            | Block                   |
+| ------------------------------------------------ | ----------------------- |
+| `@core`, `@core/testing` (test-only)             | `src/app/game/core/`    |
+| `@ai`, `@challenge`, `@session`, `@state`, `@ui` | `src/app/game/<block>/` |
+| `@history`, `@storage`, `@i18n`                  | `src/app/<block>/`      |
+| `@settings` (player preferences)                 | `src/app/settings/`     |
+| `@kit` (shared UI: flap, button…)                | `src/app/kit/`          |
 
 Another block is imported only through its alias (`import { applyMove } from '@core'`), never
 with a relative path (`../core`) or into its files (`@core/engine`). Inside a block, files import
@@ -112,8 +115,9 @@ each other with relative paths. A sub-folder with its own audience gets its own 
 alias too (`@core/testing`). A new block needs both an `index.ts` and an alias, and its name added
 to `BLOCKS` in `eslint.config.js`.
 
-ESLint enforces it: no relative or deep imports across blocks, `core` and `ai` free of Angular,
-NgRx, RxJS and app layers, and `core` free of `ai`.
+ESLint enforces it: no relative or deep imports across blocks, `core`, `ai` and `challenge` free of
+Angular, NgRx, RxJS and app layers, and `core` free of `ai`. `challenge` runs in Node with
+`test:core`, like the engine and the opponent.
 
 Keep a block flat until its files stop being easy to scan; split into sub-folders by concept
 (e.g. `core/rules/v1/` once a second `rulesVersion` exists), never in advance. Create each folder
