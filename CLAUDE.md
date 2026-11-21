@@ -88,18 +88,18 @@ build output.
 
 ## Layers and boundaries
 
-| Path                              | Responsibility                                      | May import                           |
-| --------------------------------- | --------------------------------------------------- | ------------------------------------ |
-| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3         | Local TypeScript only                |
-| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                | `tictac`                             |
-| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                  | `core`                               |
-| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging          | `core`, `ai`                         |
-| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker      | `core`, `ai`, `challenge`, `storage` |
-| `src/app/games/<game>/state/`     | GameStore (SignalStore) provided on the route       | `core`, `session`                    |
-| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                |
-| `src/app/match/`                  | `withMatch` (play and storage), sessions, opponents | `tictac`, `settings`, `storage`      |
-| `src/app/shell/`                  | Layout, settings sheet, score, actions, title       | `match`, `kit`, `settings`, `i18n`   |
-| `src/app/storage/`                | Game and series records, IndexedDB and memory       | `settings` types                     |
+| Path                              | Responsibility                                      | May import                                    |
+| --------------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3         | Local TypeScript only                         |
+| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                | `tictac`                                      |
+| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                  | `core`                                        |
+| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging          | `core`, `ai`                                  |
+| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker      | `core`, `ai`, `challenge`, `storage`          |
+| `src/app/games/<game>/state/`     | GameStore (SignalStore) provided on the route       | `core`, `session`                             |
+| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                         |
+| `src/app/match/`                  | `withMatch` (play and storage), sessions, opponents | `tictac`, `settings`, `storage`               |
+| `src/app/shell/`                  | Layout, settings sheet, score, actions, history     | `match`, `kit`, `settings`, `i18n`, `storage` |
+| `src/app/storage/`                | Game and series records, IndexedDB and memory       | `settings` types                              |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through

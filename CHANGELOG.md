@@ -14,20 +14,13 @@ new version and date.
   A line under the actions says "Saved", or what went wrong with a way to try again.
 - History for each game: results against the computer by level, games for two people and the
   latest finished games, from a History button beside Settings.
-
-### Changed
-
-- Leaving a game for the challenges or another game no longer asks first: nothing is lost.
-
 - Classic tic tac toe at `/classic`, for two people or against the computer at three levels (the
-  advanced one never loses). Switch games from Settings (Game); a game under way asks first. The
-  app opens on the last game played; Super 3T now lives at `/super-3t` (old links redirect).
-
+  advanced one never loses). Switch games from Settings (Game). The app opens on the last game
+  played; Super 3T now lives at `/super-3t` (old links redirect).
 - Tactical challenges: three prepared positions (easy, medium, hard) where you play X and must
   send the opponent to a board where any reply hands you the game, then close it. A wrong move
   names the reply that would save the opponent; Try again restarts the position. Each challenge is
   marked solved once. Reach them from Settings (Game) or from the how-to-play ticket.
-
 - How to play: on the first visit a departure ticket explains the game in four rules (winning a
   small board, how your cell picks your opponent's board, where you may play, winning the game),
   each beside a small board drawing, over the real game. Play, Skip or Escape closes it for good;
@@ -38,6 +31,10 @@ new version and date.
 - On phones the settings sheet has a grip and closes when dragged down; a short drag springs back.
 - The settings sheet slides in and out: from the right on wide screens, from the bottom on phones.
 - Thin scrollbars in the app's colours.
+
+### Changed
+
+- Leaving a game for the challenges or another game no longer asks first: nothing is lost.
 
 ### Fixed
 

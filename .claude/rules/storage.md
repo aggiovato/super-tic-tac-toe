@@ -20,8 +20,13 @@ paths:
   stops saving (`conflict`, the page offers Reload); `quota`, `failed` and `unavailable` are shown
   and the first two can be retried. Without IndexedDB the app uses `MemoryRepository` and says the
   game will not be kept.
+- **Cleanup**: a save may name a `drop` id, deleted in the same transaction unless that game
+  finished: the game this tab last saved or restored, when the series moved on and left it
+  unfinished. An unreadable record is never dropped, and a missing current game keeps the series'
+  version, so the next save builds on it instead of a false conflict.
 - **Restoring**: the board takes no moves until the saved match is back (`ready`). The moves are
-  replayed with the engine; if it is the opponent's turn, one request is made. The mode and level
+  replayed with the engine (a throw counts as unreadable); the player's commands are ignored
+  until then; if it is the opponent's turn, one request is made. The mode and level
   come back from the record and are written to the preferences.
 - **One result per game**: the result is part of the record and `scored` comes back with it, so a
   reload, reopening the final screen or a rematch never counts a game twice; a rematch is a new id
