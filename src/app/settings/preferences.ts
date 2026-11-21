@@ -1,9 +1,11 @@
 import { computed, DestroyRef, DOCUMENT, effect, inject, Injectable, signal } from '@angular/core';
 import type {
   Design,
+  GameId,
   MotionSetting,
   OpponentLevel,
   PlayMode,
+  PlaySetup,
   PreferencesState,
 } from './preferences.model';
 
@@ -11,6 +13,7 @@ export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
 export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
 export const OPPONENT_LEVELS: readonly OpponentLevel[] = ['beginner', 'intermediate', 'advanced'];
+export const GAME_IDS: readonly GameId[] = ['super-3t', 'classic'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 
@@ -18,14 +21,42 @@ const isDesign = (value: unknown): value is Design => DESIGNS.some((design) => d
 const isMode = (value: unknown): value is PlayMode => PLAY_MODES.some((mode) => mode === value);
 const isLevel = (value: unknown): value is OpponentLevel =>
   OPPONENT_LEVELS.some((level) => level === value);
+const isGame = (value: unknown): value is GameId => GAME_IDS.some((game) => game === value);
+const TWO_PEOPLE: PlaySetup = { mode: 'humans', level: 'beginner' };
+
+/** A saved setup, or the default for what is missing or unknown. */
+function readSetup(saved: Partial<PlaySetup> | undefined): PlaySetup {
+  return {
+    mode: isMode(saved?.mode) ? saved.mode : TWO_PEOPLE.mode,
+    level: isLevel(saved?.level) ? saved.level : TWO_PEOPLE.level,
+  };
+}
+
+/** Two names, each cut to the allowed length. */
+function readNames(saved: unknown): [string, string] {
+  const names: unknown[] = Array.isArray(saved) ? saved : [];
+  const read = (name: unknown): string =>
+    typeof name === 'string' ? name.slice(0, NAME_MAX_LENGTH) : '';
+  return [read(names[0]), read(names[1])];
+}
+
+/** A list of ids, keeping only strings. */
+const readIds = (saved: unknown): string[] =>
+  Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [];
+
+/** What older versions stored: one mode and level, Super 3T's, before there were several games. */
+interface LegacyPreferences {
+  readonly mode?: unknown;
+  readonly level?: unknown;
+}
 const DEFAULTS: PreferencesState = {
   names: ['', ''],
   motion: 'system',
   autoZoom: true,
   hints: true,
   design: 'departures',
-  mode: 'humans',
-  level: 'beginner',
+  play: { 'super-3t': TWO_PEOPLE, classic: TWO_PEOPLE },
+  lastGame: 'super-3t',
   tutorialSeen: false,
   solvedChallenges: [],
 };
@@ -44,8 +75,8 @@ export class Preferences {
   readonly autoZoom = computed(() => this.state().autoZoom);
   readonly hints = computed(() => this.state().hints);
   readonly design = computed(() => this.state().design);
-  readonly mode = computed(() => this.state().mode);
-  readonly level = computed(() => this.state().level);
+  readonly play = computed(() => this.state().play);
+  readonly lastGame = computed(() => this.state().lastGame);
   readonly tutorialSeen = computed(() => this.state().tutorialSeen);
   readonly solvedChallenges = computed(() => new Set(this.state().solvedChallenges));
 
@@ -100,8 +131,16 @@ export class Preferences {
     this.update({ design });
   }
 
-  setMode(mode: PlayMode): void {
-    this.update({ mode });
+  /** Who plays `game` from now on. */
+  setPlay(game: GameId, setup: PlaySetup): void {
+    this.update({ play: { ...this.state().play, [game]: setup } });
+  }
+
+  /** The game the app opens on next time. */
+  setLastGame(game: GameId): void {
+    if (this.state().lastGame !== game) {
+      this.update({ lastGame: game });
+    }
   }
 
   /** Records a solved challenge once: solving it again changes nothing. */
@@ -113,10 +152,6 @@ export class Preferences {
 
   markTutorialSeen(): void {
     this.update({ tutorialSeen: true });
-  }
-
-  setLevel(level: OpponentLevel): void {
-    this.update({ level });
   }
 
   private update(change: Partial<PreferencesState>): void {
@@ -134,23 +169,22 @@ export class Preferences {
       if (!raw) {
         return DEFAULTS;
       }
-      const saved = JSON.parse(raw) as Partial<PreferencesState>;
-      const names = Array.isArray(saved.names) ? saved.names : DEFAULTS.names;
+      const saved = JSON.parse(raw) as Partial<PreferencesState> & LegacyPreferences;
+      const play = saved.play as Partial<Record<GameId, Partial<PlaySetup>>> | undefined;
       return {
-        names: [
-          String(names[0] ?? '').slice(0, NAME_MAX_LENGTH),
-          String(names[1] ?? '').slice(0, NAME_MAX_LENGTH),
-        ],
+        names: readNames(saved.names),
         motion: saved.motion === 'full' || saved.motion === 'reduced' ? saved.motion : 'system',
         autoZoom: saved.autoZoom ?? DEFAULTS.autoZoom,
         hints: saved.hints ?? DEFAULTS.hints,
         design: isDesign(saved.design) ? saved.design : DEFAULTS.design,
-        mode: isMode(saved.mode) ? saved.mode : DEFAULTS.mode,
-        level: isLevel(saved.level) ? saved.level : DEFAULTS.level,
+        play: {
+          // Before several games, `mode` and `level` were Super 3T's: they move into its setup.
+          'super-3t': readSetup(play?.['super-3t'] ?? (saved as Partial<PlaySetup>)),
+          classic: readSetup(play?.classic),
+        },
+        lastGame: isGame(saved.lastGame) ? saved.lastGame : DEFAULTS.lastGame,
         tutorialSeen: saved.tutorialSeen === true,
-        solvedChallenges: Array.isArray(saved.solvedChallenges)
-          ? saved.solvedChallenges.filter((id): id is string => typeof id === 'string')
-          : [],
+        solvedChallenges: readIds(saved.solvedChallenges),
       };
     } catch {
       return DEFAULTS;

@@ -5,27 +5,55 @@ const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 const prettier = require('eslint-config-prettier');
 
-// Functional blocks of the app. Each one has an index.ts and a tsconfig `paths` alias.
-const BLOCKS = 'core|ai|challenge|session|state|ui|history|storage|i18n|settings|kit';
+/*
+ * Functional blocks. Each has an index.ts and a tsconfig `paths` alias. Shared blocks live in
+ * src/app/<block>/ (alias @<block>); each game's layers in src/app/games/<folder>/<layer>/ (alias
+ * @<game>/<layer>). A new game adds its alias and folder to GAMES.
+ */
+const GAMES = { super3t: 'super-3t', classic: 'classic' };
+const GAME_ALIASES = Object.keys(GAMES).join('|');
+const LAYERS = 'core|ai|challenge|session|state|ui';
+const SHARED = 'tictac|match|shell|history|storage|i18n|settings|kit';
+const BLOCK_ALIASES = `(?:${GAME_ALIASES})/(?:${LAYERS})|${SHARED}`;
 
 const BLOCK_BOUNDARIES = [
   {
-    regex: `^\\.{1,2}/(?:.*/)?(?:${BLOCKS})(?:/|$)`,
-    message: 'Import another block through its alias (e.g. "@core"), not a relative path.',
+    regex: `^\\.{1,2}/(?:.*/)?(?:${LAYERS}|${SHARED}|games)(?:/|$)`,
+    message: 'Import another block through its alias (e.g. "@super3t/core"), not a relative path.',
   },
   {
-    regex: `^@(?:${BLOCKS})/(?!testing$)`,
-    message: 'Import the block alias (e.g. "@core"), not its internal files.',
+    regex: `^@(?:${BLOCK_ALIASES})/(?!testing$)`,
+    message: 'Import the block alias (e.g. "@super3t/core"), not its internal files.',
   },
 ];
 
+/** Every game's files may not import another game: what they share goes to `@tictac` or `@kit`. */
+const OTHER_GAMES = Object.entries(GAMES)
+  .map(([alias, folder]) => ({
+    others: Object.keys(GAMES).filter((other) => other !== alias),
+    folder,
+  }))
+  .filter(({ others }) => others.length > 0)
+  .map(({ others, folder }) => ({
+    files: [`src/app/games/${folder}/**/*.ts`],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: `ImportDeclaration[source.value=/^@(?:${others.join('|')})\\//]`,
+          message: 'A game never imports another game.',
+        },
+      ],
+    },
+  }));
+
 const PLAIN_TYPESCRIPT = {
   regex: '^(?:@angular/|@ngrx/|rxjs(?:/|$))',
-  message: 'core, ai and challenge are plain TypeScript.',
+  message: '@tictac and the core, ai and challenge of every game are plain TypeScript.',
 };
 
 const NO_APP_LAYERS = {
-  regex: '^@(?:challenge|session|state|ui|history|storage|i18n|settings|kit)(?:/|$)',
+  regex: `^@(?:(?:${GAME_ALIASES})/(?:challenge|session|state|ui)|match|shell|history|storage|i18n|settings|kit)(?:/|$)`,
   message: 'core, ai and challenge must not import app layers.',
 };
 
@@ -95,8 +123,8 @@ module.exports = defineConfig([
     rules: { 'no-restricted-imports': ['error', { patterns: BLOCK_BOUNDARIES }] },
   },
   {
-    // The opponent and the challenges do not depend on Angular, NgRx, RxJS or app layers.
-    files: ['src/app/game/ai/**/*.ts', 'src/app/game/challenge/**/*.ts'],
+    // Opponents and challenges do not depend on Angular, NgRx, RxJS or app layers.
+    files: ['src/app/games/*/ai/**/*.ts', 'src/app/games/*/challenge/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -105,8 +133,8 @@ module.exports = defineConfig([
     },
   },
   {
-    // The engine depends on nothing else: no framework, no app layer, no opponent.
-    files: ['src/app/game/core/**/*.ts'],
+    // An engine depends on nothing else: no framework, no app layer, no opponent.
+    files: ['src/app/games/*/core/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -114,12 +142,29 @@ module.exports = defineConfig([
           patterns: [
             PLAIN_TYPESCRIPT,
             NO_APP_LAYERS,
-            { regex: '^@ai(?:/|$)', message: 'core must not import ai.' },
+            { regex: `^@(?:${GAME_ALIASES})/ai(?:/|$)`, message: 'core must not import ai.' },
           ],
         },
       ],
     },
   },
+  {
+    // The family's shared base: plain TypeScript that no game's layer may leak into.
+    files: ['src/app/games/tictac/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            PLAIN_TYPESCRIPT,
+            NO_APP_LAYERS,
+            { regex: `^@(?:${GAME_ALIASES})/`, message: '@tictac never imports a game.' },
+          ],
+        },
+      ],
+    },
+  },
+  ...OTHER_GAMES,
   {
     // Specs read as one long `describe` of scenarios: longer files and callbacks, nested suites.
     files: ['**/*.spec.ts', 'e2e/**/*.ts'],

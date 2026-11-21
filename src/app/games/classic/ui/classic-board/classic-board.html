@@ -1,0 +1,24 @@
+<div class="platform" [class.closed]="store.isOver()">
+  <div
+    #grid
+    class="cells"
+    role="group"
+    [attr.aria-label]="t().classic.board"
+    (keydown)="onKey($event, grid)"
+  >
+    @for (cell of cells(); track cell.cell) {
+      <button
+        type="button"
+        [app-board-cell]="cell"
+        [attr.data-roving]="cell.cell"
+        [attr.tabindex]="cell.cell === roving() ? 0 : -1"
+        [attr.aria-disabled]="!cell.legal"
+        [attr.aria-label]="cell.label"
+        (click)="play(cell.cell)"
+      ></button>
+    }
+    @if (strike(); as line) {
+      <app-strike-line [segment]="line" [animate]="true" />
+    }
+  </div>
+</div>

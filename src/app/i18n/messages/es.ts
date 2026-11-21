@@ -82,6 +82,27 @@ export const es: Messages = {
     next: 'Siguiente reto',
     exit: 'Volver a la partida',
   },
+  classic: {
+    flapTurn: 'JUEGA',
+    opening: 'Tres en raya: el primero que consiga tres en línea gana. Empieza X.',
+    played: (mover, cell, next) => `${mover} jugó la casilla ${cell}. Turno de ${next}.`,
+    won: (winner) => `${winner} gana con tres en línea.`,
+    drawn: 'Tablas: el tablero está lleno y nadie hizo línea.',
+    rejected: (reason) =>
+      reason === 'cell-occupied'
+        ? 'Esa casilla ya está ocupada.'
+        : reason === 'game-over'
+          ? 'La partida ha terminado: pulsa Revancha para jugar otra.'
+          : 'Esa jugada no existe en el tablero.',
+    status: {
+      turn: (next) => `Turno de ${next}.`,
+      won: (winner) => `Partida terminada. Gana ${winner}.`,
+      drawn: 'Partida terminada en tablas.',
+    },
+    board: 'Tablero',
+    cell: (cell, mark) => `Casilla ${cell}, ${mark ?? 'vacía'}`,
+  },
+  games: { 'super-3t': 'Super 3T', classic: 'Clásico' },
   settings: {
     open: 'Ajustes',
     title: 'Ajustes',
@@ -109,6 +130,8 @@ export const es: Messages = {
     howToPlay: 'Cómo se juega',
     challenges: 'Retos tácticos',
     confirmChallenges: 'Ir y dejar esta partida',
+    game: 'Juego',
+    confirmSwitchGame: 'Cambiar y dejar esta partida',
     sections: 'Secciones de ajustes',
     sectionNames: { game: 'Partida', app: 'Aplicación' },
   },

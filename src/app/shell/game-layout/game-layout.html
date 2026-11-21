@@ -1,0 +1,7 @@
+<app-backdrop />
+<div class="game">
+  <header class="masthead"><ng-content select="[masthead]" /></header>
+  <div class="departures"><ng-content select="[status]" /></div>
+  <section class="arena" [attr.aria-label]="arenaLabel()"><ng-content select="[arena]" /></section>
+  <footer class="controls"><ng-content select="[controls]" /></footer>
+</div>

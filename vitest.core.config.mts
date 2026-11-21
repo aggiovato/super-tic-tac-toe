@@ -1,23 +1,25 @@
 import { defineConfig } from 'vitest/config';
 
-// Engine, opponent and challenges run in plain Node, without TestBed. App specs run through `ng test`.
+// @tictac and every game's engine, opponent and challenges run in plain Node, without TestBed. App specs run through `ng test`.
 export default defineConfig({
-  // Block aliases (@core, @ai…) come from tsconfig.json `paths`, the single source of truth.
+  // Block aliases (@tictac, @super3t/core…) come from tsconfig.json `paths`, the single source of truth.
   resolve: { tsconfigPaths: true },
   test: {
     environment: 'node',
     include: [
-      'src/app/game/core/**/*.spec.ts',
-      'src/app/game/ai/**/*.spec.ts',
-      'src/app/game/challenge/**/*.spec.ts',
+      'src/app/games/tictac/**/*.spec.ts',
+      'src/app/games/*/core/**/*.spec.ts',
+      'src/app/games/*/ai/**/*.spec.ts',
+      'src/app/games/*/challenge/**/*.spec.ts',
     ],
     coverage: {
       provider: 'v8',
-      // The engine, the opponent and the challenges are held to the same bar.
+      // Engines, opponents and challenges are held to the same bar.
       include: [
-        'src/app/game/core/**/*.ts',
-        'src/app/game/ai/**/*.ts',
-        'src/app/game/challenge/**/*.ts',
+        'src/app/games/tictac/**/*.ts',
+        'src/app/games/*/core/**/*.ts',
+        'src/app/games/*/ai/**/*.ts',
+        'src/app/games/*/challenge/**/*.ts',
       ],
       exclude: ['**/*.spec.ts', '**/testing/**'],
       reporter: ['text-summary', 'html'],

@@ -28,7 +28,7 @@ async function playAll(page: Page, notation: string): Promise<void> {
   }
 }
 
-// Fixtures from src/app/game/core/testing/fixtures.ts.
+// Fixtures from src/app/games/super-3t/core/testing/fixtures.ts.
 const CLOSES_OWN_TARGET = '4.0 0.2 2.0 0.4 4.1 1.2 2.1 1.4 4.3 3.2 2.2';
 const GLOBAL_DIAGONAL_WIN =
   '8.6 6.4 4.5 5.2 2.7 7.0 0.3 3.0 0.0 0.8 8.3 3.8 8.0 0.4 4.2 2.0 0.6 6.0 4.8';
@@ -387,7 +387,7 @@ test.describe('how to play', () => {
   test('links to the challenges before any game is under way', async ({ page }) => {
     await firstVisit(page);
     await page.getByRole('link', { name: /Practise with a tactical challenge/ }).click();
-    await expect(page).toHaveURL(/\/challenge\/diagonal-2026-11$/);
+    await expect(page).toHaveURL(/\/super-3t\/challenge\/diagonal-2026-11$/);
     await expect(page.getByRole('dialog', { name: 'How to play' })).toBeHidden();
   });
 
@@ -447,8 +447,8 @@ test.describe('tactical challenges', () => {
   test('a wrong move names the saving reply; the key move and the finish solve it, once', async ({
     page,
   }) => {
-    await page.goto('/challenge');
-    await expect(page).toHaveURL(/\/challenge\/diagonal-2026-11$/);
+    await page.goto('/super-3t/challenge');
+    await expect(page).toHaveURL(/\/super-3t\/challenge\/diagonal-2026-11$/);
     await expect(status(page)).toHaveText('X to move. Must play on board 3.');
 
     await play(page, 2, 0);
@@ -469,7 +469,7 @@ test.describe('tactical challenges', () => {
     await expect(page.getByRole('radio', { name: 'Easy ✓' })).toBeChecked();
     await expect(page.getByRole('button', { name: 'Next challenge' })).toHaveCount(0);
     await page.getByRole('radio', { name: 'Medium' }).check();
-    await expect(page).toHaveURL(/\/challenge\/column-2026-11$/);
+    await expect(page).toHaveURL(/\/super-3t\/challenge\/column-2026-11$/);
     await expect(status(page)).toHaveText('X to move. May pick any open board.');
   });
 
@@ -480,9 +480,70 @@ test.describe('tactical challenges', () => {
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'Tactical challenges' }).click();
     await page.getByRole('button', { name: 'Go and leave this game' }).click();
-    await expect(page).toHaveURL(/\/challenge\//);
+    await expect(page).toHaveURL(/\/super-3t\/challenge\//);
     await page.getByRole('button', { name: 'Back to the game' }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/super-3t$/);
     await expect(status(page)).toHaveText('X to move. May pick any open board.');
   });
+});
+
+test.describe('classic tic tac toe', () => {
+  const classicCell = (page: Page, at: number) =>
+    page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
+
+  test('settings switch to it, asking first when a game is under way; the app reopens on it', async ({
+    page,
+  }) => {
+    await play(page, 4, 2);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('radio', { name: 'Classic' }).check();
+    await page.getByRole('button', { name: 'Switch and leave this game' }).click();
+    await expect(page).toHaveURL(/\/classic$/);
+    await expect(status(page)).toHaveText('X to move.');
+
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/classic$/);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('radio', { name: 'Super 3T' }).check();
+    await expect(page).toHaveURL(/\/super-3t$/);
+  });
+
+  test('two people play to a win, the score counts it and the rematch swaps symbols', async ({
+    page,
+  }) => {
+    await page.goto('/classic');
+    // X: 0, 1, 2 · O: 3, 4.
+    for (const at of [0, 3, 1, 4]) {
+      await classicCell(page, at).click();
+    }
+    await expect(status(page)).toHaveText('X to move.');
+    // A taken cell is aria-disabled; pressing it anyway is refused with a reason.
+    await classicCell(page, 0).click({ force: true });
+    await expect(page.getByText('That cell is already taken.')).toBeVisible();
+    await classicCell(page, 2).click();
+    await expect(status(page)).toHaveText('Game over. X wins.');
+    await expect(page.locator('app-score-board dd .sr-only').first()).toHaveText('01');
+    await page.getByRole('button', { name: 'Rematch' }).click();
+    // Player 2 now plays X and opens.
+    await expect(status(page)).toHaveText('X to move.');
+    await expect(page.getByRole('button', { name: /^Cell \d, empty$/ })).toHaveCount(9);
+  });
+
+  for (const level of ['Beginner', 'Intermediate', 'Advanced']) {
+    test(`the ${level.toLowerCase()} opponent answers every move`, async ({ page }) => {
+      await page.goto('/classic');
+      await page.getByRole('button', { name: 'Settings' }).click();
+      await page.getByRole('radio', { name: 'Against the opponent' }).check();
+      await page.getByRole('radio', { name: level }).check();
+      await page.getByRole('button', { name: 'Close settings' }).click();
+      for (let round = 0; round < 2; round++) {
+        await page
+          .getByRole('button', { name: /^Cell \d, empty$/ })
+          .first()
+          .click();
+        await expect(status(page)).toHaveText(/^X to move\.|^Game over/);
+      }
+      await expect(page.getByRole('button', { name: /, O$/ })).toHaveCount(2);
+    });
+  }
 });

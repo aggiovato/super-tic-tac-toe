@@ -1,4 +1,4 @@
-/* Engine, opponent and challenges: plain TypeScript, no Angular or DOM. Used by Vitest in Node (npm run test:core). */
+/* @tictac and every game's engine, opponent and challenges: plain TypeScript, no Angular or DOM. Used by Vitest in Node (npm run test:core). */
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
@@ -6,9 +6,10 @@
     "lib": ["ES2022"]
   },
   "include": [
-    "src/app/game/core/**/*.ts",
-    "src/app/game/ai/**/*.ts",
-    "src/app/game/challenge/**/*.ts",
+    "src/app/games/tictac/**/*.ts",
+    "src/app/games/*/core/**/*.ts",
+    "src/app/games/*/ai/**/*.ts",
+    "src/app/games/*/challenge/**/*.ts",
     "vitest.core.config.mts"
   ]
 }
