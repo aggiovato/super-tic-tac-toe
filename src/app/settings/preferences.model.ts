@@ -16,4 +16,6 @@ export interface PreferencesState {
   readonly design: Design;
   readonly mode: PlayMode;
   readonly level: OpponentLevel;
+  /** The how-to-play ticket was shown once (first visit); Settings reopens it on demand. */
+  readonly tutorialSeen: boolean;
 }

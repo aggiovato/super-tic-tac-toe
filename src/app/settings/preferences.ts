@@ -26,6 +26,7 @@ const DEFAULTS: PreferencesState = {
   design: 'departures',
   mode: 'humans',
   level: 'beginner',
+  tutorialSeen: false,
 };
 
 /**
@@ -44,6 +45,7 @@ export class Preferences {
   readonly design = computed(() => this.state().design);
   readonly mode = computed(() => this.state().mode);
   readonly level = computed(() => this.state().level);
+  readonly tutorialSeen = computed(() => this.state().tutorialSeen);
 
   private readonly systemReducedMotion = signal(false);
 
@@ -100,6 +102,10 @@ export class Preferences {
     this.update({ mode });
   }
 
+  markTutorialSeen(): void {
+    this.update({ tutorialSeen: true });
+  }
+
   setLevel(level: OpponentLevel): void {
     this.update({ level });
   }
@@ -132,6 +138,7 @@ export class Preferences {
         design: isDesign(saved.design) ? saved.design : DEFAULTS.design,
         mode: isMode(saved.mode) ? saved.mode : DEFAULTS.mode,
         level: isLevel(saved.level) ? saved.level : DEFAULTS.level,
+        tutorialSeen: saved.tutorialSeen === true,
       };
     } catch {
       return DEFAULTS;
