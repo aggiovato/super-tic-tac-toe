@@ -106,7 +106,7 @@ const easingOf = (value: string | undefined): string => {
   host: {
     '[class.zoomed]': "mode() === 'zoom'",
     '(window:keydown)': 'onWindowKeydown($event)',
-    '(window:pointerdown)': 'usingKeyboard = false',
+    '(window:pointerdown)': 'onWindowPointerDown()',
     '(window:resize)': 'onResize()',
   },
 })
@@ -430,6 +430,15 @@ export class GameBoard {
     if (this.usingKeyboard) {
       this.preview({ board, cell });
     }
+  }
+
+  /**
+   * A pointer switches out of keyboard mode. A method, not an inline `usingKeyboard = false`: a host
+   * listener expression that evaluates to false makes Angular call preventDefault(), which cancelled
+   * every press on the page and kept text fields from taking focus.
+   */
+  protected onWindowPointerDown(): void {
+    this.usingKeyboard = false;
   }
 
   /** Any key switches to keyboard mode; Escape leaves an open board wherever focus is. */

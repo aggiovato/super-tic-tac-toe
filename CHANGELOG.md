@@ -7,6 +7,23 @@ new version and date.
 
 ## [Unreleased]
 
+### Added
+
+- How to play: on the first visit a departure ticket explains the game in four rules (winning a
+  small board, how your cell picks your opponent's board, where you may play, winning the game),
+  each beside a small board drawing, over the real game. Play, Skip or Escape closes it for good;
+  Settings reopens it. On short screens only the rules scroll.
+- Settings in two tabs, Game and App. The title and tabs stay put while the section scrolls, and
+  a fade at its foot shows when there is more below. Short choices (mode, level, language, motion,
+  design) sit side by side on one segmented track.
+- On phones the settings sheet has a grip and closes when dragged down; a short drag springs back.
+- The settings sheet slides in and out: from the right on wide screens, from the bottom on phones.
+- Thin scrollbars in the app's colours.
+
+### Fixed
+
+- Tapping or clicking a player name field now lets you type at once.
+
 ## [0.2.0] - 2026-11-20
 
 ### Added

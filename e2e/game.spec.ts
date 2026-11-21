@@ -33,7 +33,20 @@ const CLOSES_OWN_TARGET = '4.0 0.2 2.0 0.4 4.1 1.2 2.1 1.4 4.3 3.2 2.2';
 const GLOBAL_DIAGONAL_WIN =
   '8.6 6.4 4.5 5.2 2.7 7.0 0.3 3.0 0.0 0.8 8.3 3.8 8.0 0.4 4.2 2.0 0.6 6.0 4.8';
 
+const PREFERENCES = 'super-ttt.preferences';
+
 test.beforeEach(async ({ page }) => {
+  // Every flow but the tutorial's own starts as a returning visitor: the how-to-play ticket was
+  // already seen. Navigations to `/?e2e-tour` keep the real first visit.
+  await page.addInitScript((key) => {
+    if (location.search.includes('e2e-tour')) {
+      return;
+    }
+    const saved = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+    if (saved['tutorialSeen'] === undefined) {
+      localStorage.setItem(key, JSON.stringify({ ...saved, tutorialSeen: true }));
+    }
+  }, PREFERENCES);
   await page.goto('/');
 });
 
@@ -135,11 +148,20 @@ test('settings switch language, rename players and need a second press to reset'
   page,
 }) => {
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Player 1 name').fill('Ana');
+  // A real click in the field, then typing: a window listener once cancelled every press.
+  await page.getByLabel('Player 1 name').click();
+  await page.keyboard.type('Ana');
+  await expect(page.getByLabel('Player 1 name')).toHaveValue('Ana');
+  await page.getByRole('tab', { name: 'App' }).click();
+  await expect(page.getByRole('tab', { name: 'App' })).toHaveAttribute('aria-selected', 'true');
   await page.getByRole('radio', { name: 'Español' }).check();
   await expect(status(page)).toHaveText('Turno de Ana. Puede elegir cualquier tablero abierto.');
   await expect(page.locator('html')).toHaveAttribute('lang', 'es');
 
+  // Arrow keys move between the tabs.
+  await page.getByRole('tab', { name: 'Aplicación' }).press('ArrowLeft');
+  await expect(page.getByRole('tab', { name: 'Partida' })).toBeFocused();
+  await expect(page.getByRole('tabpanel', { name: 'Partida' })).toBeVisible();
   await page.getByRole('button', { name: 'Nueva serie' }).click();
   await expect(page.getByRole('button', { name: 'Borrar marcador y empezar' })).toBeVisible();
 });
@@ -336,4 +358,78 @@ test.describe('against the opponent', () => {
     await expect(page.getByRole('radio', { name: 'Beginner' })).toBeChecked();
     await expect(page.getByLabel('Player 2 name')).toHaveCount(0);
   });
+});
+
+test.describe('how to play', () => {
+  /** A real first visit: no preferences stored, and the init script left out. */
+  async function firstVisit(page: Page): Promise<void> {
+    await page.evaluate((key) => localStorage.removeItem(key), PREFERENCES);
+    await page.goto('/?e2e-tour');
+  }
+
+  test('shows the four rules on the first visit, then only when asked', async ({ page }) => {
+    await firstVisit(page);
+    const ticket = page.getByRole('dialog', { name: 'How to play' });
+    await expect(ticket).toBeVisible();
+    await expect(ticket.getByRole('listitem')).toHaveCount(4);
+    await expect(ticket.getByRole('heading', { name: 'How to play' })).toBeFocused();
+    await ticket.getByRole('button', { name: 'Play' }).click();
+    await expect(ticket).toBeHidden();
+    // The game behind is the real one, ready for the first move.
+    await play(page, 4, 2);
+    await expect(status(page)).toHaveText('O to move. Must play on board 3.');
+
+    await page.reload();
+    await expect(page.locator('.board')).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'How to play' })).toBeHidden();
+  });
+
+  test('closes with Skip or Escape and reopens from the settings', async ({ page }) => {
+    await firstVisit(page);
+    const ticket = page.getByRole('dialog', { name: 'How to play' });
+    await expect(ticket).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(ticket).toBeHidden();
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'How to play' }).click();
+    await expect(ticket).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeHidden();
+    await ticket.getByRole('button', { name: 'Skip' }).click();
+    await expect(ticket).toBeHidden();
+  });
+});
+
+test('on phones the settings sheet closes when dragged down by its head', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'The bottom sheet and its drag exist on narrow screens only');
+  const sheet = page.getByRole('heading', { name: 'Settings' });
+  /** Drags the head down by `distance` px with touch input, in small steps, then lifts. */
+  async function dragHead(distance: number): Promise<void> {
+    const head = await page.locator('.sheet-head').boundingBox();
+    if (!head) {
+      throw new Error('The settings sheet is not open');
+    }
+    const cdp = await page.context().newCDPSession(page);
+    const x = head.x + head.width / 2;
+    const y = head.y + 10;
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+    for (let step = 1; step <= 10; step++) {
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [{ x, y: y + (distance * step) / 10 }],
+      });
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  }
+
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(sheet).toBeVisible();
+  // A short drag springs back.
+  await dragHead(40);
+  await expect(sheet).toBeVisible();
+  await dragHead(400);
+  await expect(sheet).toBeHidden();
 });

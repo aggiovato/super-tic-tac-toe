@@ -38,6 +38,23 @@ export interface Messages {
   readonly score: string;
   readonly rematch: string;
   readonly undo: string;
+  /** The how-to-play ticket: four rules, each beside a small board drawing, and a closing tip. */
+  readonly howToPlay: {
+    readonly title: string;
+    readonly intro: string;
+    /** Winning one small board, and a full board with no line. */
+    readonly board: string;
+    /** The cell you play sends the opponent to the board in that same position. */
+    readonly destination: string;
+    /** Where you may play: the board in Apricot, or any open one when sent to a closed board. */
+    readonly target: string;
+    /** Winning the game: three boards in a line. */
+    readonly win: string;
+    /** The flap row says whose turn it is and where. */
+    readonly guide: string;
+    readonly play: string;
+    readonly skip: string;
+  };
   readonly settings: {
     readonly open: string;
     readonly title: string;
@@ -67,5 +84,10 @@ export interface Messages {
     readonly confirmNewSeries: string;
     /** Second press that applies a new mode or level and clears the score. */
     readonly confirmModeChange: string;
+    /** Reopens the how-to-play ticket. */
+    readonly howToPlay: string;
+    /** The tab list's accessible name. */
+    readonly sections: string;
+    readonly sectionNames: { readonly game: string; readonly app: string };
   };
 }

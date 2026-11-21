@@ -1,14 +1,30 @@
-<fieldset>
+<fieldset [class.segmented]="layout() === 'segmented'">
   <legend>{{ legend() }}</legend>
-  @for (option of options(); track option.value) {
-    <app-choice
-      type="radio"
-      [name]="name()"
-      [lang]="option.lang"
-      [checked]="option.value === selected()"
-      (changed)="chosen.emit(option.value)"
-    >
-      {{ option.label }}
-    </app-choice>
+  @if (layout() === 'segmented') {
+    <div class="track">
+      @for (option of options(); track option.value) {
+        <label class="segment" [attr.lang]="option.lang">
+          <input
+            type="radio"
+            [attr.name]="name()"
+            [checked]="option.value === selected()"
+            (change)="chosen.emit(option.value)"
+          />
+          <span>{{ option.label }}</span>
+        </label>
+      }
+    </div>
+  } @else {
+    @for (option of options(); track option.value) {
+      <app-choice
+        type="radio"
+        [name]="name()"
+        [lang]="option.lang"
+        [checked]="option.value === selected()"
+        (changed)="chosen.emit(option.value)"
+      >
+        {{ option.label }}
+      </app-choice>
+    }
   }
 </fieldset>

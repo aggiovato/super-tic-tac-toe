@@ -1,8 +1,9 @@
 <app-backdrop />
+<app-how-to-play />
 <div class="game">
   <header class="masthead">
     <app-brand-title />
-    <app-settings-panel />
+    <app-settings-panel (howToPlay)="howToPlay().open()" />
   </header>
 
   <app-departure-panel class="departures" />

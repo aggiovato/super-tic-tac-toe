@@ -107,6 +107,24 @@ components:
     textColor: '{colors.seagrass-grey}'
     padding: '1rem'
     width: 'min(24rem, 100vw)'
+  how-to-play-ticket:
+    backgroundColor: '{colors.raven-deep}'
+    textColor: '{colors.seagrass-grey}'
+    rounded: '1rem'
+    padding: '2rem 1.25rem 1rem'
+    width: 'min(26rem, 100vw - 2rem)'
+  how-to-play-ticket-wide:
+    padding: '2rem 2rem 1rem'
+  how-to-play-title:
+    textColor: '{colors.chalk}'
+    typography: '{typography.title}'
+  how-to-play-rule:
+    textColor: '{colors.chalk}'
+    typography: '{typography.body}'
+  how-to-play-mini:
+    backgroundColor: '{colors.raven-teal}'
+    textColor: '{colors.seagrass-dim}'
+    size: '2.9rem'
   brand-mark:
     backgroundColor: '{colors.raven-deep}'
     textColor: '{colors.apricot-flare}'
@@ -147,7 +165,7 @@ A dark teal world with one warm signal: the palette is nearly monochrome so that
 
 ### Primary
 
-- **Apricot Flare** (apricot-flare): the departure. The forced platform's border and its flap number, the accent characters in the departure row, the primary button, the winning line and the winner's large marks. Also the text selection fill and the T of the brand mark (see the exception under the One Departure Rule). Nothing else.
+- **Apricot Flare** (apricot-flare): the departure. The forced platform's border and its flap number, the accent characters in the departure row, the primary button, the winning line and the winner's large marks. Also the text selection fill and the T of the brand mark (see the exception under the One Departure Rule). Nothing else. The how-to-play ticket spends it on the same three things in miniature: the departure in its drawings, a win strike and its one primary action.
 
 ### Neutral
 
@@ -211,6 +229,7 @@ Components are flat; depth is tonal. The ground is Raven Teal under a fixed radi
 - **Panel lift** (`box-shadow: 0 0.375rem 1.25rem -0.25rem var(--color-shade)`): every full-size platform over the page. Not on thumbnail platforms.
 - **Mark drop** (`filter: drop-shadow(0 0.25rem 0.5rem var(--color-shade))`): the large X, O or draw mark over a closed board.
 - **Line drop** (`filter: drop-shadow(0 0.125rem 0.375rem var(--color-shade))`): strike lines.
+- **Ticket lift** (`filter: drop-shadow(0 -0.375rem 1.5rem var(--color-shade))` as a bottom sheet on phones; `filter: drop-shadow(0 0.375rem 1.25rem var(--color-shade))`, the panel lift's offset and blur, when centred from 35rem): the how-to-play ticket only. A filter on the dialog rather than a box-shadow on the card, because the card's notch mask would cut a box-shadow.
 
 ### Named Rules
 
@@ -240,10 +259,30 @@ One family on a native `<button>`: tactile, plain and condensed.
 
 - **Text field:** Raven Teal fill on the panel, 2px Seagrass Dim border, control radius, 44px tall, Chalk text at body size.
 - **Radios and checkboxes:** drawn from tokens, 20px, 2px Seagrass Dim border on Raven Teal; a Chalk dot or check scales in when checked and the border turns Chalk; hover strengthens the border to Seagrass Grey.
+- **Segmented choice:** a `ChoiceGroup` with `layout="segmented"` sets short options side by side on one track: Raven Teal, hairline Seagrass Dim border, control radius, 4px inset (`--segment-inset`). Each segment is at least 44px tall, caption size at weight 600, Seagrass Grey; the chosen one is raised in Raven Lift with Chalk text. The native radio stays underneath, invisible and covering the segment, so arrows, labels and screen readers work as for any radio group; its focus draws the focus ring on the segment.
 
 ### Settings Sheet
 
-A native popover. On wide screens a full-height sheet on the right (up to 24rem) with a hairline left edge; under 35rem a bottom sheet up to 88% of the viewport with rounded top corners. Raven Deep fill over a 70% Raven Teal scrim; fieldsets separated by 32px, each with a Chalk label legend.
+A native popover. On wide screens a full-height sheet on the right (up to 24rem) with a hairline left edge, sliding in from the right over the frame duration; under 35rem a bottom sheet of steady height (85% of the viewport, at most 44rem, so switching tabs never makes it jump) with rounded top corners, rising from the bottom over the zoom duration. Both use the out easing and the 70% Raven Teal scrim fades with them; closing runs the same motion back, and reduced motion drops it.
+
+- **Head:** the title, the close button and two ARIA tabs, "Game" and "App" (es "Partida", "Aplicación"): body size, weight 600, Seagrass Grey; the selected tab is Chalk with a 3px Chalk underline. Arrow keys, Home and End move between them. The head stays put above a hairline; only the section below scrolls.
+- **Sections:** Game holds the "How to play" button (a full-width secondary button that hides the sheet, then reopens the ticket, so the two modals never stack), mode, level, player names, hints and New series. App holds language, motion, design and opening the forced board. Choices with short labels use the segmented choice; groups are 32px apart, each under a Chalk legend. A 2.5rem fade at the section's foot shows that more follows, and goes once the end is reached (scroll-driven; without support there is no fade). Touch screens hide the section's scrollbar.
+- **Phones:** a 40×5px Seagrass Dim grip tops the sheet, and the head is its drag handle: dragging down follows the finger; releasing past a quarter of the sheet's height, or with a quick flick, closes it, otherwise it springs back (`swipeToClose` in `@kit`).
+- **Scrollbars:** across the app, thin Seagrass Dim rails on a clear track (`scrollbar-color`, with WebKit parts where it is unsupported).
+
+### How-to-play Ticket
+
+The rules arrive as a departure ticket handed over before boarding: four lines, each beside a tiny board drawing, then the player boards the real game behind it. Never a step-by-step tour over the board.
+
+- **Container:** a native modal `<dialog>` (the page behind is inert, focus returns where it was) over the real board, dimmed by a backdrop in the shade colour (Ink at 70%). The card is Raven Deep (`--color-surface-panel`) with twice the panel radius, Seagrass Grey text, 32px top padding, 16px bottom padding and side padding from `--ticket-pad`. When the viewport is short (max height: viewport minus 16px above and below) only its body scrolls: the tear line and the actions stay in view.
+- **Notches and tear line:** both sides are cut by a half-circle notch (`--ticket-notch`, 0.65rem radius, drawn with a CSS mask that reads alpha only) at the tear line, `--ticket-tear` (4.8rem) above the card's bottom: the actions row and its padding. The tear line is a 2px dashed border in Raven Lift (`--color-surface-raised`) running the card's full width, notch to notch, above the actions.
+- **Anatomy:** title (title size, weight 600, Chalk); one line of intro (caption size, 14px, line-height 1.35, Seagrass Grey); an ordered list of four rules in the order a newcomer needs them (winning a small board, how your cell picks the opponent's board, where you may play, winning the game), 16px apart, each a two-column row (the drawing at its own width, then the text in body size, Chalk), 16px gap (`--spacing-stack`), vertically centred, so single drawings sit right beside their text and only the second rule's text starts after its pair of boards and arrow; then a caption-size note that the flap row always says whose turn it is and where; then the actions row: a quiet "Skip" (es "Saltar") at the left and the Apricot primary "Play" (es "Jugar") at the right.
+- **Mini-board drawing language:** each drawing is a 2.9rem SVG (30-unit box) of the board's own parts, never a new illustration style: a Raven Teal tile (`--color-surface`, rx 4) with a 1-unit outline and a 3×3 grid inset 5 units, both in the board's line colour (Seagrass Dim, `--color-line`). The departure is the board's forced state: a 2.4-unit Apricot outline (`--color-target`) and a bold Apricot number top left. The played cell is a 7.5-unit Chalk square (rx 1.4) carrying, centred in Raven Deep at 6.5 units so it reads at 1x, the same number as the board it sends to; an arrow (round-capped Seagrass Grey stroke, 0.7rem) leads from it to that forced board. A small board won is three round-capped Chalk crosses across its middle row, struck by a thin Chalk line at 60%. A game win is a round-capped 2.6-unit Apricot strike (`--color-win`) across the grid. The drawings are decorative (`aria-hidden`); the sentence carries the rule.
+- **Colour:** the ticket's only Apricot is the departure in its drawings (as on the board), the win strike and the one primary action, all within the One Departure Rule. Everything else is Raven, Seagrass and Chalk.
+- **Placement:** under 35rem, a bottom sheet: full width minus the 16px gutter, resting 16px above the bottom edge, with the upward ticket lift, side padding 1.25rem so the rules keep their measure. From 35rem, centred on the page, about 26rem wide, side padding 32px (`--spacing-stack-loose`) and the downward ticket lift.
+- **Motion:** opening, the ticket rises 2rem and fades in over the zoom duration and easing (`--duration-zoom`, `--ease-zoom`); the backdrop fades in over the same duration with the out easing. Both are off under reduced motion (the player's motion setting overrides the system's); closing is instant.
+- **Focus and dismissal:** focus lands on the title (`tabindex="-1"`, no ring), so it is read first and no ring sits on a button nobody chose. Escape, Skip and Play all close it, and any close marks it seen.
+- **First visit and entry point:** the game page opens it after its first render while the player's preferences say it has not been seen (`tutorialSeen`, persisted with the other preferences); after that only the settings sheet's "How to play" button reopens it.
 
 ### Split-Flap Tile (signature)
 
@@ -298,10 +337,11 @@ The name as a departure board in miniature: a T that is a split-flap tile just l
 - **Do** keep the sentence under the departure row at a fixed three-line height so previews and refusals never move the board.
 - **Do** provide an instant equivalent for every animation and honour the player's motion setting over the system one.
 - **Do** use the full brand mark above 48px, the small flap drawing at 48px and below and the small flat drawing at 16px, regenerating every asset from `scripts/build-icons.mjs`.
+- **Do** draw any rule or help illustration in the board's own language: a Raven Teal tile with a Seagrass Dim grid, the departure as the forced board's Apricot outline and number, the played cell in Chalk, a win as an Apricot strike.
 
 ### Don't:
 
-- **Don't** add glows, gradients or shadows to components beyond the panel lift and the drop shadows under drawn marks and lines.
+- **Don't** add glows, gradients or shadows to components beyond the panel lift, the how-to-play ticket's lift and the drop shadows under drawn marks and lines.
 - **Don't** use Apricot Flare for focus, hover, the last move or the preview; those are Chalk or Seagrass.
 - **Don't** colour X and O differently.
 - **Don't** put information in the backdrop wash or torn strips; they vanish in the high-contrast design.

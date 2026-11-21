@@ -49,6 +49,20 @@ export const en: Messages = {
   score: 'Series score',
   rematch: 'Rematch',
   undo: 'Undo',
+  howToPlay: {
+    title: 'How to play',
+    intro: 'A tic tac toe made of nine tic tac toes.',
+    board:
+      'Get three in a row inside a small board and it is yours. If it fills up with no line, it is a draw and belongs to nobody.',
+    destination:
+      'Your cell picks the board your opponent plays next: the top-right cell sends them to the top-right board.',
+    target:
+      'Always play on the board marked in orange. If you are sent to a board that is already closed, pick any open board.',
+    win: 'Whoever gets three boards in a line wins the game.',
+    guide: 'The flap row at the top always tells you whose turn it is and where.',
+    play: 'Play',
+    skip: 'Skip',
+  },
   settings: {
     open: 'Settings',
     title: 'Settings',
@@ -72,6 +86,9 @@ export const en: Messages = {
     designs: { departures: 'Departures', 'departures-contrast': 'Departures · high contrast' },
     newSeries: 'New series',
     confirmModeChange: 'Switch and clear the score',
+    howToPlay: 'How to play',
+    sections: 'Settings sections',
+    sectionNames: { game: 'Game', app: 'App' },
     confirmNewSeries: 'Clear the score and start',
   },
 };
