@@ -18,4 +18,6 @@ export interface PreferencesState {
   readonly level: OpponentLevel;
   /** The how-to-play ticket was shown once (first visit); Settings reopens it on demand. */
   readonly tutorialSeen: boolean;
+  /** Ids of the tactical challenges solved at least once; each counts a single time. */
+  readonly solvedChallenges: readonly string[];
 }
