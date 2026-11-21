@@ -1,0 +1,16 @@
+<p class="notice" [class.problem]="problem()" aria-live="polite">
+  @if (problem(); as text) {
+    <span>{{ text }}</span>
+    @if (retryable()) {
+      <button app-button="secondary" size="small" (click)="match.retrySave()">
+        {{ t().save.retry }}
+      </button>
+    } @else if (match.saveStatus() === 'conflict') {
+      <button app-button="secondary" size="small" (click)="reload()">{{ t().save.reload }}</button>
+    }
+  } @else if (match.saveStatus() === 'saved') {
+    <span class="saved"><app-icon name="check" /> {{ t().save.saved }}</span>
+  } @else if (match.saveStatus() === 'saving') {
+    <span class="saved">{{ t().save.saving }}</span>
+  }
+</p>

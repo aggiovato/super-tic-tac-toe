@@ -94,6 +94,36 @@ export interface Messages {
     readonly board: string;
     readonly cell: (cell: number, mark: string | null) => string;
   };
+  /** Saving the game on this device. */
+  readonly save: {
+    readonly saving: string;
+    readonly saved: string;
+    readonly quota: string;
+    readonly failed: string;
+    readonly unavailable: string;
+    readonly conflict: string;
+    readonly retry: string;
+    readonly reload: string;
+  };
+  /** The history of a game: results against the computer by level and the latest games. */
+  readonly history: {
+    readonly open: string;
+    readonly title: (game: string) => string;
+    readonly back: string;
+    readonly byLevel: string;
+    readonly level: string;
+    readonly wins: string;
+    readonly draws: string;
+    readonly losses: string;
+    readonly humans: (count: number) => string;
+    readonly recent: string;
+    readonly empty: (game: string) => string;
+    readonly won: string;
+    readonly lost: string;
+    readonly draw: string;
+    readonly winner: (name: string) => string;
+    readonly moves: (count: number) => string;
+  };
   /** Each game's name, in the game switcher. */
   readonly games: { readonly 'super-3t': string; readonly classic: string };
   readonly settings: {
@@ -128,10 +158,8 @@ export interface Messages {
     /** Reopens the how-to-play ticket. */
     readonly howToPlay: string;
     readonly challenges: string;
-    readonly confirmChallenges: string;
-    /** The game switcher's legend and its second press. */
+    /** The game switcher's legend. */
     readonly game: string;
-    readonly confirmSwitchGame: string;
     /** The tab list's accessible name. */
     readonly sections: string;
     readonly sectionNames: { readonly game: string; readonly app: string };

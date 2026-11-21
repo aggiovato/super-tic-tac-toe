@@ -106,16 +106,14 @@ export class SettingsSheet {
   protected readonly reset = new TwoPress();
 
   /**
-   * A mode, level or game picked while a score or a game is under way waits for a second press,
-   * like "New series"; the choice shown falls back when the question expires.
+   * A mode or level picked while a score or a game is under way waits for a second press, like
+   * "New series"; the choice shown falls back when the question expires.
    */
   protected readonly pendingSetup = signal<PlaySetup | null>(null);
-  protected readonly pendingGame = signal<GameId | null>(null);
   private pendingTimer: ReturnType<typeof setTimeout> | undefined;
 
   protected readonly shownMode = computed(() => (this.pendingSetup() ?? this.setup()).mode);
   protected readonly shownLevel = computed(() => (this.pendingSetup() ?? this.setup()).level);
-  protected readonly shownGame = computed(() => this.pendingGame() ?? this.game.id);
 
   private readonly sheet = viewChild.required<ElementRef<HTMLElement>>('sheet');
   private readonly handle = viewChild.required<ElementRef<HTMLElement>>('handle');
@@ -153,28 +151,20 @@ export class SettingsSheet {
     this.requestSetup({ mode: 'opponent', level });
   }
 
-  /** Another game: at once when nothing is lost, else after a second press. */
+  /** Another game: every game is saved, so switching loses nothing. */
   protected switchGame(id: GameId): void {
     this.clearPending();
-    if (id === this.game.id) {
-      return;
+    if (id !== this.game.id) {
+      this.close();
+      void this.router.navigate(['/', id]);
     }
-    if (!this.game.match.seriesStarted()) {
-      this.goTo(id);
-      return;
-    }
-    this.pendingGame.set(id);
-    this.pendingTimer = setTimeout(() => this.clearPending(), CONFIRM_WINDOW_MS);
   }
 
   protected confirmPending(): void {
     const setup = this.pendingSetup();
-    const game = this.pendingGame();
     this.clearPending();
     if (setup) {
       this.applySetup(setup);
-    } else if (game) {
-      this.goTo(game);
     }
   }
 
@@ -198,15 +188,9 @@ export class SettingsSheet {
     this.game.match.setMode(setup.mode, setup.level);
   }
 
-  private goTo(id: GameId): void {
-    this.close();
-    void this.router.navigate(['/', id]);
-  }
-
   private clearPending(): void {
     clearTimeout(this.pendingTimer);
     this.pendingSetup.set(null);
-    this.pendingGame.set(null);
   }
 
   protected onName(index: 0 | 1, event: Event): void {

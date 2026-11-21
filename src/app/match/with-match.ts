@@ -10,7 +10,8 @@ import {
 import type { Player } from '@tictac';
 import { GameSession } from './game-session';
 import type { Level, MatchGame, MatchRules, MatchState, Mode, Participant } from './match.model';
-import { matchTurns, newSeed, other } from './match-turns';
+import { MATCH_STORAGE, matchStorage } from './match-storage';
+import { matchTurns, newId, newSeed, other } from './match-turns';
 import { Opponent } from './opponent';
 
 /** Against the computer, participant 0 is the person and participant 1 the opponent. */
@@ -23,12 +24,28 @@ const OPPONENT: Participant = 1;
  */
 export function withMatch<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
   return signalStoreFeature(
+    withMatchPlay<S, M, R>(rules),
+    // Saving every change and restoring the saved match, where the route provides storage.
+    withMethods((store) => matchStorage<S, M, R>(store, rules)),
+    withHooks({ onInit: (store) => store._startStorage() }),
+  );
+}
+
+/** The match without storage: position, series, symbols, undo and the opponent's turn. */
+function withMatchPlay<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
+  return signalStoreFeature(
     withProps(() => ({
       _session: inject(GameSession) as GameSession<S, M, R>,
       _opponent: inject(Opponent) as Opponent<M>,
     })),
     withState<MatchState<S, R>>(() => ({
       game: (inject(GameSession) as GameSession<S, M, R>).start(),
+      id: newId(),
+      seriesId: newId(),
+      startedAt: Date.now(),
+      // With storage, the board waits for the saved match to be restored.
+      ready: !inject(MATCH_STORAGE, { optional: true }),
+      saveStatus: 'idle',
       seed: newSeed(),
       mode: 'humans',
       level: 'beginner',
@@ -53,10 +70,10 @@ export function withMatch<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>)
       );
       return { toMove, isOver, opponentTurn };
     }),
-    withComputed(({ game, position, opponentTurn, isOver, mode, wins, draws }) => {
-      // The person has no legal move while the opponent plays.
+    withComputed(({ game, position, opponentTurn, isOver, mode, wins, draws, ready }) => {
+      // The person has no legal move while the opponent plays or the saved match loads.
       const legal = computed((): readonly M[] =>
-        opponentTurn() ? [] : rules.legalMoves(position()),
+        opponentTurn() || !ready() ? [] : rules.legalMoves(position()),
       );
       /** Moves one undo takes back: against the computer, back to the person's turn. */
       const undoSteps = computed(() => (mode() === 'opponent' && !opponentTurn() ? 2 : 1));
@@ -92,12 +109,12 @@ export function withMatch<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>)
       },
 
       newSeries(): void {
-        store._startGame({ xPlayer: 0, wins: [0, 0], draws: 0 });
+        store._startGame({ seriesId: newId(), xPlayer: 0, wins: [0, 0], draws: 0 });
       },
 
       /** Two people or against the computer at `level`: a new series either way. */
       setMode(mode: Mode, level: Level): void {
-        store._startGame({ mode, level, xPlayer: 0, wins: [0, 0], draws: 0 });
+        store._startGame({ seriesId: newId(), mode, level, xPlayer: 0, wins: [0, 0], draws: 0 });
       },
     })),
   );

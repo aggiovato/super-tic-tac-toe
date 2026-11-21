@@ -24,6 +24,7 @@ export interface MatchTurnsStore<S, M, R> extends WritableStateSource<MatchState
 
 export const other = (participant: Participant): Participant => (participant === 0 ? 1 : 0);
 export const newSeed = (): number => crypto.getRandomValues(new Uint32Array(1))[0] ?? 0;
+export const newId = (): string => crypto.randomUUID();
 
 /** Publishes an accepted position and counts its result once. */
 function acceptPosition<S extends MatchGame<M>, M, R>(
@@ -137,6 +138,8 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
     patchState(store, {
       ...changes,
       game: store._session.start(),
+      id: newId(),
+      startedAt: Date.now(),
       seed: newSeed(),
       lastRejection: null,
       scored: false,

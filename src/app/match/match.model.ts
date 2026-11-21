@@ -1,5 +1,6 @@
 import type { Signal } from '@angular/core';
 import type { OpponentLevel, PlayMode } from '@settings';
+import type { SaveFailure } from '@storage';
 import type { GameStatus, Player } from '@tictac';
 
 /** Participant index (0 or 1) in a series; symbols swap on every rematch. */
@@ -40,8 +41,19 @@ export interface MatchRules<S, M> {
 }
 
 /** A series between two participants, in any game of the family. */
+/** Where the match's last save stands: never asked, on its way, done, or why it failed. */
+export type SaveStatus = 'idle' | 'saving' | 'saved' | SaveFailure;
+
 export interface MatchState<S, R> {
   readonly game: S;
+  /** This game's identity: a result is recorded once per id. */
+  readonly id: string;
+  /** The series it belongs to; a rematch keeps it, a new series or mode starts another. */
+  readonly seriesId: string;
+  readonly startedAt: number;
+  /** The saved match has been restored (or there was none): until then the board takes no moves. */
+  readonly ready: boolean;
+  readonly saveStatus: SaveStatus;
   /** Integer seed of the opponent's choices for this game. */
   readonly seed: number;
   readonly mode: Mode;
@@ -70,7 +82,9 @@ export interface MatchApi {
   readonly canUndo: Signal<boolean>;
   /** A score or a game under way: something a change would throw away. */
   readonly seriesStarted: Signal<boolean>;
+  readonly saveStatus: Signal<SaveStatus>;
   symbolOf(participant: Participant): Player;
+  retrySave(): void;
   undo(): void;
   rematch(): void;
   newSeries(): void;
