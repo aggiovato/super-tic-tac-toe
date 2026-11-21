@@ -81,6 +81,27 @@ export const en: Messages = {
     next: 'Next challenge',
     exit: 'Back to the game',
   },
+  classic: {
+    flapTurn: 'PLAYS',
+    opening: 'Tic tac toe: the first to get three in a line wins. X starts.',
+    played: (mover, cell, next) => `${mover} played cell ${cell}. ${next} to move.`,
+    won: (winner) => `${winner} wins with three in a line.`,
+    drawn: 'Draw: the board is full and nobody made a line.',
+    rejected: (reason) =>
+      reason === 'cell-occupied'
+        ? 'That cell is already taken.'
+        : reason === 'game-over'
+          ? 'The game is over: press Rematch to play another.'
+          : 'That move is not on the board.',
+    status: {
+      turn: (next) => `${next} to move.`,
+      won: (winner) => `Game over. ${winner} wins.`,
+      drawn: 'Game over, a draw.',
+    },
+    board: 'Board',
+    cell: (cell, mark) => `Cell ${cell}, ${mark ?? 'empty'}`,
+  },
+  games: { 'super-3t': 'Super 3T', classic: 'Classic' },
   settings: {
     open: 'Settings',
     title: 'Settings',
@@ -107,6 +128,8 @@ export const en: Messages = {
     howToPlay: 'How to play',
     challenges: 'Tactical challenges',
     confirmChallenges: 'Go and leave this game',
+    game: 'Game',
+    confirmSwitchGame: 'Switch and leave this game',
     sections: 'Settings sections',
     sectionNames: { game: 'Game', app: 'App' },
     confirmNewSeries: 'Clear the score and start',

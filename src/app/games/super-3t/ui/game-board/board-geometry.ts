@@ -1,0 +1,28 @@
+import type { Mark, Move } from '@super3t/core';
+
+// The strike geometry of a 3×3 grid is shared by every game.
+export { clampSegment, gridStrike, overshoot } from '@kit';
+
+/** Pure geometry of the board: indices, keyboard order and strike lines. No DOM, no Angular. */
+
+export const INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
+
+/** The game's strike line overshoots less and stays inside the board grid. */
+export const GAME_OVERSHOOT = 0.08;
+
+/** Index of a cell in the 9×9 reading order of the whole board. */
+export const globalIndex = (board: number, cell: number): number =>
+  (Math.floor(board / 3) * 3 + Math.floor(cell / 3)) * 9 + (board % 3) * 3 + (cell % 3);
+
+/** Inverse of `globalIndex`. */
+export const moveAt = (index: number): Move => {
+  const row = Math.floor(index / 9);
+  const col = index % 9;
+  return {
+    board: Math.floor(row / 3) * 3 + Math.floor(col / 3),
+    cell: (row % 3) * 3 + (col % 3),
+  };
+};
+
+/** Flap character for a mark: players are drawn glyphs, empty is blank. */
+export const glyphOf = (mark: Mark): string => (mark === 'X' ? 'x' : mark === 'O' ? 'o' : ' ');

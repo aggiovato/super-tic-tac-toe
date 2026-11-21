@@ -1,0 +1,11 @@
+<app-game-layout [arenaLabel]="t().boardLabel">
+  <app-brand-title masthead [wonBoards]="wonBoards()" />
+  <button masthead app-button="quiet" size="small" (click)="exit()">
+    <app-icon name="close" />
+    {{ t().challenge.exit }}
+  </button>
+  <app-departure-panel status />
+  <app-game-board arena />
+  <h2 controls class="sr-only">{{ t().challenge.title }}</h2>
+  <app-challenge-panel controls />
+</app-game-layout>

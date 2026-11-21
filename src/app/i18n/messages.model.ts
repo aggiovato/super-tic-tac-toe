@@ -1,4 +1,4 @@
-import type { RejectionReason } from '@core';
+import type { RejectionReason } from '@super3t/core';
 
 export type Lang = 'es' | 'en';
 
@@ -77,6 +77,25 @@ export interface Messages {
     readonly next: string;
     readonly exit: string;
   };
+  /** The classic tic tac toe screen. */
+  readonly classic: {
+    /** Flap word after the player and the arrow while the game goes on (five letters). */
+    readonly flapTurn: string;
+    readonly opening: string;
+    readonly played: (mover: string, cell: number, next: string) => string;
+    readonly won: (winner: string) => string;
+    readonly drawn: string;
+    readonly rejected: (reason: 'game-over' | 'invalid-coordinates' | 'cell-occupied') => string;
+    readonly status: {
+      readonly turn: (next: string) => string;
+      readonly won: (winner: string) => string;
+      readonly drawn: string;
+    };
+    readonly board: string;
+    readonly cell: (cell: number, mark: string | null) => string;
+  };
+  /** Each game's name, in the game switcher. */
+  readonly games: { readonly 'super-3t': string; readonly classic: string };
   readonly settings: {
     readonly open: string;
     readonly title: string;
@@ -110,6 +129,9 @@ export interface Messages {
     readonly howToPlay: string;
     readonly challenges: string;
     readonly confirmChallenges: string;
+    /** The game switcher's legend and its second press. */
+    readonly game: string;
+    readonly confirmSwitchGame: string;
     /** The tab list's accessible name. */
     readonly sections: string;
     readonly sectionNames: { readonly game: string; readonly app: string };

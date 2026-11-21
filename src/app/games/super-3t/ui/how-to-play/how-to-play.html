@@ -1,0 +1,67 @@
+<dialog #ticket class="ticket" aria-labelledby="how-to-play-title" (close)="onClose()">
+  <div class="card">
+    <div class="body">
+      <h2 id="how-to-play-title" tabindex="-1" autofocus>{{ t().howToPlay.title }}</h2>
+      <p class="intro">{{ t().howToPlay.intro }}</p>
+      <ol class="rules">
+        <li class="rule">
+          <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+            <rect class="tile" x="1" y="1" width="28" height="28" rx="4" />
+            <path class="grid" d="M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25" />
+            <path
+              class="mark"
+              d="M6.2 13.2 l3.6 3.6 m0 -3.6 l-3.6 3.6 M13.2 13.2 l3.6 3.6 m0 -3.6 l-3.6 3.6 M20.2 13.2 l3.6 3.6 m0 -3.6 l-3.6 3.6"
+            />
+            <path class="line" d="M5.5 15 H24.5" />
+          </svg>
+          <p>{{ t().howToPlay.board }}</p>
+        </li>
+        <li class="rule">
+          <span class="pair" aria-hidden="true">
+            <svg class="mini" viewBox="0 0 30 30">
+              <rect class="tile" x="1" y="1" width="28" height="28" rx="4" />
+              <path class="grid" d="M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25" />
+              <rect class="played" x="18.25" y="3.75" width="7.5" height="7.5" rx="1.4" />
+              <text class="cell-number" x="22" y="9.85">3</text>
+            </svg>
+            <svg class="arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" /></svg>
+            <svg class="mini" viewBox="0 0 30 30">
+              <rect class="tile" x="1" y="1" width="28" height="28" rx="4" />
+              <path class="grid" d="M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25" />
+              <rect class="forced" x="1" y="1" width="28" height="28" rx="4" />
+              <text class="number" x="3.6" y="11.6">3</text>
+            </svg>
+          </span>
+          <p>{{ t().howToPlay.destination }}</p>
+        </li>
+        <li class="rule">
+          <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+            <rect class="tile" x="1" y="1" width="28" height="28" rx="4" />
+            <path class="grid" d="M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25" />
+            <rect class="forced" x="1" y="1" width="28" height="28" rx="4" />
+            <text class="number" x="3.6" y="11.6">3</text>
+          </svg>
+          <p>{{ t().howToPlay.target }}</p>
+        </li>
+        <li class="rule">
+          <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+            <rect class="tile" x="1" y="1" width="28" height="28" rx="4" />
+            <path class="grid" d="M11 5 V25 M19 5 V25 M5 11 H25 M5 19 H25" />
+            <path class="strike" d="M6 24 L24 6" />
+          </svg>
+          <p>{{ t().howToPlay.win }}</p>
+        </li>
+      </ol>
+      <p class="guide">{{ t().howToPlay.guide }}</p>
+      @if (!store.seriesStarted()) {
+        <a class="practise" routerLink="/super-3t/challenge" (click)="dismiss()">
+          {{ t().howToPlay.practise }} →
+        </a>
+      }
+    </div>
+    <div class="actions">
+      <button app-button="quiet" (click)="dismiss()">{{ t().howToPlay.skip }}</button>
+      <button app-button="primary" (click)="dismiss()">{{ t().howToPlay.play }}</button>
+    </div>
+  </div>
+</dialog>

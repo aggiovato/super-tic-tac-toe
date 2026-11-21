@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.departures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+}
+
+.why {
+  /* Fixed height: a preview or refusal replacing the sentence never moves anything below. */
+  max-width: 60ch;
+  height: calc(3 * var(--text-body) * var(--text-body--line-height));
+  overflow: hidden;
+  text-wrap: pretty;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+.why.refused {
+  color: var(--color-fg-strong);
+}

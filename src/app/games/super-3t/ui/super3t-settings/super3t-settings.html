@@ -1,0 +1,27 @@
+<button app-button="secondary" class="w-full" (click)="openHowToPlay()">
+  {{ t().settings.howToPlay }}
+</button>
+
+<button
+  [app-button]="leave.pending() ? 'primary' : 'secondary'"
+  class="w-full"
+  (click)="openChallenges()"
+>
+  {{ leave.pending() ? t().settings.confirmChallenges : t().settings.challenges }}
+</button>
+
+<app-choice
+  [checked]="preferences.hints()"
+  [hint]="t().settings.hintsHint"
+  (changed)="preferences.setHints(!preferences.hints())"
+>
+  {{ t().settings.hints }}
+</app-choice>
+
+<app-choice
+  [checked]="preferences.autoZoom()"
+  [hint]="t().settings.autoZoomHint"
+  (changed)="preferences.setAutoZoom(!preferences.autoZoom())"
+>
+  {{ t().settings.autoZoom }}
+</app-choice>
