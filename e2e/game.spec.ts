@@ -9,6 +9,14 @@ const openBoard = (page: Page, board: number) =>
 
 const status = (page: Page) => page.getByRole('status');
 
+/** Starts a new series from the settings (two presses), back at the opening. */
+async function newSeries(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'New series' }).click();
+  await page.getByRole('button', { name: 'Clear the score and start' }).click();
+  await page.getByRole('button', { name: 'Close settings' }).click();
+}
+
 /** Plays a move whatever the layout: on narrow screens the board is zoomed first if needed. */
 async function play(page: Page, board: number, at: number): Promise<void> {
   const target = cell(page, board, at);
@@ -58,7 +66,8 @@ test('opening, forced target and free choice', async ({ page }) => {
   await expect(status(page)).toHaveText('O to move. Must play on board 3.');
   await expect(page.getByText('X played cell 3, so O plays on board 3.')).toBeVisible();
 
-  await page.goto('/');
+  // The game is saved: a new series, not a reload, starts from the opening.
+  await newSeries(page);
   await playAll(page, CLOSES_OWN_TARGET);
   await expect(status(page)).toHaveText('O to move. May pick any open board.');
   await expect(page.getByText('but board 3 is closed')).toBeVisible();
@@ -473,17 +482,16 @@ test.describe('tactical challenges', () => {
     await expect(status(page)).toHaveText('X to move. May pick any open board.');
   });
 
-  test('settings lead to the challenges, asking first when a game is under way', async ({
+  test('settings lead to the challenges, and the game is still there on the way back', async ({
     page,
   }) => {
     await play(page, 4, 2);
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'Tactical challenges' }).click();
-    await page.getByRole('button', { name: 'Go and leave this game' }).click();
     await expect(page).toHaveURL(/\/super-3t\/challenge\//);
     await page.getByRole('button', { name: 'Back to the game' }).click();
     await expect(page).toHaveURL(/\/super-3t$/);
-    await expect(status(page)).toHaveText('X to move. May pick any open board.');
+    await expect(status(page)).toHaveText('O to move. Must play on board 3.');
   });
 });
 
@@ -491,13 +499,12 @@ test.describe('classic tic tac toe', () => {
   const classicCell = (page: Page, at: number) =>
     page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
 
-  test('settings switch to it, asking first when a game is under way; the app reopens on it', async ({
+  test('settings switch games, each keeps its own game, and the app reopens on the last', async ({
     page,
   }) => {
     await play(page, 4, 2);
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('radio', { name: 'Classic' }).check();
-    await page.getByRole('button', { name: 'Switch and leave this game' }).click();
     await expect(page).toHaveURL(/\/classic$/);
     await expect(status(page)).toHaveText('X to move.');
 
@@ -506,6 +513,7 @@ test.describe('classic tic tac toe', () => {
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('radio', { name: 'Super 3T' }).check();
     await expect(page).toHaveURL(/\/super-3t$/);
+    await expect(status(page)).toHaveText('O to move. Must play on board 3.');
   });
 
   test('two people play to a win, the score counts it and the rematch swaps symbols', async ({
@@ -546,4 +554,55 @@ test.describe('classic tic tac toe', () => {
       await expect(page.getByRole('button', { name: /, O$/ })).toHaveCount(2);
     });
   }
+});
+
+test.describe('saving and resuming', () => {
+  const classicCell = (page: Page, at: number) =>
+    page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
+
+  test('a game resumes after a reload, on the same turn', async ({ page }) => {
+    await play(page, 4, 2);
+    await play(page, 2, 4);
+    await expect(page.getByText('Saved')).toBeVisible();
+    await page.reload();
+    await expect(status(page)).toHaveText('X to move. Must play on board 5.');
+    await expect(page.getByText('O played cell 5, so X plays on board 5.')).toBeVisible();
+  });
+
+  test("a reload on the opponent's turn asks it once, and the game goes on", async ({
+    page,
+    isMobile,
+  }) => {
+    await againstOpponent(page);
+    await play(page, 4, 2);
+    // Reload before the reply lands: the saved game stopped on the opponent's turn.
+    await page.reload();
+    await expect(status(page)).toHaveText(/^X to move/);
+    if (!isMobile) {
+      // The whole board shows every mark: one move each, the reply played once.
+      await expect(page.locator('[aria-label$=", O"]')).toHaveCount(1);
+      await expect(page.locator('[aria-label$=", X"]')).toHaveCount(1);
+    }
+  });
+
+  test('a finished game counts once, however often it is reopened, and shows in the history', async ({
+    page,
+  }) => {
+    await page.goto('/classic');
+    for (const at of [0, 3, 1, 4, 2]) {
+      await classicCell(page, at).click();
+    }
+    await expect(status(page)).toHaveText('Game over. X wins.');
+    for (let visit = 0; visit < 2; visit++) {
+      await page.reload();
+      await expect(status(page)).toHaveText('Game over. X wins.');
+      await expect(page.locator('app-score-board dd .sr-only').first()).toHaveText('01');
+    }
+    await page.getByRole('button', { name: 'History' }).click();
+    await expect(page).toHaveURL(/\/classic\/history$/);
+    await expect(page.getByText('1 game for two people.')).toBeVisible();
+    await expect(page.getByText('Player 1 wins')).toBeVisible();
+    await page.getByRole('button', { name: 'Back to the game' }).click();
+    await expect(status(page)).toHaveText('Game over. X wins.');
+  });
 });

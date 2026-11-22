@@ -1,8 +1,12 @@
 <app-game-layout [arenaLabel]="t().boardLabel">
   <app-brand-title masthead />
-  <app-settings-sheet masthead />
+  <div masthead class="flex items-center gap-1">
+    <app-history-link />
+    <app-settings-sheet />
+  </div>
   <app-classic-status status />
   <app-classic-board arena />
   <app-score-board controls />
   <app-game-actions controls />
+  <app-save-notice controls />
 </app-game-layout>

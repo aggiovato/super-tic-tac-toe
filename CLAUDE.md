@@ -34,23 +34,20 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 3 · Opponent and learning: closing.** Phase 2 shipped as v0.1.0 and the opponent as
-v0.2.0 (Netlify production). Done: the three levels, beginner, intermediate and advanced (pure
-`@super3t/ai`, tested in Node), and playing them (Worker, `Opponent` session, mode and level in the
-settings); the how-to-play ticket and the tabbed settings sheet (`phase/3-learning`, PR #7); the
-tactical challenges (`phase/3-challenge`: `@super3t/challenge`, `/challenge/:id`). Now: the app
-becomes a family of games (`phase/3b-games`): Super 3T moved to `src/app/games/super-3t/`, the
-shared base is `@tictac`, a match (`@match`: `withMatch`, sessions, opponents) and the app shell
-(`@shell`: layout, settings sheet with a game switcher, score, actions) serve every game, and the
-classic tic tac toe lives at `/classic`. `/` opens the last game played. Saving and resuming
-(phase 4) follows.
+**Phase 4 · Local MVP: in progress** (`phase/4-local-mvp`). Phase 3 closed with the opponent's
+three levels, the how-to-play ticket, the tactical challenges and the family of games: Super 3T in
+`src/app/games/super-3t/`, the classic tic tac toe in `src/app/games/classic/`, shared through
+`@tictac`, `@match` and `@shell`; `/` opens the last game played. Done in phase 4: every game is
+saved to IndexedDB after each change (`@storage`, `provideMatchStorage` on each game route) and
+restored on the next visit, a finished game counts once, and each game has a history
+(`/<game>/history`). Next: measuring on a real phone, then the release that closes the MVP.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
 | 0 Bootstrap  | A clean clone installs from the lockfile and CI runs the available checks.            |
 | 1 Engine     | The six reference scenarios, the eight lines and the sequence invariants pass.        |
 | 2 Two humans | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
-| 3 Opponent   | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
+| 3 Opponent ✓ | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
 | 4 Local MVP  | A game resumes mid-turn and each game counts a single result.                         |
 | 5–7          | PWA and CD, online by invitation, accounts.                                           |
 
@@ -91,18 +88,18 @@ build output.
 
 ## Layers and boundaries
 
-| Path                                   | Responsibility                                   | May import                           |
-| -------------------------------------- | ------------------------------------------------ | ------------------------------------ |
-| `src/app/games/tictac/`                | Shared by the family: players, lines, a 3×3      | Local TypeScript only                |
-| `src/app/games/<game>/core/`           | Types, rules, replay. Deterministic.             | `tictac`                             |
-| `src/app/games/<game>/ai/`             | Evaluation, search, levels, Worker               | `core`                               |
-| `src/app/games/<game>/challenge/`      | Tactical challenges: positions and judging       | `core`, `ai`                         |
-| `src/app/games/<game>/session/`        | Orchestrates commands, engine, storage, Worker   | `core`, `ai`, `challenge`, `storage` |
-| `src/app/games/<game>/state/`          | GameStore (SignalStore) provided on the route    | `core`, `session`                    |
-| `src/app/games/<game>/ui/`             | Board, mini board, score, controls               | `state`, `core` types                |
-| `src/app/match/`                       | `withMatch`, `GameSession`, `Opponent` (Angular) | `tictac`, `settings`                 |
-| `src/app/shell/`                       | Layout, settings sheet, score, actions, title    | `match`, `kit`, `settings`, `i18n`   |
-| `src/app/history/`, `src/app/storage/` | History, stats, IndexedDB                        | `core`                               |
+| Path                              | Responsibility                                      | May import                                    |
+| --------------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3         | Local TypeScript only                         |
+| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                | `tictac`                                      |
+| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                  | `core`                                        |
+| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging          | `core`, `ai`                                  |
+| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker      | `core`, `ai`, `challenge`, `storage`          |
+| `src/app/games/<game>/state/`     | GameStore (SignalStore) provided on the route       | `core`, `session`                             |
+| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                         |
+| `src/app/match/`                  | `withMatch` (play and storage), sessions, opponents | `tictac`, `settings`, `storage`               |
+| `src/app/shell/`                  | Layout, settings sheet, score, actions, history     | `match`, `kit`, `settings`, `i18n`, `storage` |
+| `src/app/storage/`                | Game and series records, IndexedDB and memory       | `settings` types                              |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
@@ -115,7 +112,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/app/games/super-3t/<layer>/` |
 | `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/app/games/classic/<layer>/`  |
 | `@match`, `@shell`                                       | `src/app/<block>/`                |
-| `@history`, `@storage`, `@i18n`                          | `src/app/<block>/`                |
+| `@storage`, `@i18n`                                      | `src/app/<block>/`                |
 | `@settings` (player preferences)                         | `src/app/settings/`               |
 | `@kit` (shared UI: flap, button…)                        | `src/app/kit/`                    |
 

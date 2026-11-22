@@ -1,5 +1,6 @@
 import type { Routes } from '@angular/router';
-import { provideActiveGame } from '@shell';
+import { provideMatchStorage } from '@match';
+import { HistoryPage, provideActiveGame } from '@shell';
 import { CHALLENGES } from '@super3t/challenge';
 import { provideChallenge, provideLocalGameSession, provideWorkerOpponent } from '@super3t/session';
 import { GameStore } from '@super3t/state';
@@ -14,6 +15,7 @@ export const SUPER3T_ROUTES: Routes = [
     providers: [
       provideLocalGameSession(),
       provideWorkerOpponent(),
+      provideMatchStorage('super-3t'),
       GameStore,
       provideActiveGame('super-3t', GameStore),
     ],
@@ -24,5 +26,6 @@ export const SUPER3T_ROUTES: Routes = [
     // A prepared position and its defender instead of a new game and the Worker.
     providers: [provideChallenge(), GameStore],
   },
+  { path: 'history', component: HistoryPage, data: { gameId: 'super-3t' } },
   { path: 'challenge', pathMatch: 'full', redirectTo: `challenge/${CHALLENGES[0]?.id ?? ''}` },
 ];

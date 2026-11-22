@@ -51,7 +51,7 @@
         layout="segmented"
         [legend]="t().settings.game"
         [options]="gameOptions()"
-        [selected]="shownGame()"
+        [selected]="game.id"
         (chosen)="switchGame($event)"
       />
 
@@ -78,9 +78,9 @@
         />
       }
 
-      @if (pendingSetup() || pendingGame()) {
+      @if (pendingSetup()) {
         <button app-button="primary" class="w-full" (click)="confirmPending()">
-          {{ pendingGame() ? t().settings.confirmSwitchGame : t().settings.confirmModeChange }}
+          {{ t().settings.confirmModeChange }}
         </button>
       }
 

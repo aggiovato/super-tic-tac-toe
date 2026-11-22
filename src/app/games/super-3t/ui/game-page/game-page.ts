@@ -2,7 +2,15 @@ import { afterNextRender, Component, computed, inject, viewChild } from '@angula
 import { Translator } from '@i18n';
 import { Preferences } from '@settings';
 import { GameStore } from '@super3t/state';
-import { BrandTitle, GameActions, GameLayout, ScoreBoard, SettingsSheet } from '@shell';
+import {
+  BrandTitle,
+  GameActions,
+  GameLayout,
+  HistoryLink,
+  SaveNotice,
+  ScoreBoard,
+  SettingsSheet,
+} from '@shell';
 import { DeparturePanel } from '../departure-panel/departure-panel';
 import { GameBoard } from '../game-board/game-board';
 import { HowToPlay } from '../how-to-play/how-to-play';
@@ -17,8 +25,10 @@ import { Super3tSettings } from '../super3t-settings/super3t-settings';
     GameActions,
     GameBoard,
     GameLayout,
+    HistoryLink,
     HowToPlay,
     ScoreBoard,
+    SaveNotice,
     SettingsSheet,
     Super3tSettings,
   ],
@@ -34,11 +44,8 @@ export class GamePage {
   );
 
   constructor() {
-    // The saved mode and level (two people or against the computer) shape the first series, and
-    // the app opens on this game next time.
+    // The store restores the saved match (or starts the saved setup); the app opens here next time.
     const preferences = inject(Preferences);
-    const { mode, level } = preferences.play()['super-3t'];
-    this.store.setMode(mode, level);
     preferences.setLastGame('super-3t');
     // First visit: the how-to-play ticket, once; Settings reopens it.
     afterNextRender(() => {

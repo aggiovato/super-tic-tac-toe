@@ -10,7 +10,9 @@ export type {
   Mode,
   OpponentRequest,
   Participant,
+  SaveStatus,
 } from './match.model';
 export { LocalOpponent, OPPONENT_PACE_MS } from './local-opponent';
+export { MATCH_STORAGE, provideMatchStorage } from './match-storage';
 export { Opponent } from './opponent';
 export { withMatch } from './with-match';

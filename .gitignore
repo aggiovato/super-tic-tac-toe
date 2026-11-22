@@ -45,3 +45,6 @@ Thumbs.db
 # Impeccable local runtime state (per-machine caches and live sessions)
 .impeccable/hook.cache.json
 .impeccable/live/
+
+# Local diagrams generated with archify
+.archify/

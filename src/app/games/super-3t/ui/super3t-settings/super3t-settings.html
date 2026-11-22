@@ -2,12 +2,8 @@
   {{ t().settings.howToPlay }}
 </button>
 
-<button
-  [app-button]="leave.pending() ? 'primary' : 'secondary'"
-  class="w-full"
-  (click)="openChallenges()"
->
-  {{ leave.pending() ? t().settings.confirmChallenges : t().settings.challenges }}
+<button app-button="secondary" class="w-full" (click)="openChallenges()">
+  {{ t().settings.challenges }}
 </button>
 
 <app-choice

@@ -1,8 +1,15 @@
 import { Component, inject } from '@angular/core';
-import { ClassicStore } from '@classic/state';
 import { Translator } from '@i18n';
 import { Preferences } from '@settings';
-import { BrandTitle, GameActions, GameLayout, ScoreBoard, SettingsSheet } from '@shell';
+import {
+  BrandTitle,
+  GameActions,
+  GameLayout,
+  HistoryLink,
+  SaveNotice,
+  ScoreBoard,
+  SettingsSheet,
+} from '@shell';
 import { ClassicBoard } from '../classic-board/classic-board';
 import { ClassicStatus } from '../classic-status/classic-status';
 
@@ -15,7 +22,9 @@ import { ClassicStatus } from '../classic-status/classic-status';
     ClassicStatus,
     GameActions,
     GameLayout,
+    HistoryLink,
     ScoreBoard,
+    SaveNotice,
     SettingsSheet,
   ],
   templateUrl: './classic-page.html',
@@ -24,10 +33,7 @@ export class ClassicPage {
   protected readonly t = inject(Translator).t;
 
   constructor() {
-    // The saved mode and level shape the first series, and the app opens here next time.
-    const preferences = inject(Preferences);
-    const { mode, level } = preferences.play().classic;
-    inject(ClassicStore).setMode(mode, level);
-    preferences.setLastGame('classic');
+    // The store restores the saved match (or starts the saved setup); the app opens here next time.
+    inject(Preferences).setLastGame('classic');
   }
 }

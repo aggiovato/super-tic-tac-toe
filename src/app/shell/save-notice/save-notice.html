@@ -1,0 +1,17 @@
+<div class="notice" [class.problem]="problem()">
+  <!-- Only a failure is announced: the routine Saving and Saved stay silent after every move. -->
+  <span aria-live="polite">{{ problem() }}</span>
+  @if (problem()) {
+    @if (retryable()) {
+      <button app-button="secondary" size="small" (click)="match.retrySave()">
+        {{ t().save.retry }}
+      </button>
+    } @else if (match.saveStatus() === 'conflict') {
+      <button app-button="secondary" size="small" (click)="reload()">{{ t().save.reload }}</button>
+    }
+  } @else if (match.saveStatus() === 'saved') {
+    <span class="saved"><app-icon name="check" /> {{ t().save.saved }}</span>
+  } @else if (match.saveStatus() === 'saving') {
+    <span class="saved">{{ t().save.saving }}</span>
+  }
+</div>
