@@ -16,7 +16,7 @@ class FakeSocket extends EventTarget {
   }
 
   send(data: string): void {
-    this.sent.push(JSON.parse(data));
+    this.sent.push(data === 'ping' ? data : JSON.parse(data));
   }
 
   close(): void {
@@ -181,6 +181,22 @@ describe('an online room', () => {
     last().open();
     expect(room.connection()).toBe('open');
     expect(last().sent).toEqual([expect.objectContaining({ move: { cell: 4 } })]);
+  });
+
+  it('pings while open, and reopens a socket that has gone silent', async () => {
+    vi.useFakeTimers();
+    const { room, sockets, last } = await open();
+    last().open();
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(last().sent).toContain('ping');
+    last().dispatchEvent(new MessageEvent('message', { data: 'pong' }));
+    await vi.advanceTimersByTimeAsync(40_000);
+    expect(sockets).toHaveLength(1);
+    // Nothing heard for longer than the silence allowed: the socket is dropped and opened again.
+    await vi.advanceTimersByTimeAsync(20_000);
+    expect(room.connection()).toBe('reconnecting');
+    await vi.advanceTimersByTimeAsync(500);
+    expect(sockets).toHaveLength(2);
   });
 
   it('stops for good when the room expires', async () => {

@@ -6,9 +6,13 @@ paths:
 # The API Worker (phase 6)
 
 `packages/api` (`@super-3t/api`): online rooms by invitation, Hono on Cloudflare Workers, one
-`GameRoom` Durable Object per room. Its own Worker (`super-3t-api`, `packages/api/wrangler.jsonc`), apart from
-the app's static one, because Cloudflare gives no preview URLs to a Worker holding a Durable Object;
-the app will reach it through a service binding under `/api/*` (6c/6d).
+`GameRoom` Durable Object per room. Its own Worker (`super-3t-api`, `packages/api/wrangler.jsonc`),
+apart from the app's, because Cloudflare gives no preview URLs to a Worker holding a Durable Object.
+It has no public address (`workers_dev` and `preview_urls` off): the app's Worker (`edge/index.ts`)
+passes `/api/*` to it through a service binding. Environments: the top level is `super-3t-api`
+(production), `--env pre` is `super-3t-api-pre` (main) and `--env preview --name super-3t-api-pr-N`
+is a PR's own, deleted when it closes (`cleanup.yml`). Each declares its Durable Object, migration
+and rate limit again (they are not inherited). CD deploys it before the app (`deploy-api.yml`).
 
 ## Structure
 
@@ -54,6 +58,18 @@ Its types live in `@protocol` (`packages/game-core/src/protocol/`), shared with 
 - **Rematch**: `{type: 'rematch', game}` starts the next game once `game` is over, symbols swapped;
   a second request for the same game is ignored. **Sync**: `{type: 'sync'}` sends the state again.
 - **TTL**: any join, move or rematch pushes an alarm a week ahead; a room left alone deletes itself.
+
+## Limits and heartbeat
+
+- `ROOM_REQUESTS` (a rate-limit binding): 20 `POST`s (create or join) per client address
+  (`cf-connecting-ip`, kept through the binding) and minute; past it `429 too-many`.
+- A socket's message budget (`MessageBudget`, `src/security/limits.ts`): a burst of 20, then 4 a
+  second; a flood is closed with 1008. A seat holds at most 4 sockets; a fifth upgrade gets 429.
+  Messages are at most 4 KiB (`parse.ts`).
+- Heartbeat (`@protocol`): the client sends `ping` every 20 s and the room answers `pong` by
+  auto-response, without waking. A client that hears nothing for 50 s reconnects. While sockets
+  are open the room's alarm also sweeps every 30 s and closes those silent for 50 s (a lost network
+  sends no close), so the other player sees them go.
 
 ## Tests
 

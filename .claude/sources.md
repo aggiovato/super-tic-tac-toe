@@ -15,29 +15,29 @@ Copied unmodified.
 
 ## Toolchain versions (recorded at project creation)
 
-| Tool                                                              | Version                                                                  |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Node                                                              | 24.22.3 (`.nvmrc`; engines `>=24.15.0 <25`)                              |
-| npm                                                               | 11.19.1                                                                  |
-| Angular CLI / build                                               | 22.2.7                                                                   |
-| Angular core                                                      | 22.3.0                                                                   |
-| TypeScript                                                        | 6.0.3                                                                    |
-| Vitest / @vitest/coverage-v8                                      | 5.1.1 / 5.1.1                                                            |
-| fast-check                                                        | 4.10.3                                                                   |
-| @ngrx/signals                                                     | 22.0.1                                                                   |
-| Tailwind CSS / @tailwindcss/postcss / PostCSS                     | 4.3.5 / 4.3.5 / 8.5.33                                                   |
-| @playwright/test (Chromium headless shell 159)                    | 1.65.1                                                                   |
-| Playwright browsers / WebKit container                            | Firefox 1572, WebKit 2388 / `mcr.microsoft.com/playwright:v1.65.1-noble` |
-| @angular/service-worker (2026-11-22)                              | 22.3.0                                                                   |
-| @types/node                                                       | 24.19.2                                                                  |
-| ESLint / angular-eslint / typescript-eslint                       | 10.15.0 / 22.8.0 / 8.73.0                                                |
-| Prettier                                                          | 3.10.1                                                                   |
-| husky / lint-staged (pre-commit, 2026-11-19)                      | 9.1.7 / 17.6.1                                                           |
-| @commitlint/cli / config-conventional                             | 21.2.4 / 21.2.4                                                          |
-| Task                                                              | 3.54.0                                                                   |
-| wrangler (deploy job, `task serve:cf` via npx; API devDependency) | 4.158.0                                                                  |
-| hono (API, 2026-11-22)                                            | 4.13.17                                                                  |
-| @cloudflare/vitest-plugin / @cloudflare/workers-types (API tests) | 1.6.0 / 5.20261107.1                                                     |
+| Tool                                                                           | Version                                                                  |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Node                                                                           | 24.22.3 (`.nvmrc`; engines `>=24.15.0 <25`)                              |
+| npm                                                                            | 11.19.1                                                                  |
+| Angular CLI / build                                                            | 22.2.7                                                                   |
+| Angular core                                                                   | 22.3.0                                                                   |
+| TypeScript                                                                     | 6.0.3                                                                    |
+| Vitest / @vitest/coverage-v8                                                   | 5.1.1 / 5.1.1                                                            |
+| fast-check                                                                     | 4.10.3                                                                   |
+| @ngrx/signals                                                                  | 22.0.1                                                                   |
+| Tailwind CSS / @tailwindcss/postcss / PostCSS                                  | 4.3.5 / 4.3.5 / 8.5.33                                                   |
+| @playwright/test (Chromium headless shell 159)                                 | 1.65.1                                                                   |
+| Playwright browsers / WebKit container                                         | Firefox 1572, WebKit 2388 / `mcr.microsoft.com/playwright:v1.65.1-noble` |
+| @angular/service-worker (2026-11-22)                                           | 22.3.0                                                                   |
+| @types/node                                                                    | 24.19.2                                                                  |
+| ESLint / angular-eslint / typescript-eslint                                    | 10.15.0 / 22.8.0 / 8.73.0                                                |
+| Prettier                                                                       | 3.10.1                                                                   |
+| husky / lint-staged (pre-commit, 2026-11-19)                                   | 9.1.7 / 17.6.1                                                           |
+| @commitlint/cli / config-conventional                                          | 21.2.4 / 21.2.4                                                          |
+| Task                                                                           | 3.54.0                                                                   |
+| wrangler (deploy job, `task serve:cf` via npx; API devDependency)              | 4.158.0                                                                  |
+| hono (API, 2026-11-22)                                                         | 4.13.17                                                                  |
+| @cloudflare/vitest-plugin / @cloudflare/workers-types (API tests, edge Worker) | 1.6.0 / 5.20261107.1                                                     |
 
 ## GitHub Actions (pinned by SHA)
 

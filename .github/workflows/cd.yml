@@ -1,20 +1,27 @@
 name: CD
 
-# Delivery: publishes a build that CI already tested, never one built here. Called by ci.yml at
-# the end of a run (a pr-N preview for a PR, production for a version tag), or run by hand from the
-# Actions tab to redeploy a CI run's build to production, e.g. on the backup host.
+# Delivery: publishes a build that CI already tested, never one built here. The API Worker always
+# goes first (the app's service binding needs it) and any failure stops what follows.
+#   preview    (a PR)       → super-3t-api-pr-N, then app version pr-N bound to it (cleanup.yml
+#                              deletes that API when the PR closes)
+#   pre        (main)       → super-3t-api-pre, app version alias pre bound to it, a smoke test
+#                              against it; then, if package.json's version has no tag yet (a release
+#                              PR was merged): super-3t-api, the same dist to production, and last
+#                              the tag vX.Y.Z with its GitHub Release
+#   production (by hand)    → Actions → CD → Run workflow: a CI run's dist to production, on the
+#                              hosts chosen, and the API from the chosen ref when ticked
 #
-# DEPLOY_TARGETS (a repository variable) picks the hosts: unset or "cloudflare" (default),
-# "netlify" (the backup), or "cloudflare,netlify" for both. A manual run names its own.
+# DEPLOY_TARGETS (a repository variable) picks the app's hosts: unset or "cloudflare" (default),
+# "netlify" (the backup, without /api: no online play), or "cloudflare,netlify".
 on:
   workflow_call:
     inputs:
       environment:
-        description: preview or production
+        description: preview or pre
         type: string
         required: true
       pr-number:
-        description: The PR a preview belongs to; 0 for production
+        description: The PR a preview belongs to; 0 otherwise
         type: number
         default: 0
       head-sha:
@@ -31,10 +38,14 @@ on:
         type: string
         required: true
       targets:
-        description: Hosts to deploy to
+        description: Hosts to deploy the app to
         type: choice
         options: [cloudflare, netlify, 'cloudflare,netlify']
         default: cloudflare
+      api:
+        description: Also deploy the API to production, from this run's branch
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -47,38 +58,62 @@ jobs:
     outputs:
       targets: ${{ steps.plan.outputs.targets }}
       environment: ${{ steps.plan.outputs.environment }}
+      api-worker: ${{ steps.plan.outputs.api-worker }}
+      alias: ${{ steps.plan.outputs.alias }}
       message: ${{ steps.plan.outputs.message }}
       run-id: ${{ steps.plan.outputs.run-id }}
     steps:
-      - name: Hosts, environment and build
+      - name: Environment, its API Worker, hosts and build
         id: plan
         env:
           MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
           INPUT_TARGETS: ${{ inputs.targets }}
+          INPUT_API: ${{ inputs.api }}
+          INPUT_RUN_ID: ${{ inputs.run-id }}
           VAR_TARGETS: ${{ vars.DEPLOY_TARGETS }}
           CALL_ENVIRONMENT: ${{ inputs.environment }}
           CALL_MESSAGE: ${{ inputs.message }}
-          INPUT_RUN_ID: ${{ inputs.run-id }}
+          PR_NUMBER: ${{ inputs.pr-number }}
         run: |
+          targets="${VAR_TARGETS:-cloudflare}"
+          run_id="$GITHUB_RUN_ID"; message="$CALL_MESSAGE"; environment="$CALL_ENVIRONMENT"
+          case "$environment" in
+            preview) api="super-3t-api-pr-$PR_NUMBER"; alias="pr-$PR_NUMBER" ;;
+            pre) api="super-3t-api-pre"; alias="pre" ;;
+          esac
           if [ "$MANUAL" = "true" ]; then
-            targets="$INPUT_TARGETS"; environment=production
-            message="Redeploy of CI run $INPUT_RUN_ID"; run_id="$INPUT_RUN_ID"
-          else
-            targets="${VAR_TARGETS:-cloudflare}"; environment="$CALL_ENVIRONMENT"
-            message="$CALL_MESSAGE"; run_id="$GITHUB_RUN_ID"
+            environment=production; targets="$INPUT_TARGETS"; alias=""
+            run_id="$INPUT_RUN_ID"; message="Redeploy of CI run $INPUT_RUN_ID"
+            api=$([ "$INPUT_API" = "true" ] && echo super-3t-api || echo none)
           fi
           {
             echo "targets=$targets"
             echo "environment=$environment"
+            echo "api-worker=$api"
+            echo "alias=$alias"
             echo "message=$message"
             echo "run-id=$run_id"
           } >> "$GITHUB_OUTPUT"
-          echo "Deploying run $run_id to $environment on: $targets" >> "$GITHUB_STEP_SUMMARY"
+          echo "Run $run_id → $environment (API: $api; app on: $targets)" >> "$GITHUB_STEP_SUMMARY"
+
+  api:
+    name: API
+    needs: plan
+    if: needs.plan.outputs.api-worker != 'none'
+    uses: ./.github/workflows/deploy-api.yml
+    with:
+      environment: ${{ needs.plan.outputs.environment }}
+      worker: ${{ needs.plan.outputs.api-worker }}
+      message: ${{ needs.plan.outputs.message }}
+    secrets: inherit
 
   cloudflare:
     name: App on Cloudflare
-    needs: plan
-    if: contains(needs.plan.outputs.targets, 'cloudflare')
+    needs: [plan, api]
+    # After the API (or without it on a manual run that left it out), never after it failed.
+    if: >-
+      !cancelled() && needs.plan.result == 'success' && needs.api.result != 'failure' &&
+      contains(needs.plan.outputs.targets, 'cloudflare')
     permissions:
       contents: read
       actions: read
@@ -87,16 +122,21 @@ jobs:
     with:
       host: cloudflare
       environment: ${{ needs.plan.outputs.environment }}
+      alias: ${{ needs.plan.outputs.alias }}
+      api-worker: ${{ needs.plan.outputs.api-worker }}
       pr-number: ${{ inputs.pr-number || 0 }}
       head-sha: ${{ inputs.head-sha || github.sha }}
       message: ${{ needs.plan.outputs.message }}
       run-id: ${{ needs.plan.outputs.run-id }}
     secrets: inherit
 
+  # The backup serves the app without /api: online play is off on it. No pre there.
   netlify:
     name: App on Netlify (backup)
-    needs: plan
-    if: contains(needs.plan.outputs.targets, 'netlify')
+    needs: [plan, api]
+    if: >-
+      !cancelled() && needs.plan.result == 'success' && needs.api.result != 'failure' &&
+      needs.plan.outputs.environment != 'pre' && contains(needs.plan.outputs.targets, 'netlify')
     permissions:
       contents: read
       actions: read
@@ -105,8 +145,140 @@ jobs:
     with:
       host: netlify
       environment: ${{ needs.plan.outputs.environment }}
+      alias: ${{ needs.plan.outputs.alias }}
+      api-worker: none
       pr-number: ${{ inputs.pr-number || 0 }}
       head-sha: ${{ inputs.head-sha || github.sha }}
       message: ${{ needs.plan.outputs.message }}
       run-id: ${{ needs.plan.outputs.run-id }}
     secrets: inherit
+
+  smoke:
+    name: Smoke on pre
+    needs: [plan, cloudflare]
+    if: needs.plan.outputs.environment == 'pre' && needs.cloudflare.outputs.url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # The two-browser online game, against pre in the cloud: its app, binding, API and rooms.
+      - name: Online play on pre
+        env:
+          E2E_BASE_URL: ${{ needs.cloudflare.outputs.url }}
+        run: npx playwright test e2e/online.spec.ts --project=desktop
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: smoke-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  release:
+    name: Release?
+    needs: [plan, smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release: ${{ steps.version.outputs.release }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: package.json
+          sparse-checkout-cone-mode: false
+      # A release PR bumps package.json; production gets main only when that version is new.
+      - name: A version not tagged yet
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "v$version is already released: main stays on pre." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "v$version is new: promoting to production." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  production-api:
+    name: API to production
+    needs: [plan, release]
+    if: needs.release.outputs.release == 'true'
+    uses: ./.github/workflows/deploy-api.yml
+    with:
+      environment: production
+      worker: super-3t-api
+      message: v${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  production-app:
+    name: App to production
+    needs: [plan, release, production-api]
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      host: cloudflare
+      environment: production
+      alias: ''
+      api-worker: super-3t-api
+      head-sha: ${{ github.sha }}
+      message: v${{ needs.release.outputs.version }}
+      # The very dist pre ran and the smoke test passed on.
+      run-id: ${{ needs.plan.outputs.run-id }}
+    secrets: inherit
+
+  production-netlify:
+    name: App to production (Netlify, backup)
+    needs: [plan, release, production-app]
+    if: contains(needs.plan.outputs.targets, 'netlify')
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      host: netlify
+      environment: production
+      alias: ''
+      api-worker: none
+      head-sha: ${{ github.sha }}
+      message: v${{ needs.release.outputs.version }}
+      run-id: ${{ needs.plan.outputs.run-id }}
+    secrets: inherit
+
+  tag:
+    name: Tag and GitHub Release
+    needs: [release, production-app]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Last: the tag marks what production runs, so a failed deploy can simply be retried.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: CHANGELOG.md
+          sparse-checkout-cone-mode: false
+      - name: Tag vX.Y.Z on this commit, with the CHANGELOG's notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          # The version's section of the CHANGELOG, without its heading.
+          awk -v v="## [$VERSION]" 'index($0, v) == 1 {on = 1; next} on && /^## \[/ {exit} on' \
+            CHANGELOG.md > notes.md
+          # Created with the workflow's token: it starts no other workflow, so nothing deploys twice.
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" \
+            --notes-file notes.md
+          echo "Released v$VERSION" >> "$GITHUB_STEP_SUMMARY"

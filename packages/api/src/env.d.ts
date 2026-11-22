@@ -3,6 +3,8 @@ interface Env {
   readonly GAME_ROOMS: DurableObjectNamespace<
     import('./durable-objects/game-room.durable-object').GameRoom
   >;
+  /** Rooms created and joined per client address and minute. */
+  readonly ROOM_REQUESTS: RateLimit;
 }
 
 declare namespace Cloudflare {
@@ -10,5 +12,6 @@ declare namespace Cloudflare {
     readonly GAME_ROOMS: DurableObjectNamespace<
       import('./durable-objects/game-room.durable-object').GameRoom
     >;
+    readonly ROOM_REQUESTS: RateLimit;
   }
 }

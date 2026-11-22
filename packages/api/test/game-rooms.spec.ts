@@ -6,14 +6,20 @@ import {
 } from 'cloudflare:test';
 import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
+import { HEARTBEAT, HEARTBEAT_REPLY } from '@protocol';
 import type { MoveReply, GameRoomState, ServerMessage } from '../src/models';
 
 const BASE = 'http://api.test/api';
 
-async function call(path: string, body?: unknown): Promise<Response> {
+/** A request from `address` (a fresh one by default, so the rate limit stays out of the way). */
+async function call(
+  path: string,
+  body?: unknown,
+  address = crypto.randomUUID(),
+): Promise<Response> {
   return SELF.fetch(`${BASE}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'cf-connecting-ip': address },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 }
@@ -42,7 +48,12 @@ async function connect(roomId: string, token: string) {
   const inbox: ServerMessage[] = [];
   const waiting: { match: (m: ServerMessage) => boolean; resolve: (m: ServerMessage) => void }[] =
     [];
+  const heard: string[] = [];
   socket.addEventListener('message', (event: MessageEvent) => {
+    if (event.data === HEARTBEAT_REPLY) {
+      heard.push(HEARTBEAT_REPLY);
+      return;
+    }
     const message = JSON.parse(event.data as string) as ServerMessage;
     const waiter = waiting.findIndex(({ match }) => match(message));
     if (waiter === -1) inbox.push(message);
@@ -68,6 +79,7 @@ async function connect(roomId: string, token: string) {
   const clear = () => inbox.splice(0);
   return {
     socket,
+    heard,
     next,
     state,
     reply,
@@ -270,5 +282,60 @@ describe('reconnecting and resting', () => {
     });
     expect(await runDurableObjectAlarm(stub)).toBe(true);
     expect((await call(`/game-rooms/${roomId}/join`, {})).status).toBe(404);
+  });
+});
+
+describe('limits and the heartbeat', () => {
+  it('limits rooms created and joined per address and minute', async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 21; i++) {
+      statuses.push((await call('/game-rooms', { gameId: 'classic' }, '203.0.113.7')).status);
+    }
+    expect(statuses.slice(0, 20).every((status) => status === 201)).toBe(true);
+    expect(statuses[20]).toBe(429);
+    expect((await call('/game-rooms', { gameId: 'classic' }, '203.0.113.8')).status).toBe(201);
+  });
+
+  it('answers the heartbeat', async () => {
+    const { x } = await playing();
+    x.socket.send(HEARTBEAT);
+    await expect.poll(() => x.heard).toEqual([HEARTBEAT_REPLY]);
+  });
+
+  it("refuses a seat's fifth socket", async () => {
+    const { roomId, hostToken } = await playing();
+    for (let i = 0; i < 3; i++) {
+      await connect(roomId, hostToken);
+    }
+    const fifth = await SELF.fetch(`${BASE}/game-rooms/${roomId}/socket?token=${hostToken}`, {
+      headers: { Upgrade: 'websocket' },
+    });
+    expect(fifth.status).toBe(429);
+  });
+
+  it('closes a socket that floods the room', async () => {
+    const { x, o } = await playing();
+    const closed = new Promise<number>((resolve) =>
+      x.socket.addEventListener('close', (event: CloseEvent) => resolve(event.code)),
+    );
+    for (let i = 0; i < 30; i++) {
+      x.send({ type: 'sync' });
+    }
+    expect(await closed).toBe(1008);
+    await o.state((s) => !s.seats[0].online);
+  });
+
+  it('lets go of a socket gone silent, and tells the other player', async () => {
+    const { roomId, x } = await playing();
+    const stub = env.GAME_ROOMS.get(env.GAME_ROOMS.idFromString(roomId));
+    // The guest's socket last heard from long ago, with no heartbeat since.
+    await runInDurableObject(stub, (_room, state) => {
+      for (const socket of state.getWebSockets('seat-1')) {
+        socket.serializeAttachment({ seat: 1, since: 0 });
+      }
+    });
+    x.clear();
+    expect(await runDurableObjectAlarm(stub)).toBe(true);
+    await x.state((s) => !s.seats[1].online);
   });
 });

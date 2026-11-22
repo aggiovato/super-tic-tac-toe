@@ -51,3 +51,4 @@ Thumbs.db
 
 # Wrangler local state (task serve:cf)
 .wrangler/
+wrangler.generated.json

@@ -12,8 +12,8 @@ new version and date.
 - Online play by invitation, in all three games: Settings creates a private room and its link, the
   other player opens it on their own device, and both see every move as it happens. The game shows
   whether the connection and the rival are there, comes back by itself after a lost connection, and
-  keeps the score of the room's games, with a rematch that swaps symbols. Not live until the server
-  is deployed.
+  keeps the score of the room's games, with a rematch that swaps symbols. Rooms are deleted after
+  a week without play. Online play needs Cloudflare: the backup host serves the app without it.
 
 ### Changed
 

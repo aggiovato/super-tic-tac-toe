@@ -1,0 +1,55 @@
+name: Release
+
+# Actions → Release → Run workflow: opens the release PR from main, as `task release:*` does locally
+# (scripts/release-pr.sh). Merging that PR is the release.
+#
+# A PR opened with the workflow's own token starts no workflow, so its CI would not run: with the
+# repository secret RELEASE_TOKEN (a fine-grained token on this repository with Contents and Pull
+# requests: Read and write) the PR is opened as its owner and checked like any other. Without it,
+# the workflow's token is used (Settings → Actions → General → "Allow GitHub Actions to create and
+# approve pull requests" must be on); main is still tested, pre and the smoke test still run before
+# production.
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the version
+        type: choice
+        options: [patch, minor, major]
+        default: minor
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  open:
+    name: Open the release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.ref == 'refs/heads/main'
+    env:
+      HAS_RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Open it
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || github.token }}
+          BUMP: ${{ inputs.bump }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          scripts/release-pr.sh "$BUMP"
+          if [ "$HAS_RELEASE_TOKEN" != "true" ]; then
+            echo "::notice::Opened with the workflow's token: the PR's CI does not run (add RELEASE_TOKEN for that). Main is still tested and smoke-tested on pre before production."
+          fi
+          echo "Release PR opened from main ($BUMP)" >> "$GITHUB_STEP_SUMMARY"

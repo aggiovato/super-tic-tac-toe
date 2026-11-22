@@ -1,15 +1,22 @@
-// Cloudflare Workers: the app as static assets, no Worker code (free: assets are served without
-// running a Worker). Deployed by CI (`wrangler deploy` for a version tag, `wrangler versions upload`
-// with a `pr-N` alias for a PR preview); `task serve:cf` serves the same locally.
+// Cloudflare Workers: the app as static assets, plus a Worker (edge/index.ts) that runs only for
+// /api/* and hands it to the API Worker through a service binding (free: assets are still served
+// without running a Worker). Deployed by CI after the API: `wrangler deploy` for a version tag, and
+// `wrangler versions upload --env preview` with a `pr-N` alias for a PR preview, bound to the
+// staging API. `task serve:cf` runs the same locally with the API beside it.
 {
   "name": "super-3t",
+  "main": "edge/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
     // The production build; CI downloads the build job's artifact to the same path.
     "directory": "./dist/super-tic-tac-toe/browser",
     // Every unknown navigation is served by the app shell (the Netlify `_redirects` rule before).
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    // Only the API runs code; every other path is a static file or the app shell.
+    "run_worker_first": ["/api/*"]
   },
+  // The API Worker (packages/api), deployed before the app; previews and pre rebind it.
+  "services": [{ "binding": "API", "service": "super-3t-api" }],
   // The *.workers.dev address, and a preview URL per uploaded version (PR previews).
   "workers_dev": true,
   "preview_urls": true
