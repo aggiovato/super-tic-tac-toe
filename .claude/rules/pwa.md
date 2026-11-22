@@ -4,8 +4,7 @@ paths:
   - 'public/_headers'
   - 'public/manifest.webmanifest'
   - 'src/app/app.config.ts'
-  - 'src/app/shell/app-updates.ts'
-  - 'src/app/shell/update-notice/**'
+  - 'src/app/core/pwa/**'
   - 'e2e/offline.spec.ts'
 ---
 
@@ -21,7 +20,7 @@ paths:
   immutable. Not `worker-*.js`: that glob also matches the service worker's `worker-basic.min.js`,
   and every matching rule applies (Cloudflare, like Netlify, joins the values). `index.html`, `ngsw-worker.js`, `ngsw.json` and the
   worker's helpers are `no-cache`, so a release reaches installed copies.
-- **Updates**: `AppUpdates` (`@shell`) is created at start-up (`provideAppUpdates`, an app
+- **Updates**: `AppUpdates` (`@pwa`) is created at start-up (`provideAppUpdates`, an app
   initializer) so no service worker event is missed. It checks for a version at start, every
   `UPDATE_CHECK_MS` (30 min) and when the page comes back to the foreground. `ready` turns on with
   `VERSION_READY`; `broken` with an unrecoverable version, which `UpdateNotice` reloads by itself as

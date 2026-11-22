@@ -32,6 +32,10 @@ paths:
   last in `eslint.config.js`.
 - ESLint `--max-warnings=0`: a new warning fails CI. Active: type-aware TS
   (`no-floating-promises`, `no-explicit-any`), templates, accessibility and layer boundaries.
+- `npm run lint` also runs `scripts/check-tokens.mjs` (no raw colours in app code) and
+  `scripts/check-architecture.mjs` (the blocks' dependencies against `DEPENDS`, no cycles, and a
+  consistent structure: aliases, index files, `SHARED` and `GAMES` in ESLint, the catalog's games).
+  `scripts/*.spec.mjs` (in `test:core`) prove both checks and ESLint's boundary rules still bite.
 - Size limits (`SIZE_LIMITS` in `eslint.config.js`, effective lines: no blanks or comments):
   500 lines per `.ts` or `.html` file, 80 per function, complexity 15, depth 4, 4 parameters,
   3 nested callbacks. Specs and e2e: 1000 lines, no function limit, 5 nested callbacks. Past a

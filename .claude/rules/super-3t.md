@@ -1,7 +1,8 @@
 ---
 paths:
-  - 'src/app/games/super-3t/**'
-  - 'src/app/games/tictac/**'
+  - 'src/engine/super-3t/**'
+  - 'src/app/features/games/super-3t/**'
+  - 'src/engine/tictac/**'
 ---
 
 # Super 3T · executable rules · rulesVersion 1
@@ -37,7 +38,7 @@ belongs to the player whose turn it is.
 | A move wins the third board of a global diagonal      | Immediate win even with empty cells left.                     |
 | Zooming into a mini board and back to the global view | History, turn and score unchanged (UI, phase 2).              |
 
-## Engine contract (`src/app/games/super-3t/core/`, `@super3t/core`)
+## Engine contract (`src/engine/super-3t/core/`, `@super3t/core`)
 
 - `initialState()`, `legalMoves(state)`, `applyMove(state, move)` returning a typed success or
   rejection, and `replay(moves, rulesVersion)`.
@@ -51,7 +52,7 @@ belongs to the player whose turn it is.
 Each accepted move adds exactly one piece. A closed board never reopens. No history exceeds 81
 moves. A rejection does not change the state. Record the seed and shrink path of every failure.
 
-## Opponent (`src/app/games/super-3t/ai/`, `@super3t/ai`)
+## Computer player (`src/engine/super-3t/ai/`, `@super3t/ai`)
 
 Consumes `core` and always returns a legal move. Prepare a fallback move before searching. A
 terminal global result outranks any local gain. Tests use a deterministic node limit; real runs
@@ -64,7 +65,7 @@ opponent the game. Seeing that is what the intermediate level adds.
 
 | File                 | Contents                                                                                        |
 | -------------------- | ----------------------------------------------------------------------------------------------- |
-| `ai/opponent.ts`     | `chooseMove(state, { level, seed, now? })`: fallback first, then the level within `BUDGET_MS`   |
+| `ai/computer.ts`     | `chooseMove(state, { level, seed, now? })`: fallback first, then the level within `BUDGET_MS`   |
 | `ai/beginner.ts`     | Wins the game, else a board, in one move; else a weighted random legal move                     |
 | `ai/intermediate.ts` | Wins the game; never hands it over while a safe move is left; scores the rest (see `SCORE`)     |
 | `ai/advanced.ts`     | Negamax with alpha-beta, move ordering and iterative deepening; keeps the last complete round   |
@@ -73,7 +74,7 @@ opponent the game. Seeing that is what the intermediate level adds.
 | `ai/threats.ts`      | `completions` on either level: `cellThreats` (a board) and `boardThreats` (the game)            |
 | `ai/random.ts`       | `createRandom` (mulberry32), `turnSeed` (game seed × revision), `pickWeighted`                  |
 | `ai/weights.ts`      | `cellWeight`: centre, corners, edges; every level's random picks and tie-breaks                 |
-| `ai/models/`         | `Level`, `OpponentOptions`, `MoveOutcome`, `SearchLimits` (fallback and `expired`)              |
+| `ai/models/`         | `Level`, `ComputerOptions`, `MoveOutcome`, `SearchLimits` (fallback and `expired`)              |
 | `ai/testing/`        | Positions found by seeded games (`LONG_GAME` and cuts of it); test-only, internal to `ai`       |
 
 `chooseMove` prepares a legal fallback (a weighted random move, no engine work) and gives the level
@@ -100,10 +101,10 @@ second in Node; in the browser a reply takes ~850 ms from the click (600 ms of s
 settled endgame answers in milliseconds. With 2000 readings it must beat the intermediate in at
 least 7 of 10 seeded games (it wins 9, draws 1).
 
-Playing it (`@super3t/session`, `@super3t/state`): `Opponent` (`reply`, `cancel`) is provided on the game route as
-`WorkerOpponent`, a module Worker (`session/opponent.worker.ts`, built with `tsconfig.worker.json`)
-that replays the moves and calls `chooseMove`; no reply shows before `OPPONENT_PACE_MS` (450 ms),
-and cancelling a busy Worker terminates it. `GameStore` asks after each move of the person (and
+Playing it (`@super3t/session`, `@super3t/state`): `ComputerPlayer` (`reply`, `cancel`) is provided on the game route as
+`WorkerComputer`, a module Worker (`session/computer.worker.ts`, built with `tsconfig.worker.json`)
+that replays the moves and calls `chooseMove`; no reply shows before `COMPUTER_PACE_MS` (450 ms),
+and cancelling a busy Worker terminates it. `Super3tStore` asks after each move of the person (and
 when the opponent opens as X) and only acts on the reply to its latest request: every request,
 undo, new game and leaving the route moves a ticket on, so a cancelled reply (null) or one asked
 before an undo and replay reached the same revision is dropped. It revalidates every reply with
@@ -112,10 +113,10 @@ fails is dropped and the next request starts a fresh one. Changing mode or level
 game under way asks for a second press, like "New series".
 Against the computer participant 1 is the opponent, the person plays X first and symbols swap on
 each rematch; undo returns to the person's turn (two moves, or one while the opponent thinks).
-The mode and level are preferences (`@settings`), so they survive a reload; the game itself does
+The mode and level are preferences (`@preferences`), so they survive a reload; the game itself does
 not yet (phase 4).
 
-## Tactical challenges (`src/app/games/super-3t/challenge/`, `@super3t/challenge`)
+## Tactical challenges (`src/engine/super-3t/challenge/`, `@super3t/challenge`)
 
 A challenge is a prepared position (moves from the opening, an id, a level) where X to move wins in
 two of its own moves against any defence: one **key move** leaves the defender only replies after
@@ -129,8 +130,8 @@ beginner level against itself, keeping those with a single key move.
 
 Playing one (`/challenge/:id`): `provideChallenge()` gives the route a `ChallengeRun` (the challenge
 and its start), a `ChallengeSession` (games start at the position; a solving move calls
-`run.onSolved`) and a `ChallengeOpponent` (replies with `defend` after the key move, passes with
-null otherwise, at `OPPONENT_PACE_MS`). A null reply to the latest request is a pass in `GameStore`:
+`run.onSolved`) and a `ChallengeComputer` (replies with `defend` after the key move, passes with
+null otherwise, at `COMPUTER_PACE_MS`). A null reply to the latest request is a pass in `Super3tStore`:
 the opponent's turn stays, so the board takes no moves until Retry (`newSeries`). Solved ids are
 kept once each in `Preferences.solvedChallenges`. Leaving the game route drops the game in progress
 until phase 4 saves it, so Settings asks once more when a game is under way.
@@ -138,7 +139,7 @@ until phase 4 saves it, so Settings asks once more when a game is under way.
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
 
-## Shared base (`src/app/games/tictac/`, `@tictac`)
+## Shared base (`src/engine/tictac/`, `@tictac`)
 
 What every game of the family shares, plain TypeScript that never imports a game: `Player`,
 `Mark`, `Line`, `BoardStatus`, the eight `LINES`, `findLine` and `resolveBoard` (how a 3×3 grid

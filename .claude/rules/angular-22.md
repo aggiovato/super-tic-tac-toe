@@ -16,17 +16,17 @@ review this file and `.claude/sources.md`.
 
 - `strict` and `strictTemplates` are set explicitly in `tsconfig.json`, even though TS 6 and
   Angular 22 default to them. Do not remove them.
-- Block aliases (`@tictac`, `@super3t/core`, `@kit`…) live in `tsconfig.json` `paths` (no `baseUrl`, TS 6).
+- Block aliases (`@tictac`, `@super3t/core`, `@ui`…) live in `tsconfig.json` `paths` (no `baseUrl`, TS 6).
   Angular and Vitest both resolve them from there; never duplicate them in another config.
 - Standalone components and CLI 22 defaults: zoneless, and `OnPush` is the default change
   detection. Do not add `standalone: true`, an explicit `OnPush` or Zone.js.
-- v20+ naming: `game-board.ts` with class `GameBoard`, no `.component` suffix.
+- v20+ naming: `super3t-board.ts` with class `Super3tBoard`, no `.component` suffix.
 - Selector prefix `app-` (kebab-case components, camelCase directives), enforced by ESLint.
 
 ## Structure
 
-- One folder per component, named like it (`game-board/game-board.{ts,html,css}`), also inside
-  `@kit` (`kit/split-flap/`, `kit/button/`…). Plain DOM helpers live in `kit/dom/`.
+- One folder per component, named like it (`super3t-board/super3t-board.{ts,html,css}`), also inside
+  `@ui` (`ui/split-flap/`, `ui/button/`…). Plain DOM helpers live in `ui/dom/`.
 - Types and interfaces live in `*.model.ts` files (`core/models/move.model.ts`,
   `board-platform/platform-view.model.ts`); a block with several groups them in `models/` with
   its own `index.ts`. Components and services do not declare exported interfaces inline.
@@ -53,9 +53,9 @@ review this file and `.claude/sources.md`.
   in the engine.
 - Subscriptions, the Worker and timers are bound to the route lifecycle (`DestroyRef`,
   `takeUntilDestroyed`). No loose subscriptions.
-- Inject with `inject()`. GameStore is provided on the game route, not in `root`.
+- Inject with `inject()`. Super3tStore is provided on the game route, not in `root`.
 - No user-facing string in templates or TS: read it from `Translator.t()` (`@i18n`).
-- State that lives with a route (GameStore, its session) is provided in the route's `providers`.
+- State that lives with a route (Super3tStore, its session) is provided in the route's `providers`.
 - New forms (phase 7): Signal Forms.
 - Use the CLI (`npx ng generate …`) to scaffold, then adapt the output.
 

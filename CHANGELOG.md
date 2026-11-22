@@ -7,6 +7,16 @@ new version and date.
 
 ## [Unreleased]
 
+### Changed
+
+- The history names the winner of a game between two people as they were called when it was played.
+  Games saved by earlier versions are read as before.
+
+### Fixed
+
+- The history of Dots and Boxes shows 3×3 games in a single table, whether they were played on the
+  default board or chose 3×3 in the settings.
+
 ## [0.4.0] - 2026-11-22
 
 ### Changed

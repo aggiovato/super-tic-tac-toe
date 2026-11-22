@@ -7,7 +7,7 @@
     "build": "ng build --configuration production",
     "serve:cf": "npx -y wrangler@4.158.0 dev",
     "watch": "ng build --watch --configuration development",
-    "lint": "eslint . --max-warnings=0 && node scripts/check-tokens.mjs",
+    "lint": "eslint . --max-warnings=0 && node scripts/check-tokens.mjs && node scripts/check-architecture.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:core": "npm run typecheck:core && vitest run --config vitest.core.config.mts --coverage",

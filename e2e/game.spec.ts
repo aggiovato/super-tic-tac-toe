@@ -36,7 +36,7 @@ async function playAll(page: Page, notation: string): Promise<void> {
   }
 }
 
-// Fixtures from src/app/games/super-3t/core/testing/fixtures.ts.
+// Fixtures from src/engine/super-3t/core/testing/fixtures.ts.
 const CLOSES_OWN_TARGET = '4.0 0.2 2.0 0.4 4.1 1.2 2.1 1.4 4.3 3.2 2.2';
 const GLOBAL_DIAGONAL_WIN =
   '8.6 6.4 4.5 5.2 2.7 7.0 0.3 3.0 0.0 0.8 8.3 3.8 8.0 0.4 4.2 2.0 0.6 6.0 4.8';
@@ -276,7 +276,7 @@ test('the three boards that win the game flash', async ({ page }) => {
 });
 
 /** Switches to playing against the computer from the settings panel. */
-async function againstOpponent(page: Page): Promise<void> {
+async function againstComputer(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.getByRole('radio', { name: 'Against the opponent' }).check();
   await page.getByRole('button', { name: 'Close settings' }).click();
@@ -309,7 +309,7 @@ test.describe('against the opponent', () => {
     page,
     isMobile,
   }) => {
-    await againstOpponent(page);
+    await againstComputer(page);
     await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
     for (let round = 0; round < 3; round++) {
       await playAnyLegal(page);
@@ -333,7 +333,7 @@ test.describe('against the opponent', () => {
 
   test('undo takes back the reply and your move', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The board counts are read on the whole board');
-    await againstOpponent(page);
+    await againstComputer(page);
     const undo = page.getByRole('button', { name: 'Undo' });
     await expect(undo).toBeDisabled();
     await playAnyLegal(page);
@@ -366,7 +366,7 @@ test.describe('against the opponent', () => {
     ['Advanced', 'Express'],
   ]) {
     test(`the ${level.toLowerCase()} level answers too, and is remembered`, async ({ page }) => {
-      await againstOpponent(page);
+      await againstComputer(page);
       await page.getByRole('button', { name: 'Settings' }).click();
       await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
@@ -382,7 +382,7 @@ test.describe('against the opponent', () => {
   }
 
   test('the mode is remembered after a reload', async ({ page }) => {
-    await againstOpponent(page);
+    await againstComputer(page);
     await page.reload();
     await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
     await page.getByRole('button', { name: 'Settings' }).click();
@@ -660,6 +660,55 @@ test.describe('saving and resuming', () => {
   const classicCell = (page: Page, at: number) =>
     page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
 
+  test('a game saved before seats (schema 1) resumes with its mode and level', async ({ page }) => {
+    // The app creates its database on the first visit; then a game is stored as version 1 did.
+    await page.goto('/classic');
+    await expect(page.getByText('Saved')).toBeVisible();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const open = indexedDB.open('super-3t');
+          open.onsuccess = () => {
+            const tx = open.result.transaction(['series', 'games'], 'readwrite');
+            tx.objectStore('series').put({
+              gameId: 'classic',
+              seriesId: 'old-series',
+              currentGameId: 'old-game',
+              wins: [0, 1],
+              draws: 0,
+              version: 100,
+            });
+            tx.objectStore('games').put({
+              id: 'old-game',
+              gameId: 'classic',
+              schemaVersion: 1,
+              rulesVersion: 1,
+              seriesId: 'old-series',
+              mode: 'opponent',
+              level: 'advanced',
+              seed: 11,
+              xPlayer: 0,
+              moves: [{ cell: 4 }, { cell: 0 }],
+              revision: 2,
+              result: null,
+              startedAt: 1,
+              updatedAt: 2,
+              finishedAt: null,
+            });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error ?? new Error('write failed'));
+          };
+          open.onerror = () => reject(open.error ?? new Error('open failed'));
+        }),
+    );
+    await page.reload();
+    await expect(classicCell(page, 4)).toHaveAccessibleName(/^Cell 5, X/);
+    await expect(classicCell(page, 0)).toHaveAccessibleName(/^Cell 1, O/);
+    // Against the computer at the advanced level: its train name, and X to move.
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Express, Advanced');
+    await expect(status(page)).toHaveText(/^X to move/);
+  });
+
   test('a game resumes after a reload, on the same turn', async ({ page }) => {
     await play(page, 4, 2);
     await play(page, 2, 4);
@@ -673,7 +722,7 @@ test.describe('saving and resuming', () => {
     page,
     isMobile,
   }) => {
-    await againstOpponent(page);
+    await againstComputer(page);
     await play(page, 4, 2);
     // Reload once X's move is written (saving is asynchronous, slower on CI) and, as a rule, before
     // the reply lands: the saved game stopped on the opponent's turn. "Saved" shows once the

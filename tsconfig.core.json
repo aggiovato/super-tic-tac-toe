@@ -5,11 +5,5 @@
     "types": [],
     "lib": ["ES2022"]
   },
-  "include": [
-    "src/app/games/tictac/**/*.ts",
-    "src/app/games/*/core/**/*.ts",
-    "src/app/games/*/ai/**/*.ts",
-    "src/app/games/*/challenge/**/*.ts",
-    "vitest.core.config.mts"
-  ]
+  "include": ["src/engine/**/*.ts", "vitest.core.config.mts"]
 }
