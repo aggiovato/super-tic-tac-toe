@@ -193,7 +193,6 @@ export interface Messages {
     /** This device's player, when no name was typed. */
     readonly you: string;
     readonly rival: string;
-    readonly waiting: string;
     readonly waitingHint: string;
     readonly link: string;
     readonly share: string;
@@ -203,10 +202,17 @@ export interface Messages {
     readonly connecting: string;
     readonly reconnecting: string;
     readonly rivalAway: string;
-    readonly connected: string;
     readonly leave: string;
     readonly retry: string;
     readonly playHere: string;
+    /** This device left the room and came back (the browser's back button, the link again). */
+    readonly left: string;
+    readonly leftHint: string;
+    readonly rejoin: string;
+    /** A player's presence, after their name: connected, gone, or not in the room yet. */
+    readonly here: string;
+    readonly away: string;
+    readonly notYet: string;
     /** Why this device cannot play in the room. */
     readonly problems: Readonly<Record<'missing' | 'full' | 'expired' | 'unreachable', string>>;
   };

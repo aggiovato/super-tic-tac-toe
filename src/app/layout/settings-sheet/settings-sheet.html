@@ -4,141 +4,148 @@
 </button>
 
 <div #sheet id="settings-panel" class="sheet" popover aria-labelledby="settings-title">
-  <header #handle class="sheet-head">
-    <span class="grip" aria-hidden="true"></span>
-    <div class="sheet-title">
-      <h2 id="settings-title" class="text-title font-semibold text-fg-strong">
-        {{ t().settings.title }}
-      </h2>
-      <button
-        app-button="quiet"
-        popovertarget="settings-panel"
-        popovertargetaction="hide"
-        [attr.aria-label]="t().settings.close"
-      >
-        <app-icon name="close" />
-      </button>
-    </div>
-
-    <div class="tabs" role="tablist" [attr.aria-label]="t().settings.sections">
-      @for (tab of tabs(); track tab.id) {
+  <!-- On phones a ticket: the head is its stub, torn off along a notched perforation. -->
+  <div #card class="card">
+    <header #handle class="sheet-head">
+      <span class="grip" aria-hidden="true"></span>
+      <div class="sheet-title">
+        <h2 id="settings-title" class="text-title font-semibold text-fg-strong">
+          {{ t().settings.title }}
+        </h2>
         <button
-          type="button"
-          role="tab"
-          class="tab"
-          [id]="'settings-tab-' + tab.id"
-          [attr.aria-controls]="'settings-section-' + tab.id"
-          [attr.aria-selected]="tab.id === section()"
-          [tabIndex]="tab.id === section() ? 0 : -1"
-          (click)="section.set(tab.id)"
-          (keydown)="onTabKey($event)"
+          app-button="quiet"
+          popovertarget="settings-panel"
+          popovertargetaction="hide"
+          [attr.aria-label]="t().settings.close"
         >
-          {{ tab.label }}
+          <app-icon name="close" />
         </button>
-      }
-    </div>
-  </header>
+      </div>
 
-  @if (section() === 'game') {
-    <div
-      id="settings-section-game"
-      class="section"
-      role="tabpanel"
-      aria-labelledby="settings-tab-game"
-    >
-      @if (!online()) {
-        <!-- The game's own settings. -->
-        <ng-content />
+      <div class="tabs" role="tablist" [attr.aria-label]="t().settings.sections">
+        @for (tab of tabs(); track tab.id) {
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            [id]="'settings-tab-' + tab.id"
+            [attr.aria-controls]="'settings-section-' + tab.id"
+            [attr.aria-selected]="tab.id === section()"
+            [tabIndex]="tab.id === section() ? 0 : -1"
+            (click)="section.set(tab.id)"
+            (keydown)="onTabKey($event)"
+          >
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+    </header>
 
-        <app-choice-group
-          name="mode"
-          layout="segmented"
-          [legend]="t().settings.mode"
-          [options]="modeOptions()"
-          [selected]="shownMode()"
-          (chosen)="setMode($event)"
-        />
+    @if (section() === 'game') {
+      <div
+        id="settings-section-game"
+        class="section"
+        role="tabpanel"
+        aria-labelledby="settings-tab-game"
+      >
+        @if (!online()) {
+          <!-- The game's own settings. -->
+          <ng-content />
 
-        @if (shownMode() === 'computer') {
           <app-choice-group
-            name="level"
+            name="mode"
             layout="segmented"
-            [legend]="t().settings.level"
-            [options]="levelOptions()"
-            [selected]="shownLevel()"
-            (chosen)="setLevel($event)"
+            [legend]="t().settings.mode"
+            [options]="modeOptions()"
+            [selected]="shownMode()"
+            (chosen)="setMode($event)"
+          />
+
+          @if (shownMode() === 'computer') {
+            <app-choice-group
+              name="level"
+              layout="segmented"
+              [legend]="t().settings.level"
+              [options]="levelOptions()"
+              [selected]="shownLevel()"
+              (chosen)="setLevel($event)"
+            />
+          }
+
+          @if (pendingSetup()) {
+            <button app-button="primary" class="w-full" (click)="confirmPending()">
+              {{ t().settings.confirmModeChange }}
+            </button>
+          }
+
+          <app-online-start
+            [gameId]="game.id"
+            [variant]="game.match.variant()"
+            (opened)="close()"
           />
         }
 
-        @if (pendingSetup()) {
-          <button app-button="primary" class="w-full" (click)="confirmPending()">
-            {{ t().settings.confirmModeChange }}
+        <fieldset>
+          <legend>{{ t().settings.players }}</legend>
+          @for (index of nameFields(); track index) {
+            <label class="field">
+              <span>{{ t().settings.playerName(index + 1) }}</span>
+              <input
+                type="text"
+                autocomplete="off"
+                [maxLength]="nameMaxLength"
+                [placeholder]="t().defaultName(index + 1)"
+                [value]="preferences.names()[index]"
+                (input)="onName(index, $event)"
+              />
+            </label>
+          }
+        </fieldset>
+
+        @if (!online()) {
+          <button
+            [app-button]="reset.pending() ? 'primary' : 'secondary'"
+            class="w-full"
+            (click)="newSeries()"
+          >
+            {{ reset.pending() ? t().settings.confirmNewSeries : t().settings.newSeries }}
           </button>
         }
+      </div>
+    } @else {
+      <div
+        id="settings-section-app"
+        class="section"
+        role="tabpanel"
+        aria-labelledby="settings-tab-app"
+      >
+        <app-choice-group
+          name="language"
+          layout="segmented"
+          [legend]="t().settings.language"
+          [options]="languageOptions()"
+          [selected]="translator.lang()"
+          (chosen)="translator.setLang($event)"
+        />
 
-        <app-online-start [gameId]="game.id" [variant]="game.match.variant()" (opened)="close()" />
-      }
+        <app-choice-group
+          name="motion"
+          layout="segmented"
+          [legend]="t().settings.motion"
+          [options]="motionOptions()"
+          [selected]="preferences.motion()"
+          (chosen)="preferences.setMotion($event)"
+        />
 
-      <fieldset>
-        <legend>{{ t().settings.players }}</legend>
-        @for (index of nameFields(); track index) {
-          <label class="field">
-            <span>{{ t().settings.playerName(index + 1) }}</span>
-            <input
-              type="text"
-              autocomplete="off"
-              [maxLength]="nameMaxLength"
-              [placeholder]="t().defaultName(index + 1)"
-              [value]="preferences.names()[index]"
-              (input)="onName(index, $event)"
-            />
-          </label>
-        }
-      </fieldset>
-
-      @if (!online()) {
-        <button
-          [app-button]="reset.pending() ? 'primary' : 'secondary'"
-          class="w-full"
-          (click)="newSeries()"
-        >
-          {{ reset.pending() ? t().settings.confirmNewSeries : t().settings.newSeries }}
-        </button>
-      }
-    </div>
-  } @else {
-    <div
-      id="settings-section-app"
-      class="section"
-      role="tabpanel"
-      aria-labelledby="settings-tab-app"
-    >
-      <app-choice-group
-        name="language"
-        layout="segmented"
-        [legend]="t().settings.language"
-        [options]="languageOptions()"
-        [selected]="translator.lang()"
-        (chosen)="translator.setLang($event)"
-      />
-
-      <app-choice-group
-        name="motion"
-        layout="segmented"
-        [legend]="t().settings.motion"
-        [options]="motionOptions()"
-        [selected]="preferences.motion()"
-        (chosen)="preferences.setMotion($event)"
-      />
-
-      <app-choice-group
-        name="design"
-        layout="segmented"
-        [legend]="t().settings.design"
-        [options]="designOptions()"
-        [selected]="preferences.design()"
-        (chosen)="preferences.setDesign($event)"
-      />
-    </div>
-  }
+        <app-choice-group
+          name="design"
+          layout="segmented"
+          [legend]="t().settings.design"
+          [options]="designOptions()"
+          [selected]="preferences.design()"
+          (chosen)="preferences.setDesign($event)"
+        />
+      </div>
+    }
+  </div>
 </div>

@@ -62,6 +62,8 @@ export class OnlineRoom extends RemoteSeat {
   /** The room's id, once opened. */
   readonly roomId = signal<string | null>(null);
   readonly problem = signal<RoomProblem | null>(null);
+  /** This device left the room earlier and came back: it waits for `rejoin()`. */
+  readonly left = signal(false);
   readonly connection = computed(() => this.socket()?.state() ?? 'connecting');
 
   readonly rival = computed((): RivalPresence | null => {
@@ -109,6 +111,12 @@ export class OnlineRoom extends RemoteSeat {
       this.window?.removeEventListener('online', retry);
       this.window?.document.removeEventListener('visibilitychange', visible);
       this.socket()?.close();
+      // Leaving the route inside the app is leaving the room: back here, it asks first. A reload
+      // destroys nothing, so it reconnects as before.
+      const roomId = this.roomId();
+      if (roomId && this.socket()) {
+        this.credentials.setLeft(roomId, true);
+      }
     });
   }
 
@@ -119,9 +127,25 @@ export class OnlineRoom extends RemoteSeat {
     }
     this.roomId.set(roomId);
     this.problem.set(null);
-    const seat = this.credentials.get(roomId) ?? (await this.takeSeat(roomId));
+    const saved = this.credentials.get(roomId);
+    if (saved?.left) {
+      this.left.set(true);
+      return;
+    }
+    const seat = saved ?? (await this.takeSeat(roomId));
     if (seat) {
       this.connect(roomId, seat.token);
+    }
+  }
+
+  /** Takes back the seat this device left, and connects. */
+  rejoin(): void {
+    const roomId = this.roomId();
+    const saved = roomId ? this.credentials.get(roomId) : null;
+    if (roomId && saved && this.left()) {
+      this.credentials.setLeft(roomId, false);
+      this.left.set(false);
+      this.connect(roomId, saved.token);
     }
   }
 

@@ -12,6 +12,8 @@ import { ACTIVE_GAME } from '@match';
   imports: [Button, Icon],
   templateUrl: './save-notice.html',
   styleUrl: './save-notice.css',
+  // An online game is kept by its room, not saved here: no line to reserve.
+  host: { '[hidden]': "match.mode() === 'online'" },
 })
 export class SaveNotice {
   protected readonly t = inject(Translator).t;

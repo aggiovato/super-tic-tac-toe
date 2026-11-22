@@ -4,3 +4,7 @@
   justify-content: space-between;
   gap: var(--spacing-stack-tight);
 }
+
+:host([hidden]) {
+  display: none;
+}

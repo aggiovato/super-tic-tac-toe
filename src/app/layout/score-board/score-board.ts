@@ -38,8 +38,10 @@ export class ScoreBoard {
     const player = (participant: Participant): ScoreEntry => ({
       label:
         side.mode === 'online'
-          ? (participantName(t, names, side, participant) ??
-            (participant === side.seat ? t.online.you : t.online.rival))
+          ? side.seat === null
+            ? t.defaultName(participant + 1)
+            : (participantName(t, names, side, participant) ??
+              (participant === side.seat ? t.online.you : t.online.rival))
           : (participantName(t, names, side, participant) ?? t.defaultName(participant + 1)),
       bars: computer(participant) ? COMPUTER_LEVELS.indexOf(side.level) + 1 : null,
       levelName: computer(participant) ? t.settings.levels[side.level] : null,

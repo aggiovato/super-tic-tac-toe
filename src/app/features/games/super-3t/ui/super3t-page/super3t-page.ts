@@ -41,8 +41,11 @@ export class Super3tPage {
   protected readonly howToPlay = viewChild.required(HowToPlay);
   private readonly store = inject(Super3tStore);
   /** Boards won in the current game, for the title's TIP, TAP, TOE. */
-  protected readonly wonBoards = computed(
-    () => this.store.game().boards.filter((board) => board.kind === 'won').length,
+  protected readonly wonBoards = computed(() =>
+    // Not before the saved game is back: its boards were won before, not now.
+    this.store.ready()
+      ? this.store.game().boards.filter((board) => board.kind === 'won').length
+      : null,
   );
 
   constructor() {

@@ -1,6 +1,13 @@
-import { Component, type ElementRef, inject, viewChild } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  type ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { Translator } from '@i18n';
-import { Button, Icon } from '@ui';
+import { Button, Icon, trackTear } from '@ui';
 import { GameLibrary } from '../game-library/game-library';
 
 /**
@@ -18,6 +25,15 @@ import { GameLibrary } from '../game-library/game-library';
 export class GamesMenu {
   protected readonly t = inject(Translator).t;
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
+  private readonly head = viewChild.required<ElementRef<HTMLElement>>('head');
+  private readonly card = viewChild.required<ElementRef<HTMLElement>>('card');
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() =>
+      destroyRef.onDestroy(trackTear(this.head().nativeElement, this.card().nativeElement)),
+    );
+  }
 
   protected open(): void {
     this.dialog().nativeElement.showModal();

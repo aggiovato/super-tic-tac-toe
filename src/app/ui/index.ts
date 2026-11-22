@@ -18,6 +18,7 @@ export {
 } from './dom/flip';
 export { injectMediaQuery } from './dom/media-query';
 export { swipeToClose } from './dom/swipe-to-close';
+export { trackTear } from './dom/ticket-tear';
 export { Icon, type IconName } from './icon/icon';
 export { SplitFlap } from './split-flap/split-flap';
 export { Ticket } from './ticket/ticket';

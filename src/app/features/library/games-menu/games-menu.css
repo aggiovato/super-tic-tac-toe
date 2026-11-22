@@ -64,6 +64,14 @@
   }
 }
 
+/* The sheet's content in one card: plain on wide screens, the ticket on phones (below). */
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .sheet-head {
   display: flex;
   flex-direction: column;
@@ -92,18 +100,13 @@
 /* Phones: a bottom sheet as tall as its games need. */
 @media (max-width: 34.99rem) {
   :host {
-    --sheet-from: 0 100%;
+    --sheet-from: 0 calc(100% + 2rem);
     --sheet-duration: var(--duration-zoom);
   }
 
   .sheet {
-    inset: auto 0 0 0;
-    width: 100vw;
     height: auto;
-    max-height: 90dvh;
-    border-left: 0;
-    border-top: var(--border-hairline) solid var(--color-line);
-    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    max-height: calc(90dvh - var(--spacing-gutter));
   }
 
   .sheet-head {
@@ -118,6 +121,52 @@
     margin-block: var(--spacing-stack-tight);
     border-radius: var(--radius-pill);
     background: var(--color-line);
+  }
+}
+
+/*
+ * Phones: a departure ticket, like the how-to-play one. A Raven Deep card held off the edges with
+ * twice the panel radius and the upward ticket lift; the head is its stub, torn off along a dashed
+ * Raven Lift perforation with a notch cut on each side (`--tear-top`, kept at the head's height by
+ * `trackTear`). The shadow sits on the sheet, the notches on the card: a mask would cut the shadow.
+ */
+@media (max-width: 34.99rem) {
+  :host {
+    --ticket-notch: 0.65rem;
+  }
+
+  .sheet {
+    inset: auto var(--spacing-gutter) calc(var(--spacing-gutter) + env(safe-area-inset-bottom));
+    width: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+    filter: drop-shadow(0 -0.375rem 1.5rem var(--color-shade));
+  }
+
+  .card {
+    border-radius: calc(var(--radius-panel) * 2);
+    background: var(--color-surface-panel);
+    overflow: hidden;
+    mask:
+      radial-gradient(circle var(--ticket-notch) at 0 var(--tear-top, 6rem), transparent 98%, black)
+        left / 51% 100% no-repeat,
+      radial-gradient(
+          circle var(--ticket-notch) at 100% var(--tear-top, 6rem),
+          transparent 98%,
+          black
+        )
+        right / 51% 100% no-repeat;
+  }
+
+  .sheet-head {
+    border-bottom: var(--border-line) dashed var(--color-surface-raised);
+  }
+
+  /* The ticket's own veil (Ink at 70%), so the card and its notches stand out from the page. */
+  .sheet::backdrop {
+    background: var(--color-shade);
   }
 }
 

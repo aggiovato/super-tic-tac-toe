@@ -27,6 +27,14 @@ export class RoomCredentialsStore {
     this.write({ ...kept, [roomId]: credentials });
   }
 
+  /** Marks the seat in `roomId` as left, or taken back; nothing when this device holds none. */
+  setLeft(roomId: string, left: boolean): void {
+    const saved = this.get(roomId);
+    if (saved && !!saved.left !== left) {
+      this.write({ ...this.read(), [roomId]: { ...saved, left } });
+    }
+  }
+
   private read(): Record<string, RoomCredentials> {
     try {
       const raw = this.storage?.getItem(KEY);

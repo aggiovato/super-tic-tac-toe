@@ -1,33 +1,48 @@
 @if (room; as room) {
   <section class="online" [attr.aria-label]="t().online.title">
     <div class="head">
-      <!-- An always-present live region: connection changes and the rival joining are announced. -->
-      <div class="state" aria-live="polite" aria-atomic="true">
-        @if (room.problem(); as problem) {
-          <p class="line warn">{{ t().online.problems[problem] }}</p>
-        } @else if (waiting()) {
-          <p class="line lead">{{ t().online.waiting }}</p>
-        } @else if (status(); as status) {
-          <p class="line" [class.warn]="status.warn">
-            <span class="dot" [class.off]="status.warn" aria-hidden="true"></span>
-            {{ status.text }}
-          </p>
-        }
-      </div>
-      <div class="actions">
-        @if (room.problem() === 'unreachable') {
-          <button app-button="secondary" size="small" (click)="room.retry()">
-            {{ t().online.retry }}
-          </button>
-        }
-        <a app-button="quiet" size="small" [routerLink]="['/', gameId]">
-          {{ room.problem() ? t().online.playHere : t().online.leave }}
-        </a>
-      </div>
+      @if (players().length) {
+        <ul class="players">
+          @for (player of players(); track player.name) {
+            <li class="player">
+              <span [class]="'dot ' + player.presence" aria-hidden="true"></span>
+              <span class="name">{{ player.name }}</span>
+              <span class="word">{{ player.word }}</span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <h2 class="title">{{ t().online.title }}</h2>
+      }
+      <!-- Replaces this entry: the back button then skips the room instead of reopening it. -->
+      <a app-button="quiet" size="small" [routerLink]="['/', gameId]" [replaceUrl]="true">
+        {{ room.problem() || room.left() ? t().online.playHere : t().online.leave }}
+      </a>
     </div>
 
+    <!-- An always-present live region: connection changes and the rival joining are announced. -->
+    <div class="live" aria-live="polite" aria-atomic="true">
+      @if (note(); as note) {
+        <p class="note" [class.strong]="!waiting()">{{ note }}</p>
+      }
+    </div>
+
+    @if (room.left()) {
+      <p class="hint">{{ t().online.leftHint }}</p>
+      <div class="actions">
+        <button app-button="secondary" size="small" (click)="room.rejoin()">
+          {{ t().online.rejoin }}
+        </button>
+      </div>
+    } @else if (room.problem() === 'unreachable') {
+      <div class="actions">
+        <button app-button="secondary" size="small" (click)="room.retry()">
+          {{ t().online.retry }}
+        </button>
+      </div>
+    }
+
     @if (waiting() && room.invitation(); as link) {
-      <p class="hint">{{ t().online.waitingHint }}</p>
       <div class="share">
         <input
           type="text"
