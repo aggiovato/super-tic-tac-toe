@@ -3,7 +3,7 @@ import { ClassicStore } from '@classic/state';
 import { Translator } from '@i18n';
 import { DepartureBoard, type FlapTile } from '@kit';
 import type { Participant } from '@match';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { participantName } from '@shell';
 import type { Player } from '@tictac';
 

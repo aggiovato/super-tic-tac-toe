@@ -21,7 +21,7 @@ export const BUDGET_MS: Readonly<Record<Level, number>> = {
  */
 export const EXACT_LINES = 15;
 
-export interface OpponentOptions {
+export interface ComputerOptions {
   readonly level: Level;
   /** Integer seed for the whole game; each turn mixes it with the revision. */
   readonly seed: number;
@@ -106,7 +106,7 @@ function advanced(board: Board, random: Random, expired: () => boolean): number 
  * The Dots and Boxes opponent's line for the player to move, or null once the game is over. Seeded
  * by the game and the revision, so the same game replays the same choices.
  */
-export function chooseMove(state: GameState, options: OpponentOptions): Move | null {
+export function chooseMove(state: GameState, options: ComputerOptions): Move | null {
   if (!LEVELS.includes(options.level)) {
     throw new Error(`Unknown level: ${String(options.level)}`);
   }

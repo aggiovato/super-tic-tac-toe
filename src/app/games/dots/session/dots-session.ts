@@ -8,7 +8,7 @@ import {
   type RejectionReason,
   sizeOfVariant,
 } from '@dots/core';
-import { GameSession, Opponent, WorkerOpponent } from '@match';
+import { GameSession, ComputerPlayer, WorkerComputer } from '@match';
 
 /** Every Dots and Boxes move is applied by its engine, on a board of the game's size. */
 @Injectable()
@@ -22,11 +22,11 @@ export class DotsSession extends GameSession<GameState, Move, RejectionReason> {
   }
 }
 
-/** The Dots and Boxes opponent in its module Worker (`opponent.worker.ts`). */
+/** The Dots and Boxes computer player in its module Worker (`computer.worker.ts`). */
 @Injectable()
-export class DotsOpponent extends WorkerOpponent<Move> {
+export class DotsComputer extends WorkerComputer<Move> {
   protected createWorker(): Worker {
-    return new Worker(new URL('./opponent.worker', import.meta.url), { type: 'module' });
+    return new Worker(new URL('./computer.worker', import.meta.url), { type: 'module' });
   }
 }
 
@@ -34,6 +34,6 @@ export class DotsOpponent extends WorkerOpponent<Move> {
 export function provideDotsMatch(): Provider[] {
   return [
     { provide: GameSession, useClass: DotsSession },
-    { provide: Opponent, useClass: DotsOpponent },
+    { provide: ComputerPlayer, useClass: DotsComputer },
   ];
 }

@@ -8,16 +8,16 @@ export type {
   MatchRules,
   MatchState,
   Mode,
-  OpponentRequest,
+  ComputerRequest,
   Participant,
   SaveStatus,
 } from './match.model';
-export { LocalOpponent, OPPONENT_PACE_MS } from './local-opponent';
+export { LocalComputer, COMPUTER_PACE_MS } from './local-computer';
 export { MATCH_STORAGE, provideMatchStorage } from './match-storage';
-export { Opponent } from './opponent';
+export { ComputerPlayer } from './computer';
 export { withMatch } from './with-match';
 export {
-  type OpponentReplyMessage,
-  type OpponentRequestMessage,
-  WorkerOpponent,
-} from './worker-opponent';
+  type ComputerReplyMessage,
+  type ComputerRequestMessage,
+  WorkerComputer,
+} from './worker-computer';

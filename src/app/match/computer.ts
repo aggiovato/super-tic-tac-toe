@@ -1,4 +1,4 @@
-import type { OpponentRequest } from './match.model';
+import type { ComputerRequest } from './match.model';
 
 /**
  * The computer player of a game. `reply` resolves with a move for the player to move, or null to
@@ -6,7 +6,7 @@ import type { OpponentRequest } from './match.model';
  * fails; `cancel` drops the request in flight, which then resolves null. Callers only act on the
  * reply to their latest request.
  */
-export abstract class Opponent<M = unknown> {
-  abstract reply(request: OpponentRequest<M>): Promise<M | null>;
+export abstract class ComputerPlayer<M = unknown> {
+  abstract reply(request: ComputerRequest<M>): Promise<M | null>;
   abstract cancel(): void;
 }

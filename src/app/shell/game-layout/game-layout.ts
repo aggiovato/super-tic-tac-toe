@@ -1,7 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import { Translator } from '@i18n';
 import { Backdrop, Button, Icon } from '@kit';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { GameLibrary } from '../game-library/game-library';
 import { UpdateNotice } from '../update-notice/update-notice';
 

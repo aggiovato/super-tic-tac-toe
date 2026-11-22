@@ -2,7 +2,7 @@ import { applyMove, type GameState, initialState, legalMoves, type Move } from '
 import type { Player } from '@tictac';
 import { describe, expect, it } from 'vitest';
 import { Board } from './board';
-import { chooseMove, LEVELS, type Level } from './opponent';
+import { chooseMove, LEVELS, type Level } from './computer';
 
 const h = (row: number, col: number): Move => ({ orientation: 'h', row, col });
 const v = (row: number, col: number): Move => ({ orientation: 'v', row, col });

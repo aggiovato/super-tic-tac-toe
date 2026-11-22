@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { applyMove, initialState, legalMoves, type GameState, type Move } from '@super3t/core';
 import { parseMoves, play } from '@super3t/core/testing';
 import type { Level } from './models';
-import { chooseMove } from './opponent';
+import { chooseMove } from './computer';
 import { outcomes, winningMoves } from './tactics';
 import { createRandom, pickWeighted, turnSeed } from '@tictac';
 import { cellWeight } from '@tictac';

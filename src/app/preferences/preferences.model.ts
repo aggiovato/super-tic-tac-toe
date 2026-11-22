@@ -2,15 +2,15 @@ export type MotionSetting = 'system' | 'full' | 'reduced';
 export type Design = 'departures' | 'departures-contrast';
 /** Two people on one device, or a person against the computer. */
 export type PlayMode = 'humans' | 'opponent';
-/** Opponent levels every game offers, weakest first. */
-export type OpponentLevel = 'beginner' | 'intermediate' | 'advanced';
+/** ComputerPlayer levels every game offers, weakest first. */
+export type ComputerLevel = 'beginner' | 'intermediate' | 'advanced';
 /** The games of the app; each has its own route and its own way of playing. */
 export type GameId = 'super-3t' | 'classic' | 'dots';
 
 /** Who plays a game: two people, or a person against the computer at a level. */
 export interface PlaySetup {
   readonly mode: PlayMode;
-  readonly level: OpponentLevel;
+  readonly level: ComputerLevel;
   /** The game's variant (a board size), for games that have more than one. */
   readonly variant?: string;
 }

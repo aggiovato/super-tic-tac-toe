@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import type { Routes } from '@angular/router';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 
 /**
  * One route per game, each loaded on demand with its own providers. The app opens on the last game

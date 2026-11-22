@@ -1,8 +1,8 @@
 import { Component, computed, inject } from '@angular/core';
 import type { Player } from '@super3t/core';
 import { Translator } from '@i18n';
-import { Preferences } from '@settings';
-import { GameStore, type Participant } from '@super3t/state';
+import { Preferences } from '@preferences';
+import { Super3tStore, type Participant } from '@super3t/state';
 import { DepartureBoard, type FlapTile } from '@kit';
 import { participantName } from '@shell';
 
@@ -26,7 +26,7 @@ const word = (text: string, accent = false, steps?: number, length = WORD_LENGTH
   styleUrl: './departure-panel.css',
 })
 export class DeparturePanel {
-  protected readonly store = inject(GameStore);
+  protected readonly store = inject(Super3tStore);
   protected readonly t = inject(Translator).t;
   /** Who plays: the opponent is named after its level. */
   private readonly side = computed(() => ({ mode: this.store.mode(), level: this.store.level() }));

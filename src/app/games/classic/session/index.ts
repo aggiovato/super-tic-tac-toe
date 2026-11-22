@@ -1,1 +1,1 @@
-export { ClassicOpponent, ClassicSession, provideClassicMatch } from './classic-session';
+export { ClassicComputer, ClassicSession, provideClassicMatch } from './classic-session';

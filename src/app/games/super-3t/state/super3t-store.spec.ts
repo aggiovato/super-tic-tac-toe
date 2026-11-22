@@ -1,20 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import type { Move } from '@super3t/core';
 import { GLOBAL_DIAGONAL_WIN, GLOBAL_DRAW, parseMoves } from '@super3t/core/testing';
-import { Opponent, type OpponentRequest } from '@match';
-import { provideLocalGameSession } from '@super3t/session';
-import { GameStore } from './game-store';
+import { ComputerPlayer, type ComputerRequest } from '@match';
+import { provideSuper3tSession } from '@super3t/session';
+import { Super3tStore } from './super3t-store';
 
 /** An opponent the test answers by hand: in time, late, wrongly or not at all. */
-class FakeOpponent extends Opponent<Move> {
-  readonly requests: OpponentRequest<Move>[] = [];
+class FakeComputer extends ComputerPlayer<Move> {
+  readonly requests: ComputerRequest<Move>[] = [];
   cancels = 0;
   private readonly settles: {
     resolve: (move: Move | null) => void;
     reject: (error: Error) => void;
   }[] = [];
 
-  reply(request: OpponentRequest<Move>): Promise<Move | null> {
+  reply(request: ComputerRequest<Move>): Promise<Move | null> {
     this.requests.push(request);
     return new Promise((resolve, reject) => this.settles.push({ resolve, reject }));
   }
@@ -38,31 +38,35 @@ class FakeOpponent extends Opponent<Move> {
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const at = (notation: string): Move => parseMoves(notation)[0];
 
-function setup(): GameStore {
+function setup(): Super3tStore {
   return setupWith().store;
 }
 
-function setupWith(): { store: GameStore; opponent: FakeOpponent } {
-  const opponent = new FakeOpponent();
+function setupWith(): { store: Super3tStore; opponent: FakeComputer } {
+  const opponent = new FakeComputer();
   TestBed.configureTestingModule({
-    providers: [provideLocalGameSession(), { provide: Opponent, useValue: opponent }, GameStore],
+    providers: [
+      provideSuper3tSession(),
+      { provide: ComputerPlayer, useValue: opponent },
+      Super3tStore,
+    ],
   });
-  return { store: TestBed.inject(GameStore), opponent };
+  return { store: TestBed.inject(Super3tStore), opponent };
 }
 
-function againstOpponent(): { store: GameStore; opponent: FakeOpponent } {
+function againstComputer(): { store: Super3tStore; opponent: FakeComputer } {
   const setup = setupWith();
   setup.store.setMode('opponent', 'beginner');
   return setup;
 }
 
-function playAll(store: GameStore, notation: string): void {
+function playAll(store: Super3tStore, notation: string): void {
   for (const move of parseMoves(notation)) {
     store.play(move);
   }
 }
 
-describe('GameStore', () => {
+describe('Super3tStore', () => {
   it('starts with X to move anywhere and the whole board in view', () => {
     const store = setup();
     expect(store.game().turn).toBe('X');
@@ -169,7 +173,7 @@ describe('GameStore', () => {
 
   describe('against the computer', () => {
     it('starts a new series with the person playing X', () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       expect(store.mode()).toBe('opponent');
       expect(store.symbolOf(0)).toBe('X');
       expect(store.toMove()).toBe(0);
@@ -177,7 +181,7 @@ describe('GameStore', () => {
     });
 
     it('asks for a reply after the person moves, then plays it', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       expect(store.thinking()).toBe(true);
       expect(store.legal()).toHaveLength(0);
@@ -188,12 +192,12 @@ describe('GameStore', () => {
       await flush();
       expect(store.game().moves).toEqual([at('4.2'), at('2.4')]);
       expect(store.thinking()).toBe(false);
-      expect(store.opponentMoves()).toBe(1);
+      expect(store.computerMoves()).toBe(1);
       expect(store.toMove()).toBe(0);
     });
 
     it('ignores the person while the opponent thinks', () => {
-      const { store } = againstOpponent();
+      const { store } = againstComputer();
       store.play(at('4.2'));
       store.play(at('2.4'));
       expect(store.game().moves).toEqual([at('4.2')]);
@@ -201,18 +205,18 @@ describe('GameStore', () => {
     });
 
     it('cancels the request on undo and plays nothing for it', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       store.undo();
       expect(opponent.cancels).toBe(1);
       expect(store.thinking()).toBe(false);
       await flush();
       expect(store.game().moves).toEqual([]);
-      expect(store.opponentMoves()).toBe(0);
+      expect(store.computerMoves()).toBe(0);
     });
 
     it('ignores a cancelled request when an undo and a replay reach the same revision', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       store.undo();
       store.play(at('4.2'));
@@ -227,18 +231,18 @@ describe('GameStore', () => {
     });
 
     it('lets the opponent pass: a null reply plays nothing and keeps the board locked', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       opponent.answer(null);
       await flush();
       expect(store.game().moves).toEqual([at('4.2')]);
       expect(store.thinking()).toBe(false);
-      expect(store.opponentTurn()).toBe(true);
+      expect(store.computerTurn()).toBe(true);
       expect(store.legal()).toEqual([]);
     });
 
     it('drops a reply that arrives after a rematch', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       store.rematch();
       // The opponent now plays X and opens the new game with a second request.
@@ -254,7 +258,7 @@ describe('GameStore', () => {
     });
 
     it('plays nothing into a store whose route is gone', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       TestBed.resetTestingModule();
       expect(opponent.cancels).toBe(1);
@@ -264,7 +268,7 @@ describe('GameStore', () => {
     });
 
     it("takes back the reply and the person's move together", async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       opponent.answer(at('2.4'));
       await flush();
@@ -275,7 +279,7 @@ describe('GameStore', () => {
     });
 
     it('opens as X after a rematch and leaves nothing to undo yet', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.rematch();
       expect(store.symbolOf(1)).toBe('X');
       expect(opponent.requests[0]?.moves).toEqual([]);
@@ -286,7 +290,7 @@ describe('GameStore', () => {
     });
 
     it('plays a legal move when the reply is illegal or the opponent fails', async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.play(at('4.2'));
       opponent.answer(at('0.0'));
       await flush();
@@ -304,7 +308,7 @@ describe('GameStore', () => {
     });
 
     it("counts the opponent's win once", async () => {
-      const { store, opponent } = againstOpponent();
+      const { store, opponent } = againstComputer();
       store.rematch();
       // The opponent plays X's moves of the fixture, the person O's.
       for (const [index, move] of parseMoves(GLOBAL_DIAGONAL_WIN).entries()) {

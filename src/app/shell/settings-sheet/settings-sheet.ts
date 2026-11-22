@@ -15,13 +15,13 @@ import {
   DESIGNS,
   type MotionSetting,
   NAME_MAX_LENGTH,
-  type OpponentLevel,
-  OPPONENT_LEVELS,
+  type ComputerLevel,
+  COMPUTER_LEVELS,
   PLAY_MODES,
   type PlayMode,
   type PlaySetup,
   Preferences,
-} from '@settings';
+} from '@preferences';
 import { ACTIVE_GAME } from '../active-game';
 import { CONFIRM_WINDOW_MS, TwoPress } from '../two-press';
 
@@ -78,8 +78,8 @@ export class SettingsSheet {
     PLAY_MODES.map((mode) => ({ value: mode, label: this.t().settings.modes[mode] })),
   );
 
-  protected readonly levelOptions = computed((): readonly ChoiceOption<OpponentLevel>[] =>
-    OPPONENT_LEVELS.map((level, i) => ({
+  protected readonly levelOptions = computed((): readonly ChoiceOption<ComputerLevel>[] =>
+    COMPUTER_LEVELS.map((level, i) => ({
       value: level,
       label: this.t().opponents[level],
       bars: i + 1,
@@ -143,7 +143,7 @@ export class SettingsSheet {
     this.requestSetup({ mode, level: this.shownLevel() });
   }
 
-  protected setLevel(level: OpponentLevel): void {
+  protected setLevel(level: ComputerLevel): void {
     this.requestSetup({ mode: 'opponent', level });
   }
 

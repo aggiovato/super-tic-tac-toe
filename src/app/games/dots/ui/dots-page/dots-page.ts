@@ -1,6 +1,6 @@
 import { afterNextRender, Component, inject, viewChild } from '@angular/core';
 import { Translator } from '@i18n';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import {
   BrandTitle,
   GameActions,

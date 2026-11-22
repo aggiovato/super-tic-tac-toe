@@ -1,7 +1,7 @@
 import { afterNextRender, Component, computed, inject, viewChild } from '@angular/core';
 import { Translator } from '@i18n';
-import { Preferences } from '@settings';
-import { GameStore } from '@super3t/state';
+import { Preferences } from '@preferences';
+import { Super3tStore } from '@super3t/state';
 import {
   BrandTitle,
   GameActions,
@@ -13,18 +13,18 @@ import {
   SettingsSheet,
 } from '@shell';
 import { DeparturePanel } from '../departure-panel/departure-panel';
-import { GameBoard } from '../game-board/game-board';
+import { Super3tBoard } from '../super3t-board/super3t-board';
 import { HowToPlay } from '../how-to-play/how-to-play';
 import { Super3tSettings } from '../super3t-settings/super3t-settings';
 
 /** The game route: lays out the name, the departure panel, the board, the score and the actions. */
 @Component({
-  selector: 'app-game-page',
+  selector: 'app-super3t-page',
   imports: [
     BrandTitle,
     DeparturePanel,
     GameActions,
-    GameBoard,
+    Super3tBoard,
     GameLayout,
     GamesMenu,
     HistoryLink,
@@ -34,12 +34,12 @@ import { Super3tSettings } from '../super3t-settings/super3t-settings';
     SettingsSheet,
     Super3tSettings,
   ],
-  templateUrl: './game-page.html',
+  templateUrl: './super3t-page.html',
 })
-export class GamePage {
+export class Super3tPage {
   protected readonly t = inject(Translator).t;
   protected readonly howToPlay = viewChild.required(HowToPlay);
-  private readonly store = inject(GameStore);
+  private readonly store = inject(Super3tStore);
   /** Boards won in the current game, for the title's TIP, TAP, TOE. */
   protected readonly wonBoards = computed(
     () => this.store.game().boards.filter((board) => board.kind === 'won').length,

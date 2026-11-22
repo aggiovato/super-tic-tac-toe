@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import type { OpponentReplyMessage, OpponentRequestMessage } from './opponent-message.model';
-import { OPPONENT_PACE_MS } from '@match';
-import { WorkerOpponent } from './worker-opponent';
+import type { ComputerReplyMessage, ComputerRequestMessage } from './computer-message.model';
+import { COMPUTER_PACE_MS } from '@match';
+import { WorkerComputer } from './worker-computer';
 
 /** Stands in for the module Worker: records what is posted and lets the test answer or crash. */
 class FakeWorker extends EventTarget {
   static readonly created: FakeWorker[] = [];
-  readonly posted: OpponentRequestMessage[] = [];
+  readonly posted: ComputerRequestMessage[] = [];
   terminated = false;
 
   constructor() {
@@ -14,7 +14,7 @@ class FakeWorker extends EventTarget {
     FakeWorker.created.push(this);
   }
 
-  postMessage(message: OpponentRequestMessage): void {
+  postMessage(message: ComputerRequestMessage): void {
     this.posted.push(message);
   }
 
@@ -22,7 +22,7 @@ class FakeWorker extends EventTarget {
     this.terminated = true;
   }
 
-  reply(data: OpponentReplyMessage): void {
+  reply(data: ComputerReplyMessage): void {
     this.dispatchEvent(new MessageEvent('message', { data }));
   }
 
@@ -33,15 +33,15 @@ class FakeWorker extends EventTarget {
 
 const request = { moves: [], level: 'beginner' as const, seed: 1, variant: '' };
 
-describe('WorkerOpponent', () => {
-  let opponent: WorkerOpponent;
+describe('WorkerComputer', () => {
+  let opponent: WorkerComputer;
 
   beforeEach(() => {
     vi.useFakeTimers();
     vi.stubGlobal('Worker', FakeWorker);
     FakeWorker.created.length = 0;
-    TestBed.configureTestingModule({ providers: [WorkerOpponent] });
-    opponent = TestBed.inject(WorkerOpponent);
+    TestBed.configureTestingModule({ providers: [WorkerComputer] });
+    opponent = TestBed.inject(WorkerComputer);
   });
 
   afterEach(() => {
@@ -58,7 +58,7 @@ describe('WorkerOpponent', () => {
     const worker = FakeWorker.created[0];
     expect(FakeWorker.created).toHaveLength(1);
     worker?.reply({ id: worker.posted[0]?.id ?? -1, move: { board: 4, cell: 4 } });
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS - 1);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS - 1);
     expect(answered).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
     await expect(reply).resolves.toEqual({ board: 4, cell: 4 });
@@ -67,7 +67,7 @@ describe('WorkerOpponent', () => {
   it('cancels by resolving null and terminating a busy Worker', async () => {
     const reply = opponent.reply(request);
     opponent.cancel();
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS);
     await expect(reply).resolves.toBeNull();
     expect(FakeWorker.created[0]?.terminated).toBe(true);
 
@@ -83,7 +83,7 @@ describe('WorkerOpponent', () => {
     const current = FakeWorker.created.at(-1);
     current?.reply({ id: first, move: { board: 0, cell: 0 } });
     current?.reply({ id: current.posted.at(-1)?.id ?? -1, move: { board: 8, cell: 8 } });
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS);
     await expect(second).resolves.toEqual({ board: 8, cell: 8 });
   });
 
@@ -92,7 +92,7 @@ describe('WorkerOpponent', () => {
     const assertion = expect(reply).rejects.toThrow('bad level');
     const worker = FakeWorker.created[0];
     worker?.reply({ id: worker.posted[0]?.id ?? -1, error: 'bad level' });
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS);
     await assertion;
   });
 
@@ -100,7 +100,7 @@ describe('WorkerOpponent', () => {
     const failed = opponent.reply(request);
     const assertion = expect(failed).rejects.toThrow('boom');
     FakeWorker.created[0]?.crash();
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS);
     await assertion;
     expect(FakeWorker.created[0]?.terminated).toBe(true);
 
@@ -108,7 +108,7 @@ describe('WorkerOpponent', () => {
     const fresh = FakeWorker.created[1];
     expect(fresh).toBeDefined();
     fresh?.reply({ id: fresh.posted[0]?.id ?? -1, move: { board: 2, cell: 2 } });
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS);
     await expect(next).resolves.toEqual({ board: 2, cell: 2 });
   });
 

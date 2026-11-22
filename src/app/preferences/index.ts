@@ -2,15 +2,15 @@ export {
   DESIGNS,
   GAME_IDS,
   NAME_MAX_LENGTH,
-  OPPONENT_LEVELS,
+  COMPUTER_LEVELS,
   PLAY_MODES,
   Preferences,
-} from './preferences';
+} from './player-preferences';
 export type {
   Design,
   GameId,
   MotionSetting,
-  OpponentLevel,
+  ComputerLevel,
   PlayMode,
   PlaySetup,
   PreferencesState,

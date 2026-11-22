@@ -43,15 +43,15 @@ offered by `UpdateNotice` (`AppUpdates` in `@shell`) only once the game is saved
 Chromium (desktop, Pixel 7), Firefox and WebKit. Next: the release that closes the phase, then
 phase 6 (online by invitation).
 
-| Phase         | Accepted when…                                                                        |
-| ------------- | ------------------------------------------------------------------------------------- |
-| 0 Bootstrap   | A clean clone installs from the lockfile and CI runs the available checks.            |
-| 1 Engine      | The six reference scenarios, the eight lines and the sequence invariants pass.        |
-| 2 Two humans  | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
-| 3 Opponent ✓  | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
-| 4 Local MVP ✓ | A game resumes mid-turn and each game counts a single result.                         |
-| 5 PWA beta    | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
-| 6–7           | Online by invitation, accounts.                                                       |
+| Phase              | Accepted when…                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| 0 Bootstrap        | A clean clone installs from the lockfile and CI runs the available checks.            |
+| 1 Engine           | The six reference scenarios, the eight lines and the sequence invariants pass.        |
+| 2 Two humans       | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
+| 3 ComputerPlayer ✓ | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
+| 4 Local MVP ✓      | A game resumes mid-turn and each game counts a single result.                         |
+| 5 PWA beta         | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
+| 6–7                | Online by invitation, accounts.                                                       |
 
 Update this table when a phase closes.
 
@@ -96,20 +96,40 @@ deploys (`cloudflare` by default, `netlify`, or `cloudflare,netlify`); its job w
 SPA fallback (`_redirects`) before deploying, with the secrets `NETLIFY_AUTH_TOKEN` and
 `NETLIFY_SITE_ID`.
 
+## Glossary
+
+One word per idea, in code, tests and docs (user-facing copy keeps its own words: "Rival", the
+train names).
+
+| Term            | Meaning                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| game            | One game from the opening to its result (`GameRecord`, `id`).                                     |
+| series          | Games between the same sides, with their score; a rematch is a new game in the same series.       |
+| match           | The running pair of a series and its current game in a store (`@match`, `withMatch`).             |
+| participant     | Side 0 or 1 of a series; the X and O symbols swap between them on each rematch.                   |
+| computer player | The machine on side 1 (`ComputerPlayer`, `WorkerComputer`, `LocalComputer`, `ai/computer.ts`).    |
+| level           | How strong the computer plays (`ComputerLevel`: beginner, intermediate, advanced).                |
+| move / revision | One accepted action of the engine / the count of them, which orders saves and, later, the server. |
+| variant         | A game's shape that is not a rule change, e.g. the Dots board size (`'3'`, `'5'`).                |
+| preferences     | What a person chose on this device (`@preferences`); the Settings sheet edits them.               |
+
+The stored values `PlayMode` `'humans' | 'opponent'` keep their names until the records move to seats
+(schema 2).
+
 ## Layers and boundaries
 
-| Path                              | Responsibility                                      | May import                                    |
-| --------------------------------- | --------------------------------------------------- | --------------------------------------------- |
-| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3         | Local TypeScript only                         |
-| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                | `tictac`                                      |
-| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                  | `core`                                        |
-| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging          | `core`, `ai`                                  |
-| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker      | `core`, `ai`, `challenge`, `storage`          |
-| `src/app/games/<game>/state/`     | GameStore (SignalStore) provided on the route       | `core`, `session`                             |
-| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                         |
-| `src/app/match/`                  | `withMatch` (play and storage), sessions, opponents | `tictac`, `settings`, `storage`               |
-| `src/app/shell/`                  | Layout, game library, settings, history, updates    | `match`, `kit`, `settings`, `i18n`, `storage` |
-| `src/app/storage/`                | Game and series records, IndexedDB and memory       | `settings` types                              |
+| Path                              | Responsibility                                     | May import                                       |
+| --------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
+| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3        | Local TypeScript only                            |
+| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.               | `tictac`                                         |
+| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                 | `core`                                           |
+| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging         | `core`, `ai`                                     |
+| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker     | `core`, `ai`, `challenge`, `storage`             |
+| `src/app/games/<game>/state/`     | Super3tStore (SignalStore) provided on the route   | `core`, `session`                                |
+| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                 | `state`, `core` types                            |
+| `src/app/match/`                  | `withMatch` (play and storage), sessions, computer | `tictac`, `preferences`, `storage`               |
+| `src/app/shell/`                  | Layout, game library, settings, history, updates   | `match`, `kit`, `preferences`, `i18n`, `storage` |
+| `src/app/storage/`                | Game and series records, IndexedDB and memory      | `preferences` types                              |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
@@ -124,7 +144,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/app/games/dots/<layer>/`     |
 | `@match`, `@shell`                                       | `src/app/<block>/`                |
 | `@storage`, `@i18n`                                      | `src/app/<block>/`                |
-| `@settings` (player preferences)                         | `src/app/settings/`               |
+| `@preferences` (player preferences)                      | `src/app/preferences/`            |
 | `@kit` (shared UI: flap, button…)                        | `src/app/kit/`                    |
 
 Another block is imported only through its alias (`import { applyMove } from '@super3t/core'`), never

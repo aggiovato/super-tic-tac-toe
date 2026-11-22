@@ -11,7 +11,7 @@ import { boxesBeside, type Player, sameMove } from '@dots/core';
 import { DotsStore } from '@dots/state';
 import { Translator } from '@i18n';
 import { ClosingMark } from '@kit';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { participantName } from '@shell';
 import { nearestSlot, nextSlot, slotsOf } from './dots-geometry';
 import type { LineSlot } from './line-slot.model';

@@ -10,7 +10,7 @@ import {
   type MoveResult,
   type RejectionReason,
 } from '@classic/core';
-import { GameSession, LocalOpponent, Opponent, type OpponentRequest } from '@match';
+import { GameSession, LocalComputer, ComputerPlayer, type ComputerRequest } from '@match';
 
 /** Every classic move is applied by its engine. */
 @Injectable()
@@ -26,8 +26,8 @@ export class ClassicSession extends GameSession<GameState, Move, RejectionReason
 
 /** The classic opponent: a solved game, so it thinks on the main thread, at the usual pace. */
 @Injectable()
-export class ClassicOpponent extends LocalOpponent<Move> {
-  protected choose({ moves, level, seed }: OpponentRequest<Move>): Move | null {
+export class ClassicComputer extends LocalComputer<Move> {
+  protected choose({ moves, level, seed }: ComputerRequest<Move>): Move | null {
     const game = replay(moves, RULES_VERSION);
     return game.ok ? chooseMove(game.state, { level, seed }) : null;
   }
@@ -37,6 +37,6 @@ export class ClassicOpponent extends LocalOpponent<Move> {
 export function provideClassicMatch(): Provider[] {
   return [
     { provide: GameSession, useClass: ClassicSession },
-    { provide: Opponent, useClass: ClassicOpponent },
+    { provide: ComputerPlayer, useClass: ClassicComputer },
   ];
 }

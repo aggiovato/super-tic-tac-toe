@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { applyMove, initialState, legalMoves, type GameState } from '@super3t/core';
 import { parseMoves } from '@super3t/core/testing';
 import type { Level } from './models';
-import { chooseMove } from './opponent';
+import { chooseMove } from './computer';
 import { LONG_GAME } from './testing';
 
 // Counts the engine's work instead of timing it: a deterministic budget that does not depend on the

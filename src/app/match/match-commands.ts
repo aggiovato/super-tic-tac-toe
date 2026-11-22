@@ -6,8 +6,8 @@ import { type MatchTurnsStore, newId, other, takeBack } from './match-turns';
 /** What the player's commands read and call on the store. */
 export interface MatchCommandsStore<S, M, R> extends MatchTurnsStore<S, M, R> {
   readonly _accept: (game: S) => void;
-  readonly _requestOpponent: () => void;
-  readonly _stopOpponent: () => void;
+  readonly _requestComputer: () => void;
+  readonly _stopComputer: () => void;
   readonly _startGame: (changes: Partial<MatchState<S, R>>) => void;
 }
 
@@ -28,7 +28,7 @@ export function matchCommands<S extends MatchGame<M>, M, R>(
   return {
     /** Refused moves are recorded; accepted ones may hand the turn over. */
     play(move: M): void {
-      if (store.opponentTurn() || !store.ready()) {
+      if (store.computerTurn() || !store.ready()) {
         return;
       }
       const result = store._session.play(store.position(), move);
@@ -37,13 +37,13 @@ export function matchCommands<S extends MatchGame<M>, M, R>(
         return;
       }
       store._accept(result.state);
-      store._requestOpponent();
+      store._requestComputer();
     },
 
     /** Takes back the last move while the game goes on; against the computer, back to your turn. */
     undo(): void {
       if (store.canUndo() && store.ready()) {
-        store._stopOpponent();
+        store._stopComputer();
         takeBack(store, rules);
       }
     },

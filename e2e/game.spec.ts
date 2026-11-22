@@ -276,7 +276,7 @@ test('the three boards that win the game flash', async ({ page }) => {
 });
 
 /** Switches to playing against the computer from the settings panel. */
-async function againstOpponent(page: Page): Promise<void> {
+async function againstComputer(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.getByRole('radio', { name: 'Against the opponent' }).check();
   await page.getByRole('button', { name: 'Close settings' }).click();
@@ -309,7 +309,7 @@ test.describe('against the opponent', () => {
     page,
     isMobile,
   }) => {
-    await againstOpponent(page);
+    await againstComputer(page);
     await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
     for (let round = 0; round < 3; round++) {
       await playAnyLegal(page);
@@ -333,7 +333,7 @@ test.describe('against the opponent', () => {
 
   test('undo takes back the reply and your move', async ({ page, isMobile }) => {
     test.skip(isMobile, 'The board counts are read on the whole board');
-    await againstOpponent(page);
+    await againstComputer(page);
     const undo = page.getByRole('button', { name: 'Undo' });
     await expect(undo).toBeDisabled();
     await playAnyLegal(page);
@@ -366,7 +366,7 @@ test.describe('against the opponent', () => {
     ['Advanced', 'Express'],
   ]) {
     test(`the ${level.toLowerCase()} level answers too, and is remembered`, async ({ page }) => {
-      await againstOpponent(page);
+      await againstComputer(page);
       await page.getByRole('button', { name: 'Settings' }).click();
       await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
@@ -382,7 +382,7 @@ test.describe('against the opponent', () => {
   }
 
   test('the mode is remembered after a reload', async ({ page }) => {
-    await againstOpponent(page);
+    await againstComputer(page);
     await page.reload();
     await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
     await page.getByRole('button', { name: 'Settings' }).click();
@@ -673,7 +673,7 @@ test.describe('saving and resuming', () => {
     page,
     isMobile,
   }) => {
-    await againstOpponent(page);
+    await againstComputer(page);
     await play(page, 4, 2);
     // Reload once X's move is written (saving is asynchronous, slower on CI) and, as a rule, before
     // the reply lands: the saved game stopped on the opponent's turn. "Saved" shows once the

@@ -9,7 +9,7 @@ import {
   input,
   linkedSignal,
 } from '@angular/core';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { drumPath } from './drum';
 
 const STAGGER_MS = 35;

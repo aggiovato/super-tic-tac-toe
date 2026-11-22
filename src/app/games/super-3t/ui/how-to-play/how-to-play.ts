@@ -2,8 +2,8 @@ import { Component, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
 import { Button, Ticket } from '@kit';
-import { Preferences } from '@settings';
-import { GameStore } from '@super3t/state';
+import { Preferences } from '@preferences';
+import { Super3tStore } from '@super3t/state';
 
 /**
  * How to play: a departure ticket with the four rules, each beside a tiny board drawing, over the
@@ -21,7 +21,7 @@ import { GameStore } from '@super3t/state';
 export class HowToPlay {
   protected readonly t = inject(Translator).t;
   private readonly preferences = inject(Preferences);
-  protected readonly store = inject(GameStore);
+  protected readonly store = inject(Super3tStore);
   private readonly ticket = viewChild.required(Ticket);
 
   open(): void {

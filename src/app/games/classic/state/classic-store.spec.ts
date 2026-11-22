@@ -2,17 +2,17 @@ import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { Move } from '@classic/core';
 import { ClassicSession } from '@classic/session';
-import { GameSession, Opponent, type OpponentRequest, provideMatchStorage } from '@match';
-import { Preferences } from '@settings';
+import { GameSession, ComputerPlayer, type ComputerRequest, provideMatchStorage } from '@match';
+import { Preferences } from '@preferences';
 import { GameRepository, MemoryRepository, SaveError, type StoredSeries } from '@storage';
 import { ClassicStore } from './classic-store';
 
 /** An opponent the test answers by hand. */
-class FakeOpponent extends Opponent<Move> {
-  readonly requests: OpponentRequest<Move>[] = [];
+class FakeComputer extends ComputerPlayer<Move> {
+  readonly requests: ComputerRequest<Move>[] = [];
   private settle: ((move: Move | null) => void) | undefined;
 
-  reply(request: OpponentRequest<Move>): Promise<Move | null> {
+  reply(request: ComputerRequest<Move>): Promise<Move | null> {
     this.requests.push(request);
     return new Promise((resolve) => (this.settle = resolve));
   }
@@ -67,11 +67,11 @@ async function settle(): Promise<void> {
  * A classic store in its own injector, like a tab: several can be open at once over the same
  * `repository`, and opening another after one is a reload of the same browser.
  */
-async function open(repository: MemoryRepository, opponent = new FakeOpponent()) {
+async function open(repository: MemoryRepository, opponent = new FakeComputer()) {
   const tab = createEnvironmentInjector(
     [
       { provide: GameSession, useClass: ClassicSession },
-      { provide: Opponent, useValue: opponent },
+      { provide: ComputerPlayer, useValue: opponent },
       { provide: GameRepository, useValue: repository },
       provideMatchStorage('classic'),
       ClassicStore,

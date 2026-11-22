@@ -12,7 +12,7 @@ import {
 export type Level = 'beginner' | 'intermediate' | 'advanced';
 export const LEVELS: readonly Level[] = ['beginner', 'intermediate', 'advanced'];
 
-export interface OpponentOptions {
+export interface ComputerOptions {
   readonly level: Level;
   /** Integer seed for the whole game; each turn mixes it with the revision. */
   readonly seed: number;
@@ -76,7 +76,7 @@ export function bestMoves(state: GameState): Move[] {
  * - intermediate: also blocks the opponent's winning cell;
  * - advanced: perfect play (it never loses), varied among equally good moves by the seed.
  */
-export function chooseMove(state: GameState, { level, seed }: OpponentOptions): Move | null {
+export function chooseMove(state: GameState, { level, seed }: ComputerOptions): Move | null {
   const moves = legalMoves(state);
   if (moves.length === 0) {
     return null;

@@ -19,7 +19,7 @@ const sameMove = (a: Move, b: Move): boolean => a.board === b.board && a.cell ==
  * Super 3T's store: a match (`withMatch`: series, symbols, undo, the opponent's turn) plus what only
  * this game has, the open board and the departure preview.
  */
-export const GameStore = signalStore(
+export const Super3tStore = signalStore(
   withMatch<GameState, Move, RejectionReason>({ legalMoves, replay, sameMove, apply: applyMove }),
   // Every new position (a move, a reply, an undo, a new game) starts on the whole board, with no
   // preview; the UI decides whether to open the next board.
@@ -64,4 +64,4 @@ export const GameStore = signalStore(
   })),
 );
 
-export type GameStore = InstanceType<typeof GameStore>;
+export type Super3tStore = InstanceType<typeof Super3tStore>;

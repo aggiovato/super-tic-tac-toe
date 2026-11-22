@@ -3,7 +3,7 @@ import type {
   Design,
   GameId,
   MotionSetting,
-  OpponentLevel,
+  ComputerLevel,
   PlayMode,
   PlaySetup,
   PreferencesState,
@@ -12,15 +12,15 @@ import type {
 export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
 export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
-export const OPPONENT_LEVELS: readonly OpponentLevel[] = ['beginner', 'intermediate', 'advanced'];
+export const COMPUTER_LEVELS: readonly ComputerLevel[] = ['beginner', 'intermediate', 'advanced'];
 export const GAME_IDS: readonly GameId[] = ['super-3t', 'classic', 'dots'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 
 const isDesign = (value: unknown): value is Design => DESIGNS.some((design) => design === value);
 const isMode = (value: unknown): value is PlayMode => PLAY_MODES.some((mode) => mode === value);
-const isLevel = (value: unknown): value is OpponentLevel =>
-  OPPONENT_LEVELS.some((level) => level === value);
+const isLevel = (value: unknown): value is ComputerLevel =>
+  COMPUTER_LEVELS.some((level) => level === value);
 const isGame = (value: unknown): value is GameId => GAME_IDS.some((game) => game === value);
 const TWO_PEOPLE: PlaySetup = { mode: 'humans', level: 'beginner' };
 

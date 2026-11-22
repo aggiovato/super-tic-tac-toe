@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { CHALLENGES } from '@super3t/challenge';
 import type { Move } from '@super3t/core';
-import { ChallengeOpponent } from './challenge-opponent';
+import { ChallengeComputer } from './challenge-computer';
 import { ChallengeRun } from './challenge-run';
 import { ChallengeSession } from './challenge-session';
-import { OPPONENT_PACE_MS } from '@match';
+import { COMPUTER_PACE_MS } from '@match';
 
 // The easy challenge: X is forced onto board 2 and 2.8 is the key move.
 const easy = CHALLENGES[0];
@@ -14,16 +14,16 @@ const WRONG: Move = { board: 2, cell: 0 };
 describe('the challenge session and its defender', () => {
   let run: ChallengeRun;
   let session: ChallengeSession;
-  let opponent: ChallengeOpponent;
+  let opponent: ChallengeComputer;
 
   beforeEach(() => {
     vi.useFakeTimers();
     TestBed.configureTestingModule({
-      providers: [ChallengeRun, ChallengeSession, ChallengeOpponent],
+      providers: [ChallengeRun, ChallengeSession, ChallengeComputer],
     });
     run = TestBed.inject(ChallengeRun);
     session = TestBed.inject(ChallengeSession);
-    opponent = TestBed.inject(ChallengeOpponent);
+    opponent = TestBed.inject(ChallengeComputer);
     if (easy) {
       run.challenge.set(easy);
     }
@@ -45,7 +45,7 @@ describe('the challenge session and its defender', () => {
       .then((move) => {
         reply = move;
       });
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS - 1);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS - 1);
     expect(reply).toBeUndefined();
     await vi.advanceTimersByTimeAsync(1);
     expect(reply?.board).toBe(8);
@@ -58,7 +58,7 @@ describe('the challenge session and its defender', () => {
       seed: 1,
       variant: '',
     });
-    await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
+    await vi.advanceTimersByTimeAsync(COMPUTER_PACE_MS);
     expect(await answer).toBeNull();
   });
 

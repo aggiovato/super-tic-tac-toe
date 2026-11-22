@@ -1,5 +1,5 @@
 import type { Signal } from '@angular/core';
-import type { OpponentLevel, PlayMode } from '@settings';
+import type { ComputerLevel, PlayMode } from '@preferences';
 import type { SaveFailure } from '@storage';
 import type { Player } from '@tictac';
 
@@ -10,7 +10,7 @@ export type Participant = 0 | 1;
 export type Mode = PlayMode;
 
 /** How strong the computer plays. */
-export type Level = OpponentLevel;
+export type Level = ComputerLevel;
 
 /** How a game stands, in any game of the family: a win need not be a line (boxes are counted). */
 export type MatchStatus =
@@ -31,7 +31,7 @@ export type MatchResult<S, R> =
   { readonly ok: true; readonly state: S } | { readonly ok: false; readonly reason: R };
 
 /** What the opponent needs to reply: the game so far and how to play it. */
-export interface OpponentRequest<M> {
+export interface ComputerRequest<M> {
   /** Accepted moves in order; the opponent rebuilds the position from them. */
   readonly moves: readonly M[];
   readonly level: Level;
@@ -76,8 +76,8 @@ export interface MatchState<S, R> {
   readonly level: Level;
   /** The opponent is working on its reply; the player cannot move meanwhile. */
   readonly thinking: boolean;
-  /** Opponent moves applied so far; a board can watch it to follow the reply. */
-  readonly opponentMoves: number;
+  /** ComputerPlayer moves applied so far; a board can watch it to follow the reply. */
+  readonly computerMoves: number;
   readonly lastRejection: R | null;
   /** Participant playing X in the current game. X always starts. */
   readonly xPlayer: Participant;

@@ -6,11 +6,11 @@ import { Translator } from '@i18n';
 import { Button, Icon } from '@kit';
 import { ChallengeRun } from '@super3t/session';
 import { BrandTitle, GameLayout } from '@shell';
-import { Preferences } from '@settings';
-import { GameStore } from '@super3t/state';
+import { Preferences } from '@preferences';
+import { Super3tStore } from '@super3t/state';
 import { ChallengePanel } from '../challenge-panel/challenge-panel';
 import { DeparturePanel } from '../departure-panel/departure-panel';
-import { GameBoard } from '../game-board/game-board';
+import { Super3tBoard } from '../super3t-board/super3t-board';
 
 /**
  * The challenge route (`/super-3t/challenge/:id`): the game screen around a prepared position. The person
@@ -18,13 +18,13 @@ import { GameBoard } from '../game-board/game-board';
  */
 @Component({
   selector: 'app-challenge-page',
-  imports: [BrandTitle, Button, ChallengePanel, DeparturePanel, GameBoard, GameLayout, Icon],
+  imports: [BrandTitle, Button, ChallengePanel, DeparturePanel, Super3tBoard, GameLayout, Icon],
   templateUrl: './challenge-page.html',
 })
 export class ChallengePage {
   protected readonly t = inject(Translator).t;
   private readonly router = inject(Router);
-  private readonly store = inject(GameStore);
+  private readonly store = inject(Super3tStore);
   /** Boards won in the attempt, for the title's TIP, TAP, TOE. */
   protected readonly wonBoards = computed(
     () => this.store.game().boards.filter((board) => board.kind === 'won').length,
@@ -32,7 +32,7 @@ export class ChallengePage {
 
   constructor() {
     const run = inject(ChallengeRun);
-    const store = inject(GameStore);
+    const store = inject(Super3tStore);
     const preferences = inject(Preferences);
     run.onSolved = (id) => preferences.markChallengeSolved(id);
     // The same component serves every challenge: each id starts a fresh attempt at its position.

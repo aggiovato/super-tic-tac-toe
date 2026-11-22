@@ -4,7 +4,7 @@ import { DotsStore } from '@dots/state';
 import { Translator } from '@i18n';
 import { DepartureBoard, type FlapTile } from '@kit';
 import type { Participant } from '@match';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { participantName } from '@shell';
 
 const WORD_LENGTH = 5;

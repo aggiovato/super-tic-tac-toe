@@ -26,8 +26,8 @@ import {
   type FlipOptions,
   type Segment,
 } from '@kit';
-import { Preferences } from '@settings';
-import { GameStore } from '@super3t/state';
+import { Preferences } from '@preferences';
+import { Super3tStore } from '@super3t/state';
 import { type CellPointer, BoardPlatform } from '../board-platform/board-platform';
 import { BoardThumbnail } from '../board-thumbnail/board-thumbnail';
 import {
@@ -99,10 +99,10 @@ const easingOf = (value: string | undefined): string => {
  * On narrow screens boards grow out of, and settle back into, their place in the grid.
  */
 @Component({
-  selector: 'app-game-board',
+  selector: 'app-super3t-board',
   imports: [BoardPlatform, BoardThumbnail, StrikeLine],
-  templateUrl: './game-board.html',
-  styleUrl: './game-board.css',
+  templateUrl: './super3t-board.html',
+  styleUrl: './super3t-board.css',
   host: {
     '[class.zoomed]': "mode() === 'zoom'",
     '(window:keydown)': 'onWindowKeydown($event)',
@@ -110,8 +110,8 @@ const easingOf = (value: string | undefined): string => {
     '(window:resize)': 'onResize()',
   },
 })
-export class GameBoard {
-  protected readonly store = inject(GameStore);
+export class Super3tBoard {
+  protected readonly store = inject(Super3tStore);
   protected readonly preferences = inject(Preferences);
   protected readonly t = inject(Translator).t;
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -241,12 +241,12 @@ export class GameBoard {
     });
     // Against the computer: once its reply lands, the player's forced board opens as after any
     // move. Only schedules; the view changes in the timer.
-    let followed = untracked(this.store.opponentMoves);
+    let followed = untracked(this.store.computerMoves);
     effect(() => {
-      const replies = this.store.opponentMoves();
+      const replies = this.store.computerMoves();
       if (replies !== followed) {
         followed = replies;
-        untracked(() => this.followOpponent());
+        untracked(() => this.followComputer());
       }
     });
     inject(DestroyRef).onDestroy(() => {
@@ -266,7 +266,7 @@ export class GameBoard {
   /** Illegal cells still reach the store, so the reason is shown instead of nothing happening. */
   protected play(board: number, cell: number): void {
     // The opponent's turn: the board waits for its reply.
-    if (this.store.opponentTurn()) {
+    if (this.store.computerTurn()) {
       return;
     }
     clearTimeout(this.pendingOpen);
@@ -293,7 +293,7 @@ export class GameBoard {
         this.store.play(move);
         const target = this.store.game().target;
         stays =
-          !this.store.opponentTurn() &&
+          !this.store.computerTurn() &&
           target.kind === 'forced' &&
           target.board === board &&
           this.preferences.autoZoom();
@@ -307,7 +307,7 @@ export class GameBoard {
         }
         return this.settleInto(board, from).then(() => {
           const target = this.store.game().target;
-          // Against the computer the next board opens after its reply (`followOpponent`).
+          // Against the computer the next board opens after its reply (`followComputer`).
           if (this.store.mode() === 'opponent') {
             return;
           }
@@ -327,7 +327,7 @@ export class GameBoard {
    * once the movement in flight (their own move settling into its slot) has ended, so the opening
    * is never swallowed by a board that is still moving.
    */
-  private followOpponent(): void {
+  private followComputer(): void {
     clearTimeout(this.pendingOpen);
     if (!this.compact() || !this.preferences.autoZoom()) {
       if (this.usingKeyboard) {

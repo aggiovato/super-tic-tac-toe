@@ -57,7 +57,7 @@ shape cue (thick border, filled number) besides its colour. A new design must re
 
 - Designs today: `departures` (default) and `departures-contrast` (brighter text and strokes,
   darker panels), chosen in the settings panel and applied as `data-theme` on `<html>` by
-  `Preferences` (`@settings`).
+  `Preferences` (`@preferences`).
 - The motion setting sets `data-motion="full|reduced"` on `<html>`; `reduced` disables every CSS
   animation and transition, and components read `Preferences.reducedMotion()` for JS-driven motion
   (flap cycling, view transitions).

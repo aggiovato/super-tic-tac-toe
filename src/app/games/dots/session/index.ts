@@ -1,1 +1,1 @@
-export { DotsOpponent, DotsSession, provideDotsMatch } from './dots-session';
+export { DotsComputer, DotsSession, provideDotsMatch } from './dots-session';

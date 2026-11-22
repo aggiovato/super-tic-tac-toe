@@ -3,11 +3,11 @@
 // request carries no state that could drift from the engine's.
 import { chooseMove } from '@super3t/ai';
 import { replay, RULES_VERSION } from '@super3t/core';
-import type { OpponentReplyMessage, OpponentRequestMessage } from './opponent-message.model';
+import type { ComputerReplyMessage, ComputerRequestMessage } from './computer-message.model';
 
-addEventListener('message', ({ data }: MessageEvent<OpponentRequestMessage>) => {
+addEventListener('message', ({ data }: MessageEvent<ComputerRequestMessage>) => {
   const { id, moves, level, seed } = data;
-  let reply: OpponentReplyMessage;
+  let reply: ComputerReplyMessage;
   try {
     const game = replay(moves, RULES_VERSION);
     reply = game.ok

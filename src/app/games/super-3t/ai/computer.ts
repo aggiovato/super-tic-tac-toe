@@ -2,7 +2,7 @@ import { legalMoves, type GameState, type Move } from '@super3t/core';
 import { advancedMove } from './advanced';
 import { beginnerMove } from './beginner';
 import { intermediateMove } from './intermediate';
-import type { Level, OpponentOptions, SearchLimits } from './models';
+import type { Level, ComputerOptions, SearchLimits } from './models';
 import { createRandom, pickWeighted, turnSeed } from '@tictac';
 import { cellWeight } from '@tictac';
 
@@ -22,7 +22,7 @@ export const BUDGET_MS: Readonly<Record<Level, number>> = {
  */
 export function chooseMove(
   state: GameState,
-  { level, seed, now = () => performance.now() }: OpponentOptions,
+  { level, seed, now = () => performance.now() }: ComputerOptions,
 ): Move | null {
   const legal = legalMoves(state);
   if (legal.length === 0) {

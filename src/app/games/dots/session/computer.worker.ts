@@ -3,11 +3,11 @@
 // the whole 600 ms budget). Rebuilds the position from the moves and the board size.
 import { chooseMove } from '@dots/ai';
 import { type Move, replay, RULES_VERSION } from '@dots/core';
-import type { OpponentReplyMessage, OpponentRequestMessage } from '@match';
+import type { ComputerReplyMessage, ComputerRequestMessage } from '@match';
 
-addEventListener('message', ({ data }: MessageEvent<OpponentRequestMessage<Move>>) => {
+addEventListener('message', ({ data }: MessageEvent<ComputerRequestMessage<Move>>) => {
   const { id, moves, level, seed, variant } = data;
-  let reply: OpponentReplyMessage<Move>;
+  let reply: ComputerReplyMessage<Move>;
   try {
     const game = replay(moves, RULES_VERSION, variant);
     reply = game.ok

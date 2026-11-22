@@ -1,15 +1,15 @@
 import { Injectable, type OnDestroy } from '@angular/core';
-import { OPPONENT_PACE_MS } from './local-opponent';
-import type { OpponentRequest } from './match.model';
-import { Opponent } from './opponent';
+import { COMPUTER_PACE_MS } from './local-computer';
+import type { ComputerRequest } from './match.model';
+import { ComputerPlayer } from './computer';
 
 /** Main thread → Worker: one request, tagged so its reply can be matched. */
-export interface OpponentRequestMessage<M> extends OpponentRequest<M> {
+export interface ComputerRequestMessage<M> extends ComputerRequest<M> {
   readonly id: number;
 }
 
 /** Worker → main thread: the reply to request `id`, or why there is none. */
-export type OpponentReplyMessage<M> =
+export type ComputerReplyMessage<M> =
   | { readonly id: number; readonly move: M | null }
   | { readonly id: number; readonly error: string };
 
@@ -27,21 +27,21 @@ const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, 
  * game names its Worker in `createWorker` (the bundler needs the literal `new URL(...)` there).
  */
 @Injectable()
-export abstract class WorkerOpponent<M> extends Opponent<M> implements OnDestroy {
+export abstract class WorkerComputer<M> extends ComputerPlayer<M> implements OnDestroy {
   private worker: Worker | undefined;
   private pending: Pending<M> | undefined;
   private nextId = 0;
 
-  reply(request: OpponentRequest<M>): Promise<M | null> {
+  reply(request: ComputerRequest<M>): Promise<M | null> {
     this.cancel();
     const id = ++this.nextId;
     const answer = new Promise<M | null>((resolve, reject) => {
       this.pending = { id, resolve, reject };
     });
-    const message: OpponentRequestMessage<M> = { ...request, id };
+    const message: ComputerRequestMessage<M> = { ...request, id };
     this.ensureWorker().postMessage(message);
     // Both the reply and the pace: a fast level never answers before the player's move settles.
-    return Promise.all([answer, wait(OPPONENT_PACE_MS)]).then(([move]) => move);
+    return Promise.all([answer, wait(COMPUTER_PACE_MS)]).then(([move]) => move);
   }
 
   cancel(): void {
@@ -65,7 +65,7 @@ export abstract class WorkerOpponent<M> extends Opponent<M> implements OnDestroy
   private ensureWorker(): Worker {
     if (!this.worker) {
       this.worker = this.createWorker();
-      this.worker.addEventListener('message', ({ data }: MessageEvent<OpponentReplyMessage<M>>) =>
+      this.worker.addEventListener('message', ({ data }: MessageEvent<ComputerReplyMessage<M>>) =>
         this.settle(data),
       );
       this.worker.addEventListener('error', (event) => this.fail(new Error(event.message)));
@@ -76,7 +76,7 @@ export abstract class WorkerOpponent<M> extends Opponent<M> implements OnDestroy
     return this.worker;
   }
 
-  private settle(reply: OpponentReplyMessage<M>): void {
+  private settle(reply: ComputerReplyMessage<M>): void {
     const pending = this.pending;
     // A reply to a cancelled or replaced request is dropped.
     if (pending?.id !== reply.id) {

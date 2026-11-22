@@ -15,7 +15,7 @@ at once, a full board with no line is a draw, a line on the ninth cell wins. Rej
   weighted random move; intermediate also blocks; advanced is a memoised negamax (`bestMoves`) and
   never loses, picking among equally good moves by the seed. The spec plays every sequence of the
   other side against it.
-- `@classic/session`: `ClassicSession` and `ClassicOpponent` (a `LocalOpponent` from `@match`, main
-  thread, `OPPONENT_PACE_MS`). `@classic/state`: `ClassicStore` is `withMatch` alone.
+- `@classic/session`: `ClassicSession` and `ClassicComputer` (a `LocalComputer` from `@match`, main
+  thread, `COMPUTER_PACE_MS`). `@classic/state`: `ClassicStore` is `withMatch` alone.
 - `@classic/ui`: `/classic`, the shared `GameLayout`, `ClassicStatus` and `ClassicBoard` (kit cells,
   strike line, arrow-key roving focus). Mode and level are `Preferences.play().classic`.

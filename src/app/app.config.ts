@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { provideAppUpdates } from '@shell';
 import { provideGameRepository } from '@storage';
 import { routes } from './app.routes';

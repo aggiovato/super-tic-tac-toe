@@ -2,7 +2,7 @@ import { Component, inject, output } from '@angular/core';
 import { Router } from '@angular/router';
 import { Translator } from '@i18n';
 import { Button, Choice } from '@kit';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { SettingsSheet } from '@shell';
 
 /**

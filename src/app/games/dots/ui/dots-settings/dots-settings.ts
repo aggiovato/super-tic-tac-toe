@@ -3,7 +3,7 @@ import { type Size, SIZES, sizeOfVariant, variantOf } from '@dots/core';
 import { DotsStore } from '@dots/state';
 import { Translator } from '@i18n';
 import { Button, ChoiceGroup, type ChoiceOption } from '@kit';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 import { CONFIRM_WINDOW_MS, SettingsSheet } from '@shell';
 
 /**

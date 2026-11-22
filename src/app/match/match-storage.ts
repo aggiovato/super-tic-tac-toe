@@ -8,7 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { patchState } from '@ngrx/signals';
-import { type GameId, type PlaySetup, Preferences } from '@settings';
+import { type GameId, type PlaySetup, Preferences } from '@preferences';
 import {
   type GameRecord,
   type GameResult,
@@ -43,7 +43,7 @@ export interface MatchStorageStore<S, M, R> extends MatchTurnsStore<S, M, R> {
   readonly startedAt: Signal<number>;
   readonly mode: Signal<Mode>;
   readonly saveStatus: Signal<SaveStatus>;
-  readonly _requestOpponent: () => void;
+  readonly _requestComputer: () => void;
   readonly _startGame: (changes: Partial<MatchState<S, R>>) => void;
 }
 
@@ -225,7 +225,7 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
         startSetup(store, preferences.play()[gameId]);
       }
       patchState(store, { ready: true });
-      store._requestOpponent();
+      store._requestComputer();
       effect(
         () => {
           // Everything a save writes: any change saves again.

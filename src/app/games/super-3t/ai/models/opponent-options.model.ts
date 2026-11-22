@@ -1,6 +1,6 @@
 import type { Level } from './level.model';
 
-export interface OpponentOptions {
+export interface ComputerOptions {
   readonly level: Level;
   /**
    * Integer seed for the opponent's random choices, kept for the whole game: the same seed and

@@ -1,4 +1,4 @@
-import type { GameId, OpponentLevel, PlayMode } from '@settings';
+import type { GameId, ComputerLevel, PlayMode } from '@preferences';
 
 /** Version of the stored records' shape; a change needs a migration in the repository. */
 export const SCHEMA_VERSION = 1;
@@ -16,7 +16,7 @@ export interface GameRecord {
   readonly variant?: string;
   readonly seriesId: string;
   readonly mode: PlayMode;
-  readonly level: OpponentLevel;
+  readonly level: ComputerLevel;
   readonly seed: number;
   /** Participant playing X in this game. */
   readonly xPlayer: 0 | 1;

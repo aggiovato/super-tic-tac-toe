@@ -28,7 +28,7 @@ rulesVersion, variant)`, `sizeOfVariant` / `variantOf`. Tested in Node with fast
   - Specs: legal on both sizes, closes waiting boxes, gives nothing while safe lines exist, the
     advanced move is optimal in late positions against an independent engine oracle, and seeded
     games: intermediate beats beginner ≥ 16/20, advanced beats intermediate ≥ 7/10.
-- `@dots/session`: `DotsSession` (start from the variant) and `DotsOpponent`, a `WorkerOpponent`
+- `@dots/session`: `DotsSession` (start from the variant) and `DotsComputer`, a `WorkerComputer`
   from `@match` (`opponent.worker.ts`). `@dots/state`: `DotsStore` = `withMatch` + `boxes`, `size`,
   `lastLine`. Undo against the computer goes back to the person's last turn (`stepsToPerson`),
   however many moves; the opponent is asked again while it keeps the turn.

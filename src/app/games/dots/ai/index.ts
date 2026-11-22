@@ -5,5 +5,5 @@ export {
   EXACT_LINES,
   LEVELS,
   type Level,
-  type OpponentOptions,
-} from './opponent';
+  type ComputerOptions,
+} from './computer';

@@ -1,7 +1,7 @@
 import { applyMove, initialState, legalMoves, type GameState, type Move } from '@classic/core';
 import type { Player } from '@tictac';
 import { describe, expect, it } from 'vitest';
-import { bestMoves, chooseMove, LEVELS, type Level } from './opponent';
+import { bestMoves, chooseMove, LEVELS, type Level } from './computer';
 
 const play = (...cells: number[]): GameState =>
   cells.reduce((state, cell) => {

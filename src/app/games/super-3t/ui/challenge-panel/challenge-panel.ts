@@ -4,8 +4,8 @@ import { CHALLENGES, judge } from '@super3t/challenge';
 import { Translator } from '@i18n';
 import { Button, ChoiceGroup, type ChoiceOption } from '@kit';
 import { ChallengeRun } from '@super3t/session';
-import { Preferences } from '@settings';
-import { GameStore } from '@super3t/state';
+import { Preferences } from '@preferences';
+import { Super3tStore } from '@super3t/state';
 
 /**
  * The challenge's side of the screen: which challenge (solved ones marked), the goal, how the
@@ -19,7 +19,7 @@ import { GameStore } from '@super3t/state';
 })
 export class ChallengePanel {
   protected readonly t = inject(Translator).t;
-  protected readonly store = inject(GameStore);
+  protected readonly store = inject(Super3tStore);
   protected readonly run = inject(ChallengeRun);
   private readonly preferences = inject(Preferences);
   private readonly router = inject(Router);

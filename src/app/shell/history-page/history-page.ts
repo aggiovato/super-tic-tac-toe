@@ -2,14 +2,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Translator } from '@i18n';
 import { Backdrop, Button, Icon } from '@kit';
-import { type GameId, OPPONENT_LEVELS, type OpponentLevel, Preferences } from '@settings';
+import { type GameId, COMPUTER_LEVELS, type ComputerLevel, Preferences } from '@preferences';
 import { type GameRecord, GameRepository } from '@storage';
 import { BrandTitle } from '../brand-title/brand-title';
 import { participantName } from '../participant-name';
 import { UpdateNotice } from '../update-notice/update-notice';
 
 interface LevelRow {
-  readonly level: OpponentLevel;
+  readonly level: ComputerLevel;
   readonly label: string;
   readonly wins: number;
   readonly draws: number;
@@ -104,7 +104,7 @@ export class HistoryPage {
 
   private levelsOf(games: readonly GameRecord[]): LevelRow[] {
     const against = games.filter((game) => game.mode === 'opponent');
-    return OPPONENT_LEVELS.map((level) => {
+    return COMPUTER_LEVELS.map((level) => {
       const at = against.filter((game) => game.level === level);
       return {
         level,

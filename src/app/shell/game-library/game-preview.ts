@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import type { GameId } from '@settings';
+import type { GameId } from '@preferences';
 
 type Mark = 'x' | 'o';
 

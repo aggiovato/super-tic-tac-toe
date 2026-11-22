@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import type { Player } from '@tictac';
 import { Translator } from '@i18n';
 import { LevelBars, SplitFlap } from '@kit';
-import { OPPONENT_LEVELS, Preferences } from '@settings';
+import { COMPUTER_LEVELS, Preferences } from '@preferences';
 import type { Participant } from '@match';
 import { ACTIVE_GAME } from '../active-game';
 import { participantName } from '../participant-name';
@@ -37,7 +37,7 @@ export class ScoreBoard {
     const computer = (participant: Participant) => side.mode === 'opponent' && participant === 1;
     const player = (participant: Participant): ScoreEntry => ({
       label: participantName(t, names, side, participant) ?? t.defaultName(participant + 1),
-      bars: computer(participant) ? OPPONENT_LEVELS.indexOf(side.level) + 1 : null,
+      bars: computer(participant) ? COMPUTER_LEVELS.indexOf(side.level) + 1 : null,
       levelName: computer(participant) ? t.settings.levels[side.level] : null,
       glyph: glyph(this.store.symbolOf(participant)),
       digits: digits(wins[participant]),

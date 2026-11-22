@@ -1,7 +1,7 @@
 import { Component, inject, viewChild } from '@angular/core';
 import { Translator } from '@i18n';
 import { Button, Ticket } from '@kit';
-import { Preferences } from '@settings';
+import { Preferences } from '@preferences';
 
 /**
  * How to play Dots and Boxes: the shared departure ticket with four rules, each beside a small

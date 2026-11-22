@@ -1,7 +1,7 @@
 import { Component, computed, inject, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
-import { GAME_IDS, type GameId } from '@settings';
+import { GAME_IDS, type GameId } from '@preferences';
 import { ACTIVE_GAME } from '../active-game';
 import { GamePreview } from './game-preview';
 
