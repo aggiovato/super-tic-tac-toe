@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { ACTIVE_GAME } from '../active-game';
+import { ACTIVE_GAME } from '@match';
 import { GameLibrary } from './game-library';
 import { GAME_PREVIEWS } from './game-previews';
 

@@ -14,7 +14,7 @@ const prettier = require('eslint-config-prettier');
 const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots' };
 const GAME_ALIASES = Object.keys(GAMES).join('|');
 const LAYERS = 'core|ai|challenge|session|state|ui';
-const SHARED = 'tictac|catalog|match|shell|history|storage|i18n|preferences|kit';
+const SHARED = 'tictac|catalog|match|shell|library|history|pwa|storage|i18n|preferences|kit';
 const BLOCK_ALIASES = `(?:${GAME_ALIASES})/(?:${LAYERS})|${SHARED}`;
 
 const BLOCK_BOUNDARIES = [
@@ -54,7 +54,7 @@ const PLAIN_TYPESCRIPT = {
 };
 
 const NO_APP_LAYERS = {
-  regex: `^@(?:(?:${GAME_ALIASES})/(?:challenge|session|state|ui)|match|shell|history|storage|i18n|preferences|kit)(?:/|$)`,
+  regex: `^@(?:(?:${GAME_ALIASES})/(?:challenge|session|state|ui)|match|shell|library|history|pwa|storage|i18n|preferences|kit)(?:/|$)`,
   message: 'core, ai and challenge must not import app layers.',
 };
 

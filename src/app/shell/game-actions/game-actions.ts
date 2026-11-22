@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Translator } from '@i18n';
 import { Button, Icon } from '@kit';
-import { ACTIVE_GAME } from '../active-game';
+import { ACTIVE_GAME } from '@match';
 
 /** Undo while the game runs (against the computer, back to the player's turn); a rematch once it is over. */
 @Component({

@@ -2,7 +2,7 @@
 paths:
   - 'src/app/storage/**'
   - 'src/app/match/**'
-  - 'src/app/shell/history-page/**'
+  - 'src/app/history/**'
   - 'src/app/shell/save-notice/**'
 ---
 

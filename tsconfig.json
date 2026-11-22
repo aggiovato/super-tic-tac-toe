@@ -41,6 +41,9 @@
       "@i18n": ["./src/app/i18n/index.ts"],
       "@preferences": ["./src/app/preferences/index.ts"],
       "@catalog": ["./src/app/games/catalog/index.ts"],
+      "@library": ["./src/app/library/index.ts"],
+      "@history": ["./src/app/history/index.ts"],
+      "@pwa": ["./src/app/pwa/index.ts"],
       "@kit": ["./src/app/kit/index.ts"]
     }
   },

@@ -5,12 +5,12 @@ import {
   BrandTitle,
   GameActions,
   GameLayout,
-  GamesMenu,
   HistoryLink,
   SaveNotice,
   ScoreBoard,
   SettingsSheet,
 } from '@shell';
+import { GamesMenu } from '@library';
 import { ClassicBoard } from '../classic-board/classic-board';
 import { ClassicStatus } from '../classic-status/classic-status';
 

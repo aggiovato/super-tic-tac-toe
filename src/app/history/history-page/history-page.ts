@@ -5,9 +5,8 @@ import { Backdrop, Button, Icon } from '@kit';
 import { COMPUTER_LEVELS, type ComputerLevel, gameById, type GameId } from '@catalog';
 import { Preferences } from '@preferences';
 import { type GameRecord, GameRepository } from '@storage';
-import { BrandTitle } from '../brand-title/brand-title';
-import { participantName } from '../participant-name';
-import { UpdateNotice } from '../update-notice/update-notice';
+import { BrandTitle, participantName } from '@shell';
+import { UpdateNotice } from '@pwa';
 
 interface LevelRow {
   readonly level: ComputerLevel;

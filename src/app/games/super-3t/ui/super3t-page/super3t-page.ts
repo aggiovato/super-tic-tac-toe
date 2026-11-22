@@ -6,12 +6,12 @@ import {
   BrandTitle,
   GameActions,
   GameLayout,
-  GamesMenu,
   HistoryLink,
   SaveNotice,
   ScoreBoard,
   SettingsSheet,
 } from '@shell';
+import { GamesMenu } from '@library';
 import { DeparturePanel } from '../departure-panel/departure-panel';
 import { Super3tBoard } from '../super3t-board/super3t-board';
 import { HowToPlay } from '../how-to-play/how-to-play';

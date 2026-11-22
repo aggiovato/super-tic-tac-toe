@@ -21,3 +21,4 @@ export {
   type ComputerRequestMessage,
   WorkerComputer,
 } from './worker-computer';
+export { ACTIVE_GAME, provideActiveGame, type ActiveGame } from './active-game';

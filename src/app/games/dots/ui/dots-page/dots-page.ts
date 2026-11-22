@@ -5,12 +5,12 @@ import {
   BrandTitle,
   GameActions,
   GameLayout,
-  GamesMenu,
   HistoryLink,
   SaveNotice,
   ScoreBoard,
   SettingsSheet,
 } from '@shell';
+import { GamesMenu } from '@library';
 import { DotsBoard } from '../dots-board/dots-board';
 import { DotsHowToPlay } from '../dots-how-to-play/dots-how-to-play';
 import { DotsSettings } from '../dots-settings/dots-settings';

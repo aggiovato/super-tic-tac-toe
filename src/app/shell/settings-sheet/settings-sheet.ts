@@ -21,7 +21,7 @@ import {
   type PlaySetup,
   Preferences,
 } from '@preferences';
-import { ACTIVE_GAME } from '../active-game';
+import { ACTIVE_GAME } from '@match';
 import { CONFIRM_WINDOW_MS, TwoPress } from '../two-press';
 
 const MOTIONS: readonly MotionSetting[] = ['system', 'full', 'reduced'];

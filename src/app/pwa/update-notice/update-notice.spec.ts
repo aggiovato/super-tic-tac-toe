@@ -1,9 +1,8 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { SwUpdate, type VersionEvent } from '@angular/service-worker';
-import type { SaveStatus } from '@match';
+import { type SaveStatus, ACTIVE_GAME } from '@match';
 import { Subject } from 'rxjs';
-import { ACTIVE_GAME } from '../active-game';
 import { RELOAD_PAGE } from '../app-updates';
 import { UpdateNotice } from './update-notice';
 

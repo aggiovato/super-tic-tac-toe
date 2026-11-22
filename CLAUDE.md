@@ -39,7 +39,7 @@ resuming in IndexedDB, one result per game, a history per game, Dots and Boxes, 
 opponents named by level); its one open item is measuring interaction on a real phone (budgets in
 `quality`). Done in phase 5: the Angular service worker (`ngsw-config.json`, production builds)
 prefetches the whole app, so a second start plays offline, every game and level; a new version is
-offered by `UpdateNotice` (`AppUpdates` in `@shell`) only once the game is saved; Playwright runs
+offered by `UpdateNotice` (`AppUpdates`, both in `@pwa`) only once the game is saved; Playwright runs
 Chromium (desktop, Pixel 7), Firefox and WebKit. Next: the release that closes the phase, then
 phase 6 (online by invitation).
 
@@ -118,19 +118,22 @@ The stored values `PlayMode` `'humans' | 'opponent'` keep their names until the 
 
 ## Layers and boundaries
 
-| Path                              | Responsibility                                      | May import                                       |
-| --------------------------------- | --------------------------------------------------- | ------------------------------------------------ |
-| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3         | Local TypeScript only                            |
-| `src/app/games/catalog/`          | The games as data and engines: ids, rules, variants | Each game's `core`, `@tictac`                    |
-| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                | `tictac`                                         |
-| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                  | `core`                                           |
-| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging          | `core`, `ai`                                     |
-| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker      | `core`, `ai`, `challenge`, `storage`             |
-| `src/app/games/<game>/state/`     | Super3tStore (SignalStore) provided on the route    | `core`, `session`                                |
-| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                            |
-| `src/app/match/`                  | `withMatch` (play and storage), sessions, computer  | `tictac`, `preferences`, `storage`               |
-| `src/app/shell/`                  | Layout, game library, settings, history, updates    | `match`, `kit`, `preferences`, `i18n`, `storage` |
-| `src/app/storage/`                | Game and series records, IndexedDB and memory       | `preferences` types                              |
+| Path                              | Responsibility                                                   | May import                                              |
+| --------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- |
+| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                   |
+| `src/app/games/catalog/`          | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                           |
+| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                             | `tictac`                                                |
+| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                               | `core`                                                  |
+| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging                       | `core`, `ai`                                            |
+| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                    |
+| `src/app/games/<game>/state/`     | Super3tStore (SignalStore) provided on the route                 | `core`, `session`                                       |
+| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                               | `state`, `core` types                                   |
+| `src/app/match/`                  | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`           |
+| `src/app/shell/`                  | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `kit`, `preferences`, `i18n` |
+| `src/app/library/`                | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `kit`, `preferences`, `i18n`        |
+| `src/app/history/`                | A game's history page                                            | `shell`, `pwa`, `catalog`, `storage`, `kit`, `i18n`     |
+| `src/app/pwa/`                    | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `kit`, `i18n`                                  |
+| `src/app/storage/`                | Game and series records, IndexedDB and memory                    | `preferences` types                                     |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
@@ -145,7 +148,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/app/games/super-3t/<layer>/`  |
 | `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/app/games/classic/<layer>/`   |
 | `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/app/games/dots/<layer>/`      |
-| `@match`, `@shell`                                       | `src/app/<block>/`                 |
+| `@match`, `@shell`, `@library`, `@history`, `@pwa`       | `src/app/<block>/`                 |
 | `@storage`, `@i18n`                                      | `src/app/<block>/`                 |
 | `@preferences` (player preferences)                      | `src/app/preferences/`             |
 | `@kit` (shared UI: flap, button…)                        | `src/app/kit/`                     |

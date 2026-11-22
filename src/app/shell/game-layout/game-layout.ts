@@ -2,8 +2,8 @@ import { Component, inject, input } from '@angular/core';
 import { Translator } from '@i18n';
 import { Backdrop, Button, Icon } from '@kit';
 import { Preferences } from '@preferences';
-import { GameLibrary } from '../game-library/game-library';
-import { UpdateNotice } from '../update-notice/update-notice';
+import { GameLibrary } from '@library';
+import { UpdateNotice } from '@pwa';
 
 /**
  * The page every game shares: the masthead (title and settings), the status row, the board in the

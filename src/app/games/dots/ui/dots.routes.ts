@@ -1,8 +1,8 @@
 import type { Routes } from '@angular/router';
 import { provideDotsMatch } from '@dots/session';
 import { DotsStore } from '@dots/state';
-import { provideMatchStorage } from '@match';
-import { HistoryPage, provideActiveGame } from '@shell';
+import { provideMatchStorage, provideActiveGame } from '@match';
+import { HistoryPage } from '@history';
 
 /** Dots and Boxes' routes, under `/dots`: its store, session and Worker live with the route. */
 export const DOTS_ROUTES: Routes = [

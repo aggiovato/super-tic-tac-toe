@@ -2,9 +2,8 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Translator } from '@i18n';
 import { Button } from '@kit';
-import type { SaveStatus } from '@match';
+import { type SaveStatus, ACTIVE_GAME } from '@match';
 import { filter, firstValueFrom } from 'rxjs';
-import { ACTIVE_GAME } from '../active-game';
 import { AppUpdates } from '../app-updates';
 
 /** A game on screen is safe to reload: everything is saved, or there was nothing to save. */

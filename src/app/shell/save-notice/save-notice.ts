@@ -1,7 +1,7 @@
 import { Component, computed, DOCUMENT, inject } from '@angular/core';
 import { Translator } from '@i18n';
 import { Button, Icon } from '@kit';
-import { ACTIVE_GAME } from '../active-game';
+import { ACTIVE_GAME } from '@match';
 
 /**
  * Where the game's last save stands: a quiet "Saved" once the device confirms it, and a notice with

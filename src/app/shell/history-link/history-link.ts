@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Translator } from '@i18n';
 import { Button, Icon } from '@kit';
-import { ACTIVE_GAME } from '../active-game';
+import { ACTIVE_GAME } from '@match';
 
 /** The masthead's way to the game's history. */
 @Component({

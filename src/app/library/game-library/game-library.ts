@@ -3,7 +3,7 @@ import { Component, computed, inject, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
 import { GAMES, type GameId } from '@catalog';
-import { ACTIVE_GAME } from '../active-game';
+import { ACTIVE_GAME } from '@match';
 import { GAME_PREVIEWS } from './game-previews';
 
 /**

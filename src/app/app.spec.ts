@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { GameRepository, MemoryRepository } from '@storage';
-import { GAME_PREVIEWS } from '@shell';
+import { GAME_PREVIEWS } from '@library';
 import { routes } from './app.routes';
 import { GAME_PREVIEW_COMPONENTS } from './game-ui';
 

@@ -1,6 +1,6 @@
 import type { Routes } from '@angular/router';
-import { provideMatchStorage } from '@match';
-import { HistoryPage, provideActiveGame } from '@shell';
+import { provideMatchStorage, provideActiveGame } from '@match';
+import { HistoryPage } from '@history';
 import { CHALLENGES } from '@super3t/challenge';
 import { provideChallenge, provideSuper3tSession, provideWorkerComputer } from '@super3t/session';
 import { Super3tStore } from '@super3t/state';

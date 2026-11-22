@@ -4,8 +4,7 @@ import { Translator } from '@i18n';
 import { LevelBars, SplitFlap } from '@kit';
 import { COMPUTER_LEVELS } from '@catalog';
 import { Preferences } from '@preferences';
-import type { Participant } from '@match';
-import { ACTIVE_GAME } from '../active-game';
+import { type Participant, ACTIVE_GAME } from '@match';
 import { participantName } from '../participant-name';
 import type { ScoreEntry } from './score-entry.model';
 

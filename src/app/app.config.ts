@@ -7,7 +7,8 @@ import {
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { Preferences } from '@preferences';
-import { GAME_PREVIEWS, provideAppUpdates } from '@shell';
+import { GAME_PREVIEWS } from '@library';
+import { provideAppUpdates } from '@pwa';
 import { GAME_PREVIEW_COMPONENTS } from './game-ui';
 import { provideGameRepository } from '@storage';
 import { routes } from './app.routes';
