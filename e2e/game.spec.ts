@@ -217,12 +217,30 @@ test('winning a board spells TIP, TAP and TOE beside the name', async ({ page })
   const ending = page.locator('app-brand-title .flaps');
   // Folded away until a board is won.
   await expect(ending).toBeHidden();
+  // Every text the flaps turn to, recorded as it happens: each ending is up for about a second, too
+  // short to catch by polling on a slow engine.
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { flapTexts: string[] }).flapTexts = seen;
+    const title = document.querySelector('app-brand-title');
+    if (!title) {
+      return;
+    }
+    new MutationObserver(() => {
+      const text = title.querySelector('.flaps')?.textContent?.replace(/\s/g, '') ?? '';
+      if (text && seen.at(-1) !== text) {
+        seen.push(text);
+      }
+    }).observe(title, { subtree: true, childList: true, characterData: true });
+  });
   // X wins board 5 along its top row.
   await playAll(page, '4.0 0.4 4.1 1.4 4.2');
   await expect(ending).toBeVisible();
-  await expect(ending).toHaveText(/I\s*P/);
-  await expect(ending).toHaveText(/A\s*P/);
-  await expect(ending).toHaveText(/O\s*E/);
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as unknown as { flapTexts: string[] }).flapTexts.join(' ')),
+    )
+    .toMatch(/IP.*AP.*OE/);
   await expect(ending).toBeHidden();
 });
 
