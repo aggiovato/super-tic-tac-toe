@@ -119,40 +119,44 @@ A game record names who played each side as `seats` (`local`, `computer`, later 
 
 ## Layers and boundaries
 
-| Path                              | Responsibility                                                   | May import                                              |
-| --------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- |
-| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                   |
-| `src/app/games/catalog/`          | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                           |
-| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                             | `tictac`                                                |
-| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                               | `core`                                                  |
-| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging                       | `core`, `ai`                                            |
-| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                    |
-| `src/app/games/<game>/state/`     | Super3tStore (SignalStore) provided on the route                 | `core`, `session`                                       |
-| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                               | `state`, `core` types                                   |
-| `src/app/match/`                  | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`           |
-| `src/app/shell/`                  | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `kit`, `preferences`, `i18n` |
-| `src/app/library/`                | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `kit`, `preferences`, `i18n`        |
-| `src/app/history/`                | A game's history page                                            | `shell`, `pwa`, `catalog`, `storage`, `kit`, `i18n`     |
-| `src/app/pwa/`                    | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `kit`, `i18n`                                  |
-| `src/app/storage/`                | Game and series records, IndexedDB and memory                    | `preferences` types                                     |
+Two trees: `src/engine/` is everything pure (plain TypeScript, no Angular, tested in Node; it
+becomes `packages/game-core` in phase 6), `src/app/` the Angular app, grouped as `core/`
+(app-wide infrastructure), `layout/`, `features/` (what the player uses, the games among them) and
+`ui/` (shared components).
+
+| Path                                     | Responsibility                                                   | May import                                             |
+| ---------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| `src/engine/tictac/`                     | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                  |
+| `src/engine/catalog/`                    | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                          |
+| `src/engine/<game>/core/`                | Types, rules, replay. Deterministic.                             | `tictac`                                               |
+| `src/engine/<game>/ai/`                  | Evaluation, search, levels, Worker                               | `core`                                                 |
+| `src/engine/<game>/challenge/`           | Tactical challenges: positions and judging                       | `core`, `ai`                                           |
+| `src/app/features/games/<game>/session/` | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                   |
+| `src/app/features/games/<game>/state/`   | The game's store (SignalStore), provided on the route            | `core`, `session`                                      |
+| `src/app/features/games/<game>/ui/`      | Board, mini board, score, controls                               | `state`, `core` types                                  |
+| `src/app/core/match/`                    | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`          |
+| `src/app/layout/`                        | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `ui`, `preferences`, `i18n` |
+| `src/app/features/library/`              | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `ui`, `preferences`, `i18n`        |
+| `src/app/features/history/`              | A game's history page                                            | `layout`, `pwa`, `catalog`, `storage`, `ui`, `i18n`    |
+| `src/app/core/pwa/`                      | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                  |
+| `src/app/core/storage/`                  | Game and series records, IndexedDB and memory                    | `preferences` types                                    |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
 `resolve.tsconfigPaths`):
 
-| Alias                                                    | Block                              |
-| -------------------------------------------------------- | ---------------------------------- |
-| `@tictac`                                                | `src/app/games/tictac/`            |
-| `@catalog` (games, rules, variants, levels)              | `src/app/games/catalog/`           |
-| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library) | `src/app/games/<game>/ui/preview/` |
-| `@super3t/core`, `@super3t/core/testing` (tests)         | `src/app/games/super-3t/core/`     |
-| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/app/games/super-3t/<layer>/`  |
-| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/app/games/classic/<layer>/`   |
-| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/app/games/dots/<layer>/`      |
-| `@match`, `@shell`, `@library`, `@history`, `@pwa`       | `src/app/<block>/`                 |
-| `@storage`, `@i18n`                                      | `src/app/<block>/`                 |
-| `@preferences` (player preferences)                      | `src/app/preferences/`             |
-| `@kit` (shared UI: flap, button…)                        | `src/app/kit/`                     |
+| Alias                                                    | Block                                                       |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| `@tictac`                                                | `src/engine/tictac/`                                        |
+| `@catalog` (games, rules, variants, levels)              | `src/engine/catalog/`                                       |
+| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library) | `src/app/features/games/<game>/ui/preview/`                 |
+| `@super3t/core`, `@super3t/core/testing` (tests)         | `src/engine/super-3t/core/`                                 |
+| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/engine/super-3t/` · `src/app/features/games/super-3t/` |
+| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/engine/classic/` · `src/app/features/games/classic/`   |
+| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/engine/dots/` · `src/app/features/games/dots/`         |
+| `@match`, `@pwa`, `@storage`, `@i18n`, `@preferences`    | `src/app/core/<block>/`                                     |
+| `@layout`, `@ui`                                         | `src/app/layout/`, `src/app/ui/`                            |
+| `@library`, `@history`                                   | `src/app/features/<block>/`                                 |
 
 Another block is imported only through its alias (`import { applyMove } from '@super3t/core'`), never
 with a relative path (`../core`) or into its files (`@super3t/core/engine`). Inside a block, files import
@@ -162,10 +166,10 @@ alias too (`@super3t/core/testing`). A new block needs both an `index.ts` and an
 its folder and aliases, its folder in `GAMES` in `eslint.config.js` (`scripts/check-games.mjs`, part
 of `npm run lint`, fails until they agree), its routes and preview in `src/app/game-ui.ts`, and its
 name and blurb in every language (typed by `GameId`). A game
-never imports another game: what they share goes to `@tictac` (logic) or `@kit` (UI).
+never imports another game: what they share goes to `@tictac` (logic) or `@ui` (UI).
 
-ESLint enforces it: no relative or deep imports across blocks; `@tictac` and each game's `core`,
-`ai` and `challenge` free of Angular, NgRx, RxJS and app layers; `core` free of `ai`; `@tictac` free
+ESLint enforces it: no relative or deep imports across blocks; everything in `src/engine/` free of
+Angular, NgRx, RxJS and app layers; `core` free of `ai`; `@tictac` free
 of any game; and no game importing another. Those plain blocks run in Node with `test:core`.
 
 Keep a block flat until its files stop being easy to scan; split into sub-folders by concept
@@ -176,16 +180,16 @@ only with its first implementation.
 
 Loaded automatically for the files you touch:
 
-| Rule            | Scope                                    | Contents                                         |
-| --------------- | ---------------------------------------- | ------------------------------------------------ |
-| `angular-22`    | `src/**`, Angular configs                | Conventions for the installed Angular version    |
-| `super-3t`      | `src/app/games/super-3t/**`, `tictac/**` | Rules v1, engine contract, fixtures, invariants  |
-| `classic`       | `src/app/games/classic/**`               | Classic rules, engine, three opponent levels     |
-| `dots`          | `src/app/games/dots/**`                  | Dots and Boxes rules, opponent, board, inks      |
-| `storage`       | `src/app/storage/**`, `match/**`         | Records, saving, restoring, history              |
-| `pwa`           | `ngsw-config.json`, headers, updates     | Service worker, offline cache, update notice     |
-| `quality`       | `src/**`, configs, CI                    | Required tests, lint, budgets, CI                |
-| `design-tokens` | styles, templates, `ui/`                 | Token layers, semantic contract, adding a design |
+| Rule            | Scope                                                               | Contents                                         |
+| --------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| `angular-22`    | `src/**`, Angular configs                                           | Conventions for the installed Angular version    |
+| `super-3t`      | `src/engine/super-3t/**`, `features/games/super-3t/**`, `tictac/**` | Rules v1, engine contract, fixtures, invariants  |
+| `classic`       | `src/engine/classic/**`, `features/games/classic/**`                | Classic rules, engine, three opponent levels     |
+| `dots`          | `src/engine/dots/**`, `features/games/dots/**`                      | Dots and Boxes rules, opponent, board, inks      |
+| `storage`       | `src/app/core/storage/**`, `match/**`                               | Records, saving, restoring, history              |
+| `pwa`           | `ngsw-config.json`, headers, updates                                | Service worker, offline cache, update notice     |
+| `quality`       | `src/**`, configs, CI                                               | Required tests, lint, budgets, CI                |
+| `design-tokens` | styles, templates, `ui/`                                            | Token layers, semantic contract, adding a design |
 
 `.claude/sources.md` records origin, revision and licence of every external resource and the
 toolchain versions. Update it when adding or updating a skill or resource.
@@ -200,7 +204,7 @@ Project skills: `angular-developer` and `angular-new-app` in `.claude/skills/` (
   (departure board). Read it before changing the game UI; it is development-only and never goes
   into source or the bundle.
 - `DESIGN.md`: written at the end of phase 2 from the built UI.
-- User-facing copy lives only in `src/app/i18n/messages.ts` (es and en, typed so both stay
+- User-facing copy lives only in `src/app/core/i18n/messages.ts` (es and en, typed so both stay
   complete). The language follows the browser until the player switches it.
 
 ## Definition of done

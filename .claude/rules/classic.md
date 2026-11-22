@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'src/app/games/classic/**'
+  - 'src/engine/classic/**'
+  - 'src/app/features/games/classic/**'
 ---
 
 # Classic tic tac toe · rulesVersion 1
@@ -17,5 +18,5 @@ at once, a full board with no line is a draw, a line on the ninth cell wins. Rej
   other side against it.
 - `@classic/session`: `ClassicSession` and `ClassicComputer` (a `LocalComputer` from `@match`, main
   thread, `COMPUTER_PACE_MS`). `@classic/state`: `ClassicStore` is `withMatch` alone.
-- `@classic/ui`: `/classic`, the shared `GameLayout`, `ClassicStatus` and `ClassicBoard` (kit cells,
+- `@classic/ui`: `/classic`, the shared `GameLayout`, `ClassicStatus` and `ClassicBoard` (`@ui` cells,
   strike line, arrow-key roving focus). Mode and level are `Preferences.play().classic`.

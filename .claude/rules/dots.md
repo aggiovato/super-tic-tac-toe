@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'src/app/games/dots/**'
+  - 'src/engine/dots/**'
+  - 'src/app/features/games/dots/**'
 ---
 
 # Dots and Boxes · rulesVersion 1 (first version)

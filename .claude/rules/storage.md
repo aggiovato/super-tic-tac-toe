@@ -1,9 +1,9 @@
 ---
 paths:
-  - 'src/app/storage/**'
-  - 'src/app/match/**'
-  - 'src/app/history/**'
-  - 'src/app/shell/save-notice/**'
+  - 'src/app/core/storage/**'
+  - 'src/app/core/match/**'
+  - 'src/app/features/history/**'
+  - 'src/app/layout/save-notice/**'
 ---
 
 # Saving and history (phase 4)

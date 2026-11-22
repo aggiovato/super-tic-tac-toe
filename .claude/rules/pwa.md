@@ -4,7 +4,7 @@ paths:
   - 'public/_headers'
   - 'public/manifest.webmanifest'
   - 'src/app/app.config.ts'
-  - 'src/app/pwa/**'
+  - 'src/app/core/pwa/**'
   - 'e2e/offline.spec.ts'
 ---
 

@@ -64,7 +64,7 @@ shape cue (thick border, filled number) besides its colour. A new design must re
 - Player inks (`--color-player-x` Verdigris, `--color-player-o` Sand, brighter in high contrast)
   colour each player's lines and boxes in games that need it (Dots and Boxes); Super 3T and the
   classic game keep the shared mark ink. The X or O mark always tells players apart too.
-- Shared visual components live in `@kit` (`src/app/kit/<name>/`): `SplitFlap`, `StrikeLine`,
+- Shared visual components live in `@ui` (`src/app/ui/<name>/`): `SplitFlap`, `StrikeLine`,
   `Ticket` (the how-to-play departure ticket), `DepartureBoard`, `BoardCell`, `ClosingMark`,
   `Icon`, `LevelBars` (a level as three rising bars, shape not colour), `Backdrop` (two torn-paper strips from the brand artwork in `public/textures/tears/`, `--backdrop-opacity`, `--backdrop-blur`) `Button` (`<button app-button="primary|secondary|quiet">`), `Choice` (a radio or checkbox with
   label and hint) and `ChoiceGroup` (a titled set of radios over `ChoiceOption`s). Each keeps its styles

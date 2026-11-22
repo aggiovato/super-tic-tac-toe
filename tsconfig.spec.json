@@ -4,11 +4,5 @@
     "types": ["vitest/globals"]
   },
   "include": ["src/**/*.d.ts", "src/**/*.spec.ts"],
-  "exclude": [
-    "src/app/games/tictac/**",
-    "src/app/games/catalog/**",
-    "src/app/games/*/core/**",
-    "src/app/games/*/ai/**",
-    "src/app/games/*/challenge/**"
-  ]
+  "exclude": ["src/engine/**"]
 }

@@ -50,7 +50,7 @@ as a PWA in a later phase, and only then adds online play.
 - Delivery order: local two-player game → opponent with beginner, intermediate and advanced levels
   plus a short tutorial and a tactical challenge → local save, history and score (local MVP) →
   offline PWA → private online rooms by invitation → accounts.
-- Rules: `rulesVersion 1` as implemented in `src/app/games/super-3t/core/` (see `.claude/rules/super-3t.md`). A
+- Rules: `rulesVersion 1` as implemented in `src/engine/super-3t/core/` (see `.claude/rules/super-3t.md`). A
   drawn board is neutral and there is no tie-break by counting boards.
 - UI copy in **Spanish and English** from the first interface, with internationalization in place
   from phase 2. The default language follows the browser. The i18n mechanism is still undecided.
