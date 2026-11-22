@@ -7,6 +7,8 @@ new version and date.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-23
+
 ### Added
 
 - Online play by invitation, in all three games: Settings creates a private room and its link, the
@@ -177,7 +179,8 @@ First production release: Ultimate Tic Tac Toe for two people on one device.
 - Continuous integration with deploys to Netlify: a preview for every pull request and production
   for every version tag.
 
-[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.2.0...v0.3.0
