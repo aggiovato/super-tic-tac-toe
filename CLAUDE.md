@@ -92,8 +92,10 @@ lint-staged): ESLint with fixes, Prettier and the token check on the staged file
 ## Deploy
 
 Cloudflare Workers static assets (`wrangler.jsonc`: the build output, SPA routing, no Worker code;
-free, as assets are served without running a Worker). `.github/workflows/ci.yml` runs quality →
-build → e2e → deploy: a PR uploads a version with the preview alias `pr-N` (never live; linked in a
+free, as assets are served without running a Worker). CI and CD are separate workflows in one
+run: `.github/workflows/ci.yml` (no deploy secrets) runs quality → build → e2e → release-check and
+then calls `cd.yml`, which publishes that run's tested build through `deploy-app.yml` (one host per
+call). A PR uploads a version with the preview alias `pr-N` (never live; linked in a
 PR comment), a push to `main` is tested only, and a version tag
 `vX.Y.Z` (from `task release:*` on an up-to-date `main`, then `git push --follow-tags`) is checked
 against `package.json` and deployed to production. Notable changes go under `## [Unreleased]` in
@@ -104,9 +106,11 @@ Scripts: Edit), `CLOUDFLARE_ACCOUNT_ID`. `public/_headers` (cache and security h
 build output; `task serve:cf` serves the build locally as Cloudflare does (`wrangler dev`). Wrangler
 runs through `npx` at a pinned version, never as a dependency (its runtime would weigh on every
 `npm ci`). Netlify stays as a backup host: the repository variable `DEPLOY_TARGETS` picks where CD
-deploys (`cloudflare` by default, `netlify`, or `cloudflare,netlify`); its job writes Netlify's own
-SPA fallback (`_redirects`) before deploying, with the secrets `NETLIFY_AUTH_TOKEN` and
-`NETLIFY_SITE_ID`.
+deploys (`cloudflare` by default, `netlify`, or `cloudflare,netlify`); its deploy writes Netlify's own
+SPA fallback (`_redirects`) first, with the secrets `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`. CD
+also runs by hand (Actions → CD → Run workflow): a CI run's id and the hosts redeploy that tested
+build to production, e.g. to switch to the backup without a new tag (the `dist` artifact lasts 7
+days). A preview deploy may be cancelled by a newer push; a production one always finishes.
 
 ## Glossary
 

@@ -1,0 +1,112 @@
+name: CD
+
+# Delivery: publishes a build that CI already tested, never one built here. Called by ci.yml at
+# the end of a run (a pr-N preview for a PR, production for a version tag), or run by hand from the
+# Actions tab to redeploy a CI run's build to production, e.g. on the backup host.
+#
+# DEPLOY_TARGETS (a repository variable) picks the hosts: unset or "cloudflare" (default),
+# "netlify" (the backup), or "cloudflare,netlify" for both. A manual run names its own.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: preview or production
+        type: string
+        required: true
+      pr-number:
+        description: The PR a preview belongs to; 0 for production
+        type: number
+        default: 0
+      head-sha:
+        type: string
+        required: true
+      message:
+        description: What the hosts record with the version
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      run-id:
+        description: The CI run whose tested build to deploy (its dist artifact, kept 7 days)
+        type: string
+        required: true
+      targets:
+        description: Hosts to deploy to
+        type: choice
+        options: [cloudflare, netlify, 'cloudflare,netlify']
+        default: cloudflare
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      targets: ${{ steps.plan.outputs.targets }}
+      environment: ${{ steps.plan.outputs.environment }}
+      message: ${{ steps.plan.outputs.message }}
+      run-id: ${{ steps.plan.outputs.run-id }}
+    steps:
+      - name: Hosts, environment and build
+        id: plan
+        env:
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+          INPUT_TARGETS: ${{ inputs.targets }}
+          VAR_TARGETS: ${{ vars.DEPLOY_TARGETS }}
+          CALL_ENVIRONMENT: ${{ inputs.environment }}
+          CALL_MESSAGE: ${{ inputs.message }}
+          INPUT_RUN_ID: ${{ inputs.run-id }}
+        run: |
+          if [ "$MANUAL" = "true" ]; then
+            targets="$INPUT_TARGETS"; environment=production
+            message="Redeploy of CI run $INPUT_RUN_ID"; run_id="$INPUT_RUN_ID"
+          else
+            targets="${VAR_TARGETS:-cloudflare}"; environment="$CALL_ENVIRONMENT"
+            message="$CALL_MESSAGE"; run_id="$GITHUB_RUN_ID"
+          fi
+          {
+            echo "targets=$targets"
+            echo "environment=$environment"
+            echo "message=$message"
+            echo "run-id=$run_id"
+          } >> "$GITHUB_OUTPUT"
+          echo "Deploying run $run_id to $environment on: $targets" >> "$GITHUB_STEP_SUMMARY"
+
+  cloudflare:
+    name: App on Cloudflare
+    needs: plan
+    if: contains(needs.plan.outputs.targets, 'cloudflare')
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      host: cloudflare
+      environment: ${{ needs.plan.outputs.environment }}
+      pr-number: ${{ inputs.pr-number || 0 }}
+      head-sha: ${{ inputs.head-sha || github.sha }}
+      message: ${{ needs.plan.outputs.message }}
+      run-id: ${{ needs.plan.outputs.run-id }}
+    secrets: inherit
+
+  netlify:
+    name: App on Netlify (backup)
+    needs: plan
+    if: contains(needs.plan.outputs.targets, 'netlify')
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      host: netlify
+      environment: ${{ needs.plan.outputs.environment }}
+      pr-number: ${{ inputs.pr-number || 0 }}
+      head-sha: ${{ inputs.head-sha || github.sha }}
+      message: ${{ needs.plan.outputs.message }}
+      run-id: ${{ needs.plan.outputs.run-id }}
+    secrets: inherit

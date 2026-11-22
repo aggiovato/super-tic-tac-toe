@@ -1,15 +1,14 @@
 name: CI
 
-# The same gates as `task check`, split into jobs so failures are easy to read:
-#   quality → format, lint (with the token check) and unit tests
+# Integration: the same gates as `task check`, split into jobs so failures are easy to read. It
+# holds no deploy secrets; delivery is cd.yml, called at the end with the build that passed.
+#   quality → format, lint (typecheck, token and architecture checks) and unit tests
 #   build   → production build with budgets; its dist/ is what any deploy publishes
 #   e2e     → Playwright against that very build (Chromium desktop and Pixel 7, Firefox, WebKit)
 #   release-check (tags only) → the tag matches package.json
-#   deploy  → only after everything passes: the build's dist/ goes to Cloudflare Workers static
-#             assets (wrangler.jsonc), as a version with a pr-N preview alias for a PR (linked in a
-#             comment) or to production for a version tag vX.Y.Z (created by `task release:*`). A
-#             push to main without a tag is tested only. Cloudflare never builds on its own, so
-#             nothing reaches production without this pipeline.
+#   cd      → only after everything passes: a pr-N preview for a (non-draft) PR, production for a
+#             version tag vX.Y.Z (created by `task release:*`). A push to main without a tag is
+#             tested only. No host builds on its own, so nothing reaches production without this.
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -107,181 +106,24 @@ jobs:
             exit 1
           fi
 
-  deploy:
-    name: Deploy (Cloudflare)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  cd:
+    name: CD
     needs: [quality, build, e2e, release-check]
-    # Previews for (non-draft) PRs, production for version tags. release-check only runs for tags,
-    # so it may be skipped but never failed.
+    # release-check only runs for tags, so it may be skipped but never failed.
     if: >-
       !cancelled() && needs.quality.result == 'success' && needs.build.result == 'success' &&
       needs.e2e.result == 'success' && needs.release-check.result != 'failure' &&
       (startsWith(github.ref, 'refs/tags/v') ||
-      (github.event_name == 'pull_request' && !github.event.pull_request.draft)) &&
-      contains(vars.DEPLOY_TARGETS || 'cloudflare', 'cloudflare')
-    concurrency:
-      group: deploy-cloudflare-${{ github.ref }}
-      cancel-in-progress: true
-    environment:
-      name: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'preview' }}
-      url: ${{ steps.deploy.outputs.url }}
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft))
     permissions:
       contents: read
+      actions: read
       pull-requests: write
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      WRANGLER_SEND_METRICS: 'false'
-    steps:
-      # PRs from forks and Dependabot get no secrets: they are tested, not deployed.
-      - name: Check credentials
-        id: creds
-        run: |
-          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::Cloudflare secrets not available for this run; skipping deploy."
-          fi
-      # Only .nvmrc and wrangler.jsonc are needed; checkout runs first because it cleans the
-      # workspace.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: steps.creds.outputs.ok == 'true'
-        with:
-          sparse-checkout: |
-            .nvmrc
-            wrangler.jsonc
-          sparse-checkout-cone-mode: false
-      # The very build the e2e job tested, where wrangler.jsonc expects it.
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        if: steps.creds.outputs.ok == 'true'
-        with:
-          name: dist
-          path: dist/super-tic-tac-toe/browser/
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        if: steps.creds.outputs.ok == 'true'
-        with:
-          node-version-file: .nvmrc
-      - name: Deploy
-        id: deploy
-        if: steps.creds.outputs.ok == 'true'
-        env:
-          PROD: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          # Production replaces the live version; a PR uploads a version that serves only at its
-          # own preview alias (pr-N), never in production. Message built in the shell: a " #"
-          # inside a YAML plain scalar starts a comment.
-          wrangler=(npx -y wrangler@4.158.0)
-          if [ "$PROD" = "true" ]; then
-            "${wrangler[@]}" deploy --message "$GITHUB_REF_NAME" | tee deploy.log
-            url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
-          else
-            "${wrangler[@]}" versions upload --preview-alias "pr-$PR_NUMBER" \
-              --message "PR $PR_NUMBER" | tee deploy.log
-            url=$(grep -oE "https://pr-$PR_NUMBER-[a-z0-9.-]+\.workers\.dev" deploy.log | head -1)
-          fi
-          if [ -z "$url" ]; then
-            echo "::error::No URL in wrangler's output."; exit 1
-          fi
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Deployed: $url" >> "$GITHUB_STEP_SUMMARY"
-      - name: Link the preview in the PR
-        if: steps.creds.outputs.ok == 'true' && github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          URL: ${{ steps.deploy.outputs.url }}
-          PR: ${{ github.event.pull_request.number }}
-          # The branch's own commit, not the temporary merge commit GitHub tests on a PR.
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          body="Preview (Cloudflare): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
-          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --edit-last --body "$body" \
-            || gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$body"
-
-  # Netlify stays as a backup host. DEPLOY_TARGETS (a repository variable) picks where CD deploys:
-  # unset or "cloudflare" (default), "netlify", or "cloudflare,netlify" for both.
-  deploy-netlify:
-    name: Deploy (Netlify, backup)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [quality, build, e2e, release-check]
-    # Previews for (non-draft) PRs, production for version tags. release-check only runs for tags,
-    # so it may be skipped but never failed.
-    if: >-
-      !cancelled() && needs.quality.result == 'success' && needs.build.result == 'success' &&
-      needs.e2e.result == 'success' && needs.release-check.result != 'failure' &&
-      (startsWith(github.ref, 'refs/tags/v') ||
-      (github.event_name == 'pull_request' && !github.event.pull_request.draft)) &&
-      contains(vars.DEPLOY_TARGETS, 'netlify')
-    concurrency:
-      group: deploy-netlify-${{ github.ref }}
-      cancel-in-progress: true
-    environment:
-      name: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'preview' }}
-      url: ${{ steps.deploy.outputs.url }}
-    permissions:
-      contents: read
-      pull-requests: write
-    env:
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-    steps:
-      # PRs from forks and Dependabot get no secrets: they are tested, not deployed.
-      - name: Check credentials
-        id: creds
-        run: |
-          if [ -n "$NETLIFY_AUTH_TOKEN" ] && [ -n "$NETLIFY_SITE_ID" ]; then
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::Netlify secrets not available for this run; skipping deploy."
-          fi
-      # Only .nvmrc is needed here; checkout runs first because it cleans the workspace.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: steps.creds.outputs.ok == 'true'
-        with:
-          sparse-checkout: .nvmrc
-          sparse-checkout-cone-mode: false
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
-        if: steps.creds.outputs.ok == 'true'
-        with:
-          name: dist
-          path: dist/
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        if: steps.creds.outputs.ok == 'true'
-        with:
-          node-version-file: .nvmrc
-      # Netlify needs its own SPA fallback; Cloudflare routes unknown paths to the app by itself
-      # (wrangler.jsonc), so the rule is only written for this target.
-      - name: Add Netlify's SPA fallback
-        if: steps.creds.outputs.ok == 'true'
-        run: printf '/*  /index.html  200\n' > dist/_redirects
-      - name: Deploy
-        id: deploy
-        if: steps.creds.outputs.ok == 'true'
-        env:
-          PROD: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          # Message built in the shell: a " #" inside a YAML plain scalar starts a comment.
-          if [ "$PROD" = "true" ]; then
-            target=(--prod); message="$GITHUB_REF_NAME"
-          else
-            target=(--alias "pr-$PR_NUMBER"); message="PR $PR_NUMBER"
-          fi
-          npx -y netlify-cli@27.20.0 deploy --dir dist --site "$NETLIFY_SITE_ID" --no-build \
-            "${target[@]}" --message "$message" --json > deploy.json
-          url=$(node -e "const d=require('./deploy.json'); console.log(process.env.PROD==='true' ? d.url : d.deploy_url)")
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Deployed: $url" >> "$GITHUB_STEP_SUMMARY"
-      - name: Link the preview in the PR
-        if: steps.creds.outputs.ok == 'true' && github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          URL: ${{ steps.deploy.outputs.url }}
-          PR: ${{ github.event.pull_request.number }}
-          # The branch's own commit, not the temporary merge commit GitHub tests on a PR.
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          body="Preview (Netlify): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
-          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$body"
+    uses: ./.github/workflows/cd.yml
+    with:
+      environment: ${{ startsWith(github.ref, 'refs/tags/v') && 'production' || 'preview' }}
+      pr-number: ${{ github.event.pull_request.number || 0 }}
+      # The branch's own commit, not the temporary merge commit GitHub tests on a PR.
+      head-sha: ${{ github.event.pull_request.head.sha || github.sha }}
+      message: ${{ github.event_name == 'pull_request' && format('PR {0}', github.event.pull_request.number) || github.ref_name }}
+    secrets: inherit
