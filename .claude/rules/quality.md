@@ -68,7 +68,7 @@ API under `wrangler dev`; report and traces uploaded on failure) and cd, which c
 (delivery, reusable and also manual): the API first (`deploy-api.yml`), then the app per host
 (`deploy-app.yml`, checking `/api/health`); a PR gets its own API and a `pr-N` preview, `main` goes to
 pre and runs `e2e/online.spec.ts` against it, and a new version in `package.json` is promoted to
-production and tagged. `cleanup.yml` deletes a closed PR's API. Check workflow changes with
+production and tagged. `cleanup.yml` deletes a closed PR's API. `release.yml` (manual) opens a release PR, as `task release:*` does. Check workflow changes with
 actionlint. Actions are pinned by SHA. `task check` is the local equivalent. Each new
 Taskfile entry lands with the npm script it calls.
 

@@ -92,7 +92,7 @@ Update this table when a phase closes.
 | `task api:dev`                     | The API Worker locally (`wrangler dev`) with its `GameRoom` Durable Object          |
 | `task e2e:webkit`                  | Build + the flows in WebKit inside Playwright's container (Podman)                  |
 | `task check`                       | `fmt-check`, `lint`, `unit` and `e2e`, in CI order                                  |
-| `task release:patch\|minor\|major` | Open a release PR (`release/vX.Y.Z`: bump and CHANGELOG) from an up-to-date main    |
+| `task release:patch\|minor\|major` | Open a release PR (`release/vX.Y.Z`: bump and CHANGELOG); also Actions → Release    |
 | `task ci`                          | `setup` + `check` (what the workflow runs)                                          |
 
 Both watch modes take Playwright arguments after `--` (`task e2e:headed -- --project=mobile -g "won"`)
@@ -127,10 +127,14 @@ differs), and last the tag `vX.Y.Z` with a GitHub Release made from the CHANGELO
 with the workflow's token, so it starts nothing else). A failure before the tag leaves the release
 to retry. Runs on `main` queue instead of cancelling each other; a PR's newer push replaces its run.
 
-Releases are PRs: `task release:*` on an up-to-date, clean `main` runs `npm version` without a tag
-(bump, and `scripts/changelog-release.mjs` turns `## [Unreleased]` in `CHANGELOG.md` into the
-version and date, refusing an empty one), commits `chore(release): vX.Y.Z` on `release/vX.Y.Z` and
-opens the PR. Merging it is the release. Notable changes go under `## [Unreleased]` as they land.
+Releases are PRs, opened by `scripts/release-pr.sh` from `task release:*` (on an up-to-date, clean
+`main`) or from Actions → Release → Run workflow (`release.yml`, patch, minor or major): `npm version`
+without a tag (bump, and `scripts/changelog-release.mjs` turns `## [Unreleased]` in `CHANGELOG.md`
+into the version and date, refusing an empty one), the commit `chore(release): vX.Y.Z` on
+`release/vX.Y.Z`, and the PR. Merging it is the release. The workflow opens the PR with the secret
+`RELEASE_TOKEN` (a fine-grained token on this repository, Contents and Pull requests read and
+write) so its CI runs; without it, with the workflow's token (GitHub then runs no CI on that PR,
+and Actions must be allowed to create PRs), main is still tested and smoke-tested on pre. Notable changes go under `## [Unreleased]` as they land.
 Never push a tag by hand. The very `dist/` the build job produced is what gets deployed; Cloudflare
 never builds on its own. Secrets: `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit),
 `CLOUDFLARE_ACCOUNT_ID`. `public/_headers` (cache and security headers) ships in the build output;
