@@ -7,6 +7,11 @@ new version and date.
 
 ## [Unreleased]
 
+### Fixed
+
+- Dots and Boxes: the lines on the board's edge take a tap at once on phones, also when the finger
+  lands just outside the dots.
+
 ## [0.3.1] - 2026-11-22
 
 ### Fixed

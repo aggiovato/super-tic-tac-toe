@@ -32,7 +32,7 @@ rulesVersion, variant)`, `sizeOfVariant` / `variantOf`. Tested in Node with fast
   from `@match` (`opponent.worker.ts`). `@dots/state`: `DotsStore` = `withMatch` + `boxes`, `size`,
   `lastLine`. Undo against the computer goes back to the person's last turn (`stepsToPerson`),
   however many moves; the opponent is asked again while it keeps the turn.
-- `@dots/ui`: `/dots` and `/dots/history`. `DotsBoard` (lines are native buttons with arrow-key
+- `@dots/ui`: `/dots` and `/dots/history`. `DotsBoard` (pointer input on the whole platform resolves to the nearest free line, edge lines included; lines are native buttons with arrow-key
   roving focus, `dots-geometry.ts`), `DotsStatus` (the box score on the flap row, the waiting player dimmed; a sentence with the tally for screen readers), `DotsSettings`
   (how to play, board size; a new size starts a new series and asks again with a game under way),
   `DotsHowToPlay` (the shared `Ticket`). Player inks: `--color-player-x` / `--color-player-o`.
