@@ -51,8 +51,9 @@ test.beforeEach(async ({ page }) => {
       return;
     }
     const saved = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-    if (saved['tutorialSeen'] === undefined) {
-      localStorage.setItem(key, JSON.stringify({ ...saved, tutorialSeen: true }));
+    if (saved['seenTutorials'] === undefined) {
+      const seenTutorials = ['super-3t', 'classic', 'dots'];
+      localStorage.setItem(key, JSON.stringify({ ...saved, seenTutorials }));
     }
   }, PREFERENCES);
   await page.goto('/');
@@ -291,10 +292,10 @@ test.describe('against the opponent', () => {
     isMobile,
   }) => {
     await againstOpponent(page);
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
     for (let round = 0; round < 3; round++) {
       await playAnyLegal(page);
-      await expect(status(page)).toHaveText(/^Opponent to move/);
+      await expect(status(page)).toHaveText(/^Local to move/);
       await expect(status(page)).toHaveText(/^X to move/);
     }
     if (isMobile) {
@@ -338,33 +339,37 @@ test.describe('against the opponent', () => {
     await confirm.click();
     await expect(confirm).toHaveCount(0);
     await expect(status(page)).toHaveText('X to move. May pick any open board.');
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
   });
 
-  for (const level of ['Intermediate', 'Advanced']) {
+  // Each level is a train: its name in the level choice, the score and the status.
+  for (const [level, train] of [
+    ['Intermediate', 'Regional'],
+    ['Advanced', 'Express'],
+  ]) {
     test(`the ${level.toLowerCase()} level answers too, and is remembered`, async ({ page }) => {
       await againstOpponent(page);
       await page.getByRole('button', { name: 'Settings' }).click();
-      await page.getByRole('radio', { name: level }).check();
+      await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
       for (let round = 0; round < 2; round++) {
         await playAnyLegal(page);
-        await expect(status(page)).toHaveText(/^Opponent to move/);
+        await expect(status(page)).toHaveText(new RegExp(`^${train} to move`));
         await expect(status(page)).toHaveText(/^X to move/);
       }
       await page.reload();
       await page.getByRole('button', { name: 'Settings' }).click();
-      await expect(page.getByRole('radio', { name: level })).toBeChecked();
+      await expect(page.getByRole('radio', { name: train })).toBeChecked();
     });
   }
 
   test('the mode is remembered after a reload', async ({ page }) => {
     await againstOpponent(page);
     await page.reload();
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Opponent');
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Local, Beginner');
     await page.getByRole('button', { name: 'Settings' }).click();
     await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();
-    await expect(page.getByRole('radio', { name: 'Beginner' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Local' })).toBeChecked();
     await expect(page.getByLabel('Player 2 name')).toHaveCount(0);
   });
 });
@@ -424,7 +429,7 @@ test('on phones the settings sheet closes when dragged down by its head', async 
   const sheet = page.getByRole('heading', { name: 'Settings' });
   /** Drags the head down by `distance` px with touch input, in small steps, then lifts. */
   async function dragHead(distance: number): Promise<void> {
-    const head = await page.locator('.sheet-head').boundingBox();
+    const head = await page.locator('#settings-panel .sheet-head').boundingBox();
     if (!head) {
       throw new Error('The settings sheet is not open');
     }
@@ -495,23 +500,65 @@ test.describe('tactical challenges', () => {
   });
 });
 
+/** A game in the library: the aside on wide screens, else the games dialog (opened first). */
+async function libraryOpen(page: Page): Promise<void> {
+  const toggle = page.getByRole('button', { name: 'Games', exact: true });
+  if (await toggle.isVisible()) {
+    await toggle.click();
+    await expect(page.getByRole('dialog', { name: 'Games' })).toBeVisible();
+  }
+}
+
+function gameLink(page: Page, name: string) {
+  return page.getByRole('link', { name: new RegExp(`^${name}`) });
+}
+
+async function openGame(page: Page, name: string): Promise<void> {
+  await libraryOpen(page);
+  await gameLink(page, name).click();
+  await expect(page.getByRole('dialog', { name: 'Games' })).toBeHidden();
+}
+
 test.describe('classic tic tac toe', () => {
   const classicCell = (page: Page, at: number) =>
     page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
 
-  test('settings switch games, each keeps its own game, and the app reopens on the last', async ({
+  test('on wide screens the library folds to a rail and stays folded after a reload', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'Phones reach the library from the games button.');
+    // The aside shows from 87.5rem wide; narrower windows use the games button too.
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await page.goto('/classic');
+    await expect(gameLink(page, 'Boxes')).toBeVisible();
+    await page.getByRole('button', { name: 'Hide games' }).click();
+    await expect(gameLink(page, 'Boxes')).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Show games' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await page.getByRole('button', { name: 'Show games' }).click();
+    await expect(gameLink(page, 'Boxes')).toBeVisible();
+  });
+
+  test('the game library switches games, each keeps its own game, and the app reopens on the last', async ({
     page,
   }) => {
     await play(page, 4, 2);
-    await page.getByRole('button', { name: 'Settings' }).click();
-    await page.getByRole('radio', { name: 'Classic' }).check();
+    // The game on screen is marked as playing.
+    await libraryOpen(page);
+    await expect(gameLink(page, 'Super 3T')).toHaveAttribute('aria-current', 'page');
+    await expect(gameLink(page, 'Classic')).not.toHaveAttribute('aria-current');
+    await gameLink(page, 'Classic').click();
     await expect(page).toHaveURL(/\/classic$/);
+    await expect(page.getByRole('dialog', { name: 'Games' })).toBeHidden();
     await expect(status(page)).toHaveText('X to move.');
 
     await page.goto('/');
     await expect(page).toHaveURL(/\/classic$/);
-    await page.getByRole('button', { name: 'Settings' }).click();
-    await page.getByRole('radio', { name: 'Super 3T' }).check();
+    await openGame(page, 'Super 3T');
     await expect(page).toHaveURL(/\/super-3t$/);
     await expect(status(page)).toHaveText('O to move. Must play on board 3.');
   });
@@ -537,12 +584,16 @@ test.describe('classic tic tac toe', () => {
     await expect(page.getByRole('button', { name: /^Cell \d, empty$/ })).toHaveCount(9);
   });
 
-  for (const level of ['Beginner', 'Intermediate', 'Advanced']) {
+  for (const [level, train] of [
+    ['Beginner', 'Local'],
+    ['Intermediate', 'Regional'],
+    ['Advanced', 'Express'],
+  ]) {
     test(`the ${level.toLowerCase()} opponent answers every move`, async ({ page }) => {
       await page.goto('/classic');
       await page.getByRole('button', { name: 'Settings' }).click();
       await page.getByRole('radio', { name: 'Against the opponent' }).check();
-      await page.getByRole('radio', { name: level }).check();
+      await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
       for (let round = 0; round < 2; round++) {
         await page
@@ -575,8 +626,10 @@ test.describe('saving and resuming', () => {
   }) => {
     await againstOpponent(page);
     await play(page, 4, 2);
-    // Reload before the reply lands: the saved game stopped on the opponent's turn.
+    // Reload before the reply lands: the saved game stopped on the opponent's turn. "Saved" shows
+    // once the restored game is back (the empty game shown while it loads is never saved).
     await page.reload();
+    await expect(page.getByText('Saved')).toBeVisible();
     await expect(status(page)).toHaveText(/^X to move/);
     if (!isMobile) {
       // The whole board shows every mark: one move each, the reply played once.
@@ -604,5 +657,90 @@ test.describe('saving and resuming', () => {
     await expect(page.getByText('Player 1 wins')).toBeVisible();
     await page.getByRole('button', { name: 'Back to the game' }).click();
     await expect(status(page)).toHaveText('Game over. X wins.');
+  });
+});
+
+test.describe('dots and boxes', () => {
+  const line = (page: Page, name: string) =>
+    page.getByRole('button', { name: new RegExp(`^${name}, (free|.*'s)$`) });
+  /** Draws lines in order; names as "Horizontal line, row 1, dots 1 and 2". */
+  async function draw(page: Page, ...names: string[]): Promise<void> {
+    for (const name of names) {
+      // The board resolves a tap to the nearest line: tap where the line is drawn.
+      await line(page, name).click({ force: true });
+    }
+  }
+
+  test('closing a box keeps it and plays again; the game resumes after a reload', async ({
+    page,
+  }) => {
+    await page.goto('/dots');
+    await expect(status(page)).toHaveText('Boxes: X 0, O 0. X to move.');
+    await expect(page.getByRole('button', { name: /, free$/ })).toHaveCount(24);
+    // X top, O left, X right: O closes the box with the bottom and plays again.
+    await draw(
+      page,
+      'Horizontal line, row 1, dots 1 and 2',
+      'Vertical line, column 1, dots 1 and 2',
+      'Vertical line, column 2, dots 1 and 2',
+      'Horizontal line, row 2, dots 1 and 2',
+    );
+    await expect(page.getByText('O closed a box and plays again.', { exact: true })).toBeVisible();
+    // The departure row is now the box score; screen readers hear the count.
+    await expect(status(page)).toHaveText('O closed a box and plays again. Boxes: X 0, O 1.');
+
+    await page.reload();
+    await expect(status(page)).toHaveText(/^O closed a box/);
+    await expect(page.getByRole('button', { name: /, free$/ })).toHaveCount(20);
+
+    // The keyboard plays too: the free line in the tab order, then Enter.
+    await page
+      .getByRole('button', { name: /, free$/ })
+      .and(page.locator('[tabindex="0"]'))
+      .focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: /, free$/ })).toHaveCount(19);
+  });
+
+  test('the board size is a setting: 5×5 boxes', async ({ page }) => {
+    await page.goto('/dots');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('radio', { name: '5×5 boxes' }).check();
+    await page.getByRole('button', { name: 'Close settings' }).click();
+    await expect(page.getByRole('button', { name: /, free$/ })).toHaveCount(60);
+  });
+
+  test('the opponent answers, and a box it closes lets it play again', async ({ page }) => {
+    await page.goto('/dots');
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('radio', { name: 'Against the opponent' }).check();
+    await page.getByRole('radio', { name: 'Express' }).check();
+    await page.getByRole('button', { name: 'Close settings' }).click();
+    const theirs = page.getByRole('button', { name: /, Express's$/ });
+    for (let round = 1; round <= 3; round++) {
+      await page
+        .getByRole('button', { name: /, free$/ })
+        .first()
+        .click({ force: true });
+      // The opponent replies (more than once when it closes a box) before X moves again.
+      await expect.poll(() => theirs.count()).toBeGreaterThanOrEqual(round);
+      await expect(page.locator('app-dots-status [role="img"]')).toHaveAttribute(
+        'aria-label',
+        /X to move|Game over/,
+      );
+    }
+    await expect(page.getByRole('button', { name: /, Express's$/ }).first()).toBeVisible();
+  });
+
+  test('shows its own how-to-play on the first visit', async ({ page }) => {
+    await page.evaluate((key) => localStorage.removeItem(key), PREFERENCES);
+    await page.goto('/dots?e2e-tour');
+    const ticket = page.getByRole('dialog', { name: 'How to play' });
+    await expect(ticket).toBeVisible();
+    await expect(ticket.getByRole('listitem')).toHaveCount(4);
+    await ticket.getByRole('button', { name: 'Play' }).click();
+    await expect(ticket).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole('dialog', { name: 'How to play' })).toBeHidden();
   });
 });
