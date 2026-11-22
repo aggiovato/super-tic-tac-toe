@@ -48,3 +48,6 @@ Thumbs.db
 
 # Local diagrams generated with archify
 .archify/
+
+# Wrangler local state (task serve:cf)
+.wrangler/
