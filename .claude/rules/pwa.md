@@ -19,7 +19,7 @@ paths:
   file the app needs offline goes into one of these groups.
 - **Caching headers** (`public/_headers`): only `main-*.js`, `chunk-*.js`, CSS and `media/` are
   immutable. Not `worker-*.js`: that glob also matches the service worker's `worker-basic.min.js`,
-  and Netlify merges every matching rule. `index.html`, `ngsw-worker.js`, `ngsw.json` and the
+  and every matching rule applies (Cloudflare, like Netlify, joins the values). `index.html`, `ngsw-worker.js`, `ngsw.json` and the
   worker's helpers are `no-cache`, so a release reaches installed copies.
 - **Updates**: `AppUpdates` (`@shell`) is created at start-up (`provideAppUpdates`, an app
   initializer) so no service worker event is missed. It checks for a version at start, every

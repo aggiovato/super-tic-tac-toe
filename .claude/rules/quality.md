@@ -58,7 +58,7 @@ paths:
 `.github/workflows/ci.yml` runs on PRs, pushes to `main` and version tags, in jobs: quality (format,
 lint with the token check, unit tests), build (production build, uploaded as the `dist` artifact),
 e2e (Playwright against that artifact; report and traces uploaded on failure), release-check (tags:
-tag equals `package.json` version) and deploy (Netlify preview for PRs, production for tags; skipped
+tag equals `package.json` version) and deploy (Cloudflare, or the Netlify backup per the `DEPLOY_TARGETS` variable: a `pr-N` preview for PRs, production for tags; skipped
 without secrets). Actions are pinned by SHA. `task check` is the local equivalent. Each new
 Taskfile entry lands with the npm script it calls.
 
