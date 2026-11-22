@@ -32,7 +32,7 @@ tasks:
     run: once
     cmds: [npm run build]
   serve:cf:
-    desc: Build, then serve it as Cloudflare does (wrangler dev on http://localhost:8787, headers and SPA routing)
+    desc: Build, then serve it as Cloudflare does on http://localhost:8790 (headers, SPA routing, /api through the binding to the API Worker)
     cmds:
       - task: build
       - npm run serve:cf -- {{.CLI_ARGS}}
@@ -68,9 +68,10 @@ tasks:
       - task: lint
       - task: unit
       - task: e2e
-  # Releases: run on an up-to-date, clean main. `npm version` bumps package.json, commits
-  # "chore(release): vX.Y.Z" and tags it; `git push --follow-tags` then lets CI run the whole
-  # pipeline and deploy that tag to production.
+  # Releases are PRs: from an up-to-date, clean main, `npm version` (no tag) bumps package.json and
+  # turns the CHANGELOG's Unreleased section into the version (scripts/changelog-release.mjs), on a
+  # branch release/vX.Y.Z committed as "chore(release): vX.Y.Z" and opened as a PR. Merging it sends
+  # main to pre; when the smoke test passes there, CD deploys production and creates the tag.
   release:guard:
     internal: true
     cmds:
@@ -78,21 +79,36 @@ tasks:
       - test -z "$(git status --porcelain)" || (echo "Working tree not clean." && exit 1)
       - git fetch -q origin main
       - test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" || (echo "main is not up to date with origin." && exit 1)
+  release:open:
+    internal: true
+    requires:
+      vars: [BUMP]
+    cmds:
+      - task: release:guard
+      - npm version {{.BUMP}} --no-git-tag-version
+      - |
+        version="v$(node -p "require('./package.json').version")"
+        git switch -c "release/$version"
+        git add package.json package-lock.json CHANGELOG.md
+        git commit -m "chore(release): $version"
+        git push -u origin "release/$version"
+        gh pr create --base main --title "chore(release): $version" \
+          --body "Release $version: the version and its CHANGELOG section. Merging sends main to pre; when the smoke test passes there, CD deploys production and tags $version."
   release:patch:
-    desc: Release a patch version (fixes)
+    desc: Open a release PR for a patch version (fixes)
     cmds:
-      - task: release:guard
-      - 'npm version patch -m "chore(release): v%s"'
+      - task: release:open
+        vars: { BUMP: patch }
   release:minor:
-    desc: Release a minor version (new features)
+    desc: Open a release PR for a minor version (new features)
     cmds:
-      - task: release:guard
-      - 'npm version minor -m "chore(release): v%s"'
+      - task: release:open
+        vars: { BUMP: minor }
   release:major:
-    desc: Release a major version
+    desc: Open a release PR for a major version
     cmds:
-      - task: release:guard
-      - 'npm version major -m "chore(release): v%s"'
+      - task: release:open
+        vars: { BUMP: major }
   ci:
     desc: Clean install and full verification
     cmds:

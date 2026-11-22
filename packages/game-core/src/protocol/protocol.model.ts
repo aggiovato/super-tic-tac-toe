@@ -8,6 +8,16 @@ import type { GameId } from '@catalog';
 /** Where the rooms live, under the app's own origin (the API is reached through `/api`). */
 export const GAME_ROOMS_PATH = '/api/game-rooms';
 
+/**
+ * The socket's heartbeat: the client sends this text every `HEARTBEAT_MS` and the room answers
+ * `HEARTBEAT_REPLY` without waking up. A client that hears nothing for `SILENCE_MS` reconnects; a
+ * socket the room has not heard from for as long counts as gone (a lost network sends no close).
+ */
+export const HEARTBEAT = 'ping';
+export const HEARTBEAT_REPLY = 'pong';
+export const HEARTBEAT_MS = 20_000;
+export const SILENCE_MS = 50_000;
+
 /** Side 0 or 1 of a room; side 0 created it, side 1 joined through the invitation. */
 export type Seat = 0 | 1;
 
@@ -37,7 +47,10 @@ export interface CreatedGameRoom extends SeatGrant {
   readonly roomId: string;
 }
 
-/** Why a room cannot be joined (`POST /api/game-rooms/:id/join`): 404 missing, 409 full. */
+/**
+ * Why a room cannot be joined (`POST /api/game-rooms/:id/join`): 404 missing, 409 full. Creating
+ * or joining too often from one address answers 429 `too-many`.
+ */
 export type JoinRefusal = 'missing' | 'full';
 
 /** A seat's presence, as both players see it. */

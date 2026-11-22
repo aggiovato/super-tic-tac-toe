@@ -1,5 +1,6 @@
 import { gameById, isGameId } from '@catalog';
 import { Hono } from 'hono';
+import { clientKey } from '../security/limits';
 
 /** A room's Durable Object, or null for an id that is not one of ours. */
 function roomOf(env: Env, id: string) {
@@ -10,8 +11,17 @@ function roomOf(env: Env, id: string) {
   }
 }
 
-/** The rooms' HTTP controller, under `/api/rooms`: it checks the input and calls the room. */
+/** The rooms' HTTP controller, under `/api/game-rooms`: it checks the input and calls the room. */
 export const gameRoomsController = new Hono<{ Bindings: Env }>();
+
+// Creating and joining are limited per client address: a few a minute is plenty for people.
+gameRoomsController.post('*', async (c, next) => {
+  const { success } = await c.env.ROOM_REQUESTS.limit({ key: clientKey(c.req.raw) });
+  if (!success) {
+    return c.json({ error: 'too-many' }, 429);
+  }
+  return next();
+});
 
 /**
  * Creates a private room for a game of the catalog (and a variant it offers): the creator gets

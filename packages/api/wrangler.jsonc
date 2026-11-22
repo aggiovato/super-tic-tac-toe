@@ -1,15 +1,50 @@
-// The API Worker: online rooms by invitation. Its own Worker, apart from the app's static one,
-// because Cloudflare gives no preview URLs to a Worker that holds a Durable Object: the app keeps its
-// PR previews and reaches this Worker through a service binding (phase 6c/6d).
+// The API Worker: online rooms by invitation. Its own Worker, apart from the app's, because
+// Cloudflare gives no preview URLs to a Worker that holds a Durable Object. It has no public address:
+// the app's Worker reaches it under /api through a service binding. Deployed by CD before the app:
+// `--env preview --name super-3t-api-pr-<N>` for a PR, `--env pre` (super-3t-api-pre) for main, and
+// the top level (super-3t-api) for a release.
 {
   "name": "super-3t-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "preview_urls": false,
   // One Durable Object per room: it orders the room's moves and holds its players' sockets.
   "durable_objects": {
     "bindings": [{ "name": "GAME_ROOMS", "class_name": "GameRoom" }]
   },
   // The GameRoom keeps its state in its own SQLite database (the only kind the free plan offers).
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
-  "workers_dev": true
+  // Rooms created and joined per client address and minute (src/limits.ts).
+  "ratelimits": [
+    { "name": "ROOM_REQUESTS", "namespace_id": "3001", "simple": { "limit": 20, "period": 60 } }
+  ],
+  "env": {
+    // A PR's own API, deployed as super-3t-api-pr-<N> (`--name`) and deleted when the PR closes.
+    "preview": {
+      "name": "super-3t-api-preview",
+      "workers_dev": false,
+      "preview_urls": false,
+      "durable_objects": {
+        "bindings": [{ "name": "GAME_ROOMS", "class_name": "GameRoom" }]
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
+      "ratelimits": [
+        { "name": "ROOM_REQUESTS", "namespace_id": "3002", "simple": { "limit": 20, "period": 60 } }
+      ]
+    },
+    // Pre: what is on main, deployed on every merge.
+    "pre": {
+      "name": "super-3t-api-pre",
+      "workers_dev": false,
+      "preview_urls": false,
+      "durable_objects": {
+        "bindings": [{ "name": "GAME_ROOMS", "class_name": "GameRoom" }]
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
+      "ratelimits": [
+        { "name": "ROOM_REQUESTS", "namespace_id": "3003", "simple": { "limit": 20, "period": 60 } }
+      ]
+    }
+  }
 }

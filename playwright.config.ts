@@ -10,7 +10,9 @@ const FULL_MOTION = process.env['E2E_MOTION'] === 'full';
 // WebKit only where its system libraries are: CI, or Playwright's container (PW_WEBKIT=1).
 const WEBKIT = !!process.env['CI'] || process.env['PW_WEBKIT'] === '1';
 
-// Runs against the production build (`task e2e` builds first) served with an SPA fallback.
+// Runs against the production build (`task e2e` builds first) served with an SPA fallback, or,
+// with E2E_BASE_URL, against a deployed version (CD's smoke test on pre): then no local server.
+const BASE_URL = process.env['E2E_BASE_URL'];
 export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
@@ -18,7 +20,7 @@ export default defineConfig({
   retries: process.env['CI'] ? 1 : 0,
   reporter: process.env['CI'] ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: BASE_URL ?? `http://localhost:${PORT}`,
     locale: 'en-US',
     // Flows run without motion so every view settles at once; a few specs cover the animated path.
     reducedMotion: FULL_MOTION ? 'no-preference' : 'reduce',
@@ -38,21 +40,23 @@ export default defineConfig({
     // (`task e2e:webkit`). It runs the animated flows a good deal slower under parallel load.
     ...(WEBKIT ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] }, timeout: 60_000 }] : []),
   ],
-  webServer: [
-    // The API Worker (wrangler dev), for the online flows; the build reaches it under /api.
-    {
-      // Its port is pinned in packages/api (8787), where `task dev` also proxies /api.
-      command: 'npm run dev --workspace @super-3t/api',
-      url: `http://localhost:${API_PORT}/api/health`,
-      reuseExistingServer: !process.env['CI'],
-      env: { WRANGLER_SEND_METRICS: 'false' },
-      timeout: 60_000,
-    },
-    {
-      command: `node scripts/serve-dist.mjs ${PORT}`,
-      url: `http://localhost:${PORT}`,
-      reuseExistingServer: !process.env['CI'],
-      env: { API_ORIGIN: `http://localhost:${API_PORT}` },
-    },
-  ],
+  webServer: BASE_URL
+    ? []
+    : [
+        // The API Worker (wrangler dev), for the online flows; the build reaches it under /api.
+        {
+          // Its port is pinned in packages/api (8787), where `task dev` also proxies /api.
+          command: 'npm run dev --workspace @super-3t/api',
+          url: `http://localhost:${API_PORT}/api/health`,
+          reuseExistingServer: !process.env['CI'],
+          env: { WRANGLER_SEND_METRICS: 'false' },
+          timeout: 60_000,
+        },
+        {
+          command: `node scripts/serve-dist.mjs ${PORT}`,
+          url: `http://localhost:${PORT}`,
+          reuseExistingServer: !process.env['CI'],
+          env: { API_ORIGIN: `http://localhost:${API_PORT}` },
+        },
+      ],
 });

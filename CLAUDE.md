@@ -25,7 +25,8 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 - Remote `git@github-aggiovato:aggiovato/super-tic-tac-toe.git` (SSH alias for the **aggiovato**
   key), local identity `Aggiovato <aggiovato@gmail.com>`. Never use the global (work) identity.
 - **One branch per phase, created from `main`** (`phase/<n>-<slug>`, e.g. `phase/1-engine`),
-  merged through a PR so CI validates it. Never commit directly to `main`.
+  merged through a PR so CI validates it. Never commit directly to `main`. Releases are PRs too
+  (`task release:*`); CD creates the tags.
 - Conventional Commits, **header only**: `type(scope): summary`, lowercase, imperative, no body,
   no `Co-Authored-By` trailer, at most 100 characters. Enforced by the `commit-msg` hook
   (commitlint, `commitlint.config.mjs`). Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`,
@@ -34,7 +35,7 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 6 · Online by invitation: in progress.** Phase 5 shipped as v0.4 (offline play, safe
+**Phase 6 · Online by invitation: in progress (6d).** Phase 5 shipped as v0.4 (offline play, safe
 updates, Firefox and WebKit in e2e, hosting on Cloudflare Workers with Netlify as a backup) and the
 architecture was consolidated (glossary, `@catalog`, seats in records, engine and app trees,
 architecture checks). Phase 6 plan, one PR each:
@@ -43,15 +44,18 @@ architecture checks). Phase 6 plan, one PR each:
 - 6b: the API (`packages/api`, rule `api`): Hono on Cloudflare Workers, one `GameRoom` Durable Object per
   room (SQLite), the protocol (`commandId`, expected revision, full snapshots, reconnection, one result,
   rematch, a week's TTL), tested in the Workers runtime (merged).
-- 6c: online play (`@online`, done in `phase/6c-online`): the protocol's types shared as `@protocol`;
+- 6c: online play (`@online`, merged): the protocol's types shared as `@protocol`;
   `/<game>/online/:roomId` with an `OnlineRoom` as the match's `RemoteSeat` (the match mirrors the
   server; this player's moves show at once and go back if refused; no undo, the rematch is the
   room's; nothing saved on the device); the invitation from Settings, the online panel (link,
   connection, rival present, leave); `/api` proxied to `wrangler dev` locally and in e2e; a
   two-browser e2e that drops the connection and retries.
-- 6d: the app's Worker with the service binding to `super-3t-api`, deploy the API in CI (staging and
-  production, before the app), abuse limits, a socket heartbeat (a lost network is only noticed by
-  the server after a while), the release that closes the phase.
+- 6d (done in `phase/6d-deploy`): the app's Worker (`edge/index.ts`, only for `/api/*`) with the
+  service binding to the API, which has no public address; three environments (a PR's own API,
+  pre from `main`, production from a release PR); limits (rooms created and joined per address and
+  minute, a message budget per socket, four sockets per seat); a heartbeat (`ping`/`pong` answered
+  without waking the room; a silent socket is dropped by the client and swept by the room's alarm).
+  Then the release that closes the phase (v0.5.0), through the new release PR.
 
 Decided: all three games online; the API in its own Worker (`super-3t-api`), reached by the app
 under `/api/*` through a service binding, since Cloudflare gives no preview URLs to a Worker holding a
@@ -88,7 +92,7 @@ Update this table when a phase closes.
 | `task api:dev`                     | The API Worker locally (`wrangler dev`) with its `GameRoom` Durable Object          |
 | `task e2e:webkit`                  | Build + the flows in WebKit inside Playwright's container (Podman)                  |
 | `task check`                       | `fmt-check`, `lint`, `unit` and `e2e`, in CI order                                  |
-| `task release:patch\|minor\|major` | Bump, commit `chore(release): vX.Y.Z` and tag, from an up-to-date main              |
+| `task release:patch\|minor\|major` | Open a release PR (`release/vX.Y.Z`: bump and CHANGELOG) from an up-to-date main    |
 | `task ci`                          | `setup` + `check` (what the workflow runs)                                          |
 
 Both watch modes take Playwright arguments after `--` (`task e2e:headed -- --project=mobile -g "won"`)
@@ -97,26 +101,48 @@ lint-staged): ESLint with fixes, Prettier and the token check on the staged file
 
 ## Deploy
 
-Cloudflare Workers static assets (`wrangler.jsonc`: the build output, SPA routing, no Worker code;
-free, as assets are served without running a Worker). CI and CD are separate workflows in one
-run: `.github/workflows/ci.yml` (no deploy secrets) runs quality → build → e2e → release-check and
-then calls `cd.yml`, which publishes that run's tested build through `deploy-app.yml` (one host per
-call). A PR uploads a version with the preview alias `pr-N` (never live; linked in a
-PR comment), a push to `main` is tested only, and a version tag
-`vX.Y.Z` (from `task release:*` on an up-to-date `main`, then `git push --follow-tags`) is checked
-against `package.json` and deployed to production. Notable changes go under `## [Unreleased]` in
-`CHANGELOG.md` as they land; the release turns that section into the new version and date
-(`scripts/changelog-release.mjs`, npm's `version` script) and refuses an empty one. The very `dist/` the build job produced is what
-gets deployed; Cloudflare never builds on its own. Secrets: `CLOUDFLARE_API_TOKEN` (Workers
-Scripts: Edit), `CLOUDFLARE_ACCOUNT_ID`. `public/_headers` (cache and security headers) ships in the
-build output; `task serve:cf` serves the build locally as Cloudflare does (`wrangler dev`). Wrangler
-runs through `npx` at a pinned version, never as a dependency (its runtime would weigh on every
-`npm ci`). Netlify stays as a backup host: the repository variable `DEPLOY_TARGETS` picks where CD
-deploys (`cloudflare` by default, `netlify`, or `cloudflare,netlify`); its deploy writes Netlify's own
-SPA fallback (`_redirects`) first, with the secrets `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`. CD
-also runs by hand (Actions → CD → Run workflow): a CI run's id and the hosts redeploy that tested
-build to production, e.g. to switch to the backup without a new tag (the `dist` artifact lasts 7
-days). A preview deploy may be cancelled by a newer push; a production one always finishes.
+Two Cloudflare Workers. The app (`wrangler.jsonc`, `super-3t`): the build output as static assets
+with SPA routing, plus `edge/index.ts`, which runs only for `/api/*` (`run_worker_first`) and passes
+it to the API through the service binding `API` (free: everything else is served without running a
+Worker). The API (`packages/api/wrangler.jsonc`, rule `api`) has no public address. Cloudflare keeps
+bindings in each version, so each environment binds its own API:
+
+| Environment | When                          | API Worker                                   | App                                    |
+| ----------- | ----------------------------- | -------------------------------------------- | -------------------------------------- |
+| preview     | a (non-draft) PR, each push   | `super-3t-api-pr-N` (`--env preview --name`) | version alias `pr-N`, linked in the PR |
+| pre         | every merge to `main`         | `super-3t-api-pre` (`--env pre`)             | version alias `pre`, then a smoke test |
+| production  | `main` carrying a new version | `super-3t-api` (top level)                   | `wrangler deploy` (wrangler.jsonc)     |
+
+A preview or pre version is uploaded with a config bound to its API (`scripts/wrangler-config.mjs`,
+written next to `wrangler.jsonc` as the ignored `wrangler.generated.json`). `cleanup.yml` deletes a
+PR's API when the PR closes.
+
+CI and CD are separate workflows in one run: `.github/workflows/ci.yml` (no deploy secrets) runs
+quality → build → e2e and calls `cd.yml`. CD deploys the API first (`deploy-api.yml`; a failure
+stops the rest), then the app (`deploy-app.yml`, one host per call), which checks `/api/health`
+through the app. On pre it then runs the two-browser online e2e against the deployed URL
+(`E2E_BASE_URL`, no local servers). If `package.json`'s version has no tag yet, that run promotes:
+the production API, **the same `dist` artifact** to production (a new version, since its binding
+differs), and last the tag `vX.Y.Z` with a GitHub Release made from the CHANGELOG section (created
+with the workflow's token, so it starts nothing else). A failure before the tag leaves the release
+to retry. Runs on `main` queue instead of cancelling each other; a PR's newer push replaces its run.
+
+Releases are PRs: `task release:*` on an up-to-date, clean `main` runs `npm version` without a tag
+(bump, and `scripts/changelog-release.mjs` turns `## [Unreleased]` in `CHANGELOG.md` into the
+version and date, refusing an empty one), commits `chore(release): vX.Y.Z` on `release/vX.Y.Z` and
+opens the PR. Merging it is the release. Notable changes go under `## [Unreleased]` as they land.
+Never push a tag by hand. The very `dist/` the build job produced is what gets deployed; Cloudflare
+never builds on its own. Secrets: `CLOUDFLARE_API_TOKEN` (Workers Scripts: Edit),
+`CLOUDFLARE_ACCOUNT_ID`. `public/_headers` (cache and security headers) ships in the build output;
+`task serve:cf` serves the build locally as Cloudflare does, the API beside it through the real
+binding (`wrangler dev` with both configs, http://localhost:8790). Wrangler runs through `npx` at a
+pinned version for the app, and as the API's devDependency for the API. Netlify stays as a backup
+host: the repository variable `DEPLOY_TARGETS` picks where the app goes (`cloudflare` by default,
+`netlify`, or `cloudflare,netlify`; previews and production, never pre); its deploy writes
+Netlify's own SPA fallback (`_redirects`) first, with the secrets `NETLIFY_AUTH_TOKEN` and
+`NETLIFY_SITE_ID`; it has no `/api`, so online play is off there. CD also runs by hand (Actions →
+CD → Run workflow): a CI run's id and the hosts redeploy that tested build to production (the
+`dist` artifact lasts 7 days); ticking `api` also deploys the production API from the chosen ref.
 
 ## Glossary
 
