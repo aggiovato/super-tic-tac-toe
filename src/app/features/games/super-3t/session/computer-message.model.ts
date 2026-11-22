@@ -1,4 +1,7 @@
-import type { ComputerReplyMessage as Reply, ComputerRequestMessage as Request } from '@match';
+import type {
+  ComputerReplyMessage as Reply,
+  ComputerRequestMessage as Request,
+} from '@match/worker';
 import type { Move } from '@super3t/core';
 
 /** Main thread → Worker: one request, tagged so its reply can be matched. */

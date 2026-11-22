@@ -1,5 +1,5 @@
 import type { Signal } from '@angular/core';
-import type { GameRules } from '@catalog';
+import type { GameRules, Position, PositionStatus } from '@catalog';
 import type { ComputerLevel } from '@catalog';
 import type { PlayMode } from '@preferences';
 import type { SaveFailure } from '@storage';
@@ -15,33 +15,17 @@ export type Mode = PlayMode;
 export type Level = ComputerLevel;
 
 /** How a game stands, in any game of the family: a win need not be a line (boxes are counted). */
-export type MatchStatus =
-  | { readonly kind: 'in-progress' }
-  | { readonly kind: 'won'; readonly winner: Player }
-  | { readonly kind: 'drawn' };
+export type MatchStatus = PositionStatus;
 
 /** What a match needs from any game's position: whose turn, how it stands and its moves. */
-export interface MatchGame<M> {
-  readonly rulesVersion: number;
-  readonly turn: Player;
-  readonly status: MatchStatus;
-  readonly moves: readonly M[];
-}
+export type MatchGame<M> = Position<M>;
 
 /** An engine's answer to a move: the new position, or why it was refused. */
 export type MatchResult<S, R> =
   { readonly ok: true; readonly state: S } | { readonly ok: false; readonly reason: R };
 
-/** What the opponent needs to reply: the game so far and how to play it. */
-export interface ComputerRequest<M> {
-  /** Accepted moves in order; the opponent rebuilds the position from them. */
-  readonly moves: readonly M[];
-  readonly level: Level;
-  /** Integer seed kept for the whole game. */
-  readonly seed: number;
-  /** The game's variant (a board size), '' for games that have one shape. */
-  readonly variant: string;
-}
+/** What the computer player is asked (`@match/worker`, shared with its Worker). */
+export type { ComputerRequest } from './worker';
 
 /** The engine a match plays, from the game's definition (`@catalog`). */
 export type { GameRules };
