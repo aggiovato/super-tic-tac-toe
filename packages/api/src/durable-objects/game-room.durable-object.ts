@@ -62,13 +62,14 @@ export class GameRoom extends DurableObject<Env> {
     await this.handle(socket, seatOf(socket), message);
   }
 
+  // While its close or error is handled, the socket may still be listed as open: it is left out.
   override webSocketClose(socket: WebSocket): void {
     socket.close();
-    this.broadcast();
+    this.broadcast(socket);
   }
 
-  override webSocketError(): void {
-    this.broadcast();
+  override webSocketError(socket: WebSocket): void {
+    this.broadcast(socket);
   }
 
   /** Expires the room once it was left alone for its whole TTL; else checks again then. */
@@ -105,17 +106,24 @@ export class GameRoom extends DurableObject<Env> {
     return reply.type === 'ack';
   }
 
-  private online(): Set<Seat> {
-    return new Set(this.ctx.getWebSockets().map(seatOf));
+  /** The players' open sockets, but `leaving` (a socket being closed). */
+  private sockets(leaving?: WebSocket): WebSocket[] {
+    return this.ctx
+      .getWebSockets()
+      .filter((socket) => socket !== leaving && socket.readyState === WebSocket.OPEN);
+  }
+
+  private online(leaving?: WebSocket): Set<Seat> {
+    return new Set(this.sockets(leaving).map(seatOf));
   }
 
   /** Every open socket receives the state, as its own seat sees it. */
-  private broadcast(): void {
+  private broadcast(leaving?: WebSocket): void {
     if (!this.rooms.exists()) {
       return;
     }
-    const online = this.online();
-    for (const socket of this.ctx.getWebSockets()) {
+    const online = this.online(leaving);
+    for (const socket of this.sockets(leaving)) {
       this.send(socket, this.rooms.view(seatOf(socket), online));
     }
   }

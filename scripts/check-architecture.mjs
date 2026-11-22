@@ -49,6 +49,7 @@ const gameLayers = (game) => ({
     '@layout',
     '@library',
     '@history',
+    '@online',
     layer(game, 'core'),
     layer(game, 'challenge'),
     layer(game, 'session'),
@@ -61,6 +62,8 @@ export const DEPENDS = {
   // packages/game-core: pure TypeScript.
   '@tictac': [],
   '@catalog': ['@tictac', ...GAME_CORES],
+  // The online protocol, shared with the API Worker (packages/api).
+  '@protocol': ['@catalog'],
   ...Object.assign({}, ...Object.keys(GAMES).map(gameLayers)),
   // src/app/core: app-wide infrastructure.
   '@preferences': ['@catalog'],
@@ -70,10 +73,22 @@ export const DEPENDS = {
   '@match': ['@tictac', '@catalog', '@preferences', '@storage'],
   // The Worker's messages: plain types, so a Worker imports nothing else of @match.
   '@match/worker': ['@catalog'],
+  // Online play: the route's room behind the match's remote seat, and its panel.
+  '@online': ['@catalog', '@protocol', '@match', '@i18n', '@ui'],
   '@pwa': ['@match', '@i18n', '@ui'],
   // src/app: layout, shared UI and features.
   '@ui': ['@tictac', '@preferences'],
-  '@layout': ['@tictac', '@catalog', '@match', '@preferences', '@i18n', '@ui', '@library', '@pwa'],
+  '@layout': [
+    '@tictac',
+    '@catalog',
+    '@match',
+    '@online',
+    '@preferences',
+    '@i18n',
+    '@ui',
+    '@library',
+    '@pwa',
+  ],
   '@library': ['@catalog', '@match', '@preferences', '@i18n', '@ui'],
   '@history': ['@catalog', '@storage', '@preferences', '@i18n', '@ui', '@layout', '@pwa'],
 };
@@ -221,7 +236,7 @@ export function check() {
 
   // ESLint knows every shared block and every game.
   const lint = read('eslint.config.js');
-  const shared = /const SHARED = '([^']+)'/.exec(lint)?.[1].split('|') ?? [];
+  const shared = /const SHARED =\s*'([^']+)'/.exec(lint)?.[1].split('|') ?? [];
   for (const alias of Object.keys(DEPENDS).filter((name) => !name.includes('/'))) {
     if (!shared.includes(alias.slice(1))) problems.push(`${alias}: missing from SHARED in eslint`);
   }
@@ -234,7 +249,7 @@ export function check() {
     readdirSync(dir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && !skip.includes(entry.name))
       .map((entry) => entry.name);
-  const engines = folders('packages/game-core/src', ['tictac', 'catalog']);
+  const engines = folders('packages/game-core/src', ['tictac', 'catalog', 'protocol']);
   const apps = folders('src/app/features/games');
   if (ids.length === 0) problems.push('No game ids found in the catalog.');
   for (const id of ids) {

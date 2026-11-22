@@ -5,6 +5,8 @@
   <section class="arena" [attr.aria-label]="arenaLabel()"><ng-content select="[arena]" /></section>
   <footer class="controls">
     <ng-content select="[controls]" />
+    <!-- Online, the room's link and connection; nothing on a local game. -->
+    <app-online-panel />
     <!-- A new version, offered in the flow under the save notice: never over the controls. -->
     <app-update-notice />
   </footer>

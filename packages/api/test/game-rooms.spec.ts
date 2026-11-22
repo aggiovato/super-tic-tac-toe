@@ -88,6 +88,12 @@ async function playing(gameId = 'classic') {
 }
 
 describe('creating and joining a room', () => {
+  it('answers a health check', async () => {
+    const response = await SELF.fetch(`${BASE}/health`);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('ok');
+  });
+
   it('creates a room for a game of the catalog, with its variant read by the catalog', async () => {
     const room = await createRoom('dots', '');
     const player = await connect(room.roomId, room.token);

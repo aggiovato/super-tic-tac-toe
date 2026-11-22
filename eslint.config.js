@@ -15,7 +15,8 @@ const prettier = require('eslint-config-prettier');
 const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots' };
 const GAME_ALIASES = Object.keys(GAMES).join('|');
 const LAYERS = 'core|ai|challenge|session|state|ui';
-const SHARED = 'tictac|catalog|match|layout|library|history|pwa|storage|i18n|preferences|ui';
+const SHARED =
+  'tictac|catalog|protocol|match|online|layout|library|history|pwa|storage|i18n|preferences|ui';
 const BLOCK_ALIASES = `(?:${GAME_ALIASES})/(?:${LAYERS})|${SHARED}`;
 
 const BLOCK_BOUNDARIES = [
@@ -78,6 +79,8 @@ module.exports = defineConfig([
       'dist/',
       'coverage/',
       '.angular/',
+      // wrangler's local state and bundles (`task api:dev`, the e2e API server).
+      '**/.wrangler/',
       'node_modules/',
       'test-results/',
       'playwright-report/',
@@ -184,6 +187,16 @@ module.exports = defineConfig([
             },
           ],
         },
+      ],
+    },
+  },
+  {
+    // The online protocol: plain types shared by the app and the API Worker.
+    files: ['packages/game-core/src/protocol/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        { patterns: [PLAIN_TYPESCRIPT, NO_APP_LAYERS] },
       ],
     },
   },

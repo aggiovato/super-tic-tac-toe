@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { patchState } from '@ngrx/signals';
 import { type GameId } from '@catalog';
-import { type PlaySetup, Preferences } from '@preferences';
+import { type PlayMode, type PlaySetup, Preferences } from '@preferences';
 import {
   type GameRecord,
   type GameResult,
@@ -48,6 +48,14 @@ export interface MatchStorageStore<S, M, R> extends MatchTurnsStore<S, M, R> {
   readonly saveStatus: Signal<SaveStatus>;
   readonly _requestComputer: () => void;
   readonly _startGame: (changes: Partial<MatchState<S, R>>) => void;
+}
+
+/** The mode a saved match is played in: an online match is the room's and is never saved here. */
+function savedMode(mode: Mode): PlayMode {
+  if (mode === 'online') {
+    throw new Error('An online match is kept by its room, not saved on this device.');
+  }
+  return mode;
 }
 
 /** A finished game's result by participant, independent of the symbols. */
@@ -92,7 +100,7 @@ function recordOf<S extends MatchGame<M>, M, R>(
     variant: store.variant(),
     seriesId: store.seriesId(),
     // Who played each side, with the names chosen at the time.
-    seats: seatsOf(store.mode(), store.level(), names),
+    seats: seatsOf(savedMode(store.mode()), store.level(), names),
     seed: store.seed(),
     xPlayer: store.xPlayer(),
     moves: game.moves,
@@ -220,7 +228,7 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
       const game = stored?.game;
       if (stored && game && restoreMatch(store, rules, { series: stored.series, game }, memory)) {
         preferences.setPlay(gameId, {
-          mode: store.mode(),
+          mode: savedMode(store.mode()),
           level: store.level(),
           variant: store.variant(),
         });

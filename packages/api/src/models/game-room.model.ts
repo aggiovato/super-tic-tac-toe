@@ -1,10 +1,7 @@
 import type { GameId } from '@catalog';
+import type { GameRoomResult, GameRoomScore, JoinRefusal, Seat } from '@protocol';
 
-/** Side 0 or 1 of a room; side 0 created it, side 1 joined through the invitation. */
-export type Seat = 0 | 1;
-
-/** How a finished game of the room ended, by seat. */
-export type GameRoomResult = 'won-0' | 'won-1' | 'draw';
+export type { GameRoomResult, GameRoomScore, Seat };
 
 /** A room's setup, fixed when it is created. */
 export interface GameRoomSetup {
@@ -28,13 +25,7 @@ export interface MoveRow {
   readonly move: unknown;
 }
 
-/** Wins by seat and draws over a room's finished games. */
-export interface GameRoomScore {
-  readonly wins: readonly [number, number];
-  readonly draws: number;
-}
-
 /** What joining a room gives back: the guest's seat and token, or why it cannot be taken. */
 export type JoinOutcome =
   | { readonly ok: true; readonly seat: Seat; readonly token: string }
-  | { readonly ok: false; readonly reason: 'missing' | 'full' };
+  | { readonly ok: false; readonly reason: JoinRefusal };

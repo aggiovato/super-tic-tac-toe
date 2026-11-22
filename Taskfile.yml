@@ -24,7 +24,7 @@ tasks:
       - npm run test:app
       - npm run test:api
   api:dev:
-    desc: The API Worker locally (wrangler dev), with its Room Durable Object
+    desc: The API Worker locally on port 8787 (wrangler dev); `task dev` proxies /api to it
     cmds:
       - npm run dev --workspace @super-3t/api
   build:

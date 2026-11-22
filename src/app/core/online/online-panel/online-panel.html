@@ -1,0 +1,46 @@
+@if (room; as room) {
+  <section class="online" [attr.aria-label]="t().online.title">
+    <div class="head">
+      <!-- An always-present live region: connection changes and the rival joining are announced. -->
+      <div class="state" aria-live="polite" aria-atomic="true">
+        @if (room.problem(); as problem) {
+          <p class="line warn">{{ t().online.problems[problem] }}</p>
+        } @else if (waiting()) {
+          <p class="line lead">{{ t().online.waiting }}</p>
+        } @else if (status(); as status) {
+          <p class="line" [class.warn]="status.warn">
+            <span class="dot" [class.off]="status.warn" aria-hidden="true"></span>
+            {{ status.text }}
+          </p>
+        }
+      </div>
+      <div class="actions">
+        @if (room.problem() === 'unreachable') {
+          <button app-button="secondary" size="small" (click)="room.retry()">
+            {{ t().online.retry }}
+          </button>
+        }
+        <a app-button="quiet" size="small" [routerLink]="['/', gameId]">
+          {{ room.problem() ? t().online.playHere : t().online.leave }}
+        </a>
+      </div>
+    </div>
+
+    @if (waiting() && room.invitation(); as link) {
+      <p class="hint">{{ t().online.waitingHint }}</p>
+      <div class="share">
+        <input
+          type="text"
+          readonly
+          class="link"
+          [value]="link"
+          [attr.aria-label]="t().online.link"
+          (focus)="selectAll($event)"
+        />
+        <button app-button="primary" size="small" (click)="share()">
+          {{ canShare ? t().online.share : copied() ? t().online.copied : t().online.copy }}
+        </button>
+      </div>
+    }
+  </section>
+}

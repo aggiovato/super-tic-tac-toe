@@ -8,8 +8,11 @@ import type { Player } from '@tictac';
 /** Participant index (0 or 1) in a series; symbols swap on every rematch. */
 export type Participant = 0 | 1;
 
-/** Who plays: two people on one device, or a person against the computer. */
-export type Mode = PlayMode;
+/**
+ * Who plays: two people on one device, a person against the computer, or two people online (only
+ * on an online route, never saved as a preference).
+ */
+export type Mode = PlayMode | 'online';
 
 /** How strong the computer plays. */
 export type Level = ComputerLevel;
@@ -61,6 +64,8 @@ export interface MatchState<S, R> {
   readonly draws: number;
   /** Whether the current game's result is already in the series score. */
   readonly scored: boolean;
+  /** Online, the participant playing on this device; null when both play here or the computer does. */
+  readonly seat: Participant | null;
 }
 
 /** What the app around a game (score, actions, settings) may read and do with its match. */
@@ -69,6 +74,10 @@ export interface MatchApi {
   readonly wins: Signal<readonly [number, number]>;
   readonly draws: Signal<number>;
   readonly mode: Signal<Mode>;
+  /** The game's variant (a board size), '' for games that have one shape. */
+  readonly variant: Signal<string>;
+  /** Online, the participant playing on this device; null otherwise. */
+  readonly seat: Signal<Participant | null>;
   /** The computer's level (kept while two people play, for when it comes back). */
   readonly level: Signal<Level>;
   readonly toMove: Signal<Participant>;

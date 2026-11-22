@@ -22,6 +22,7 @@ import {
   Preferences,
 } from '@preferences';
 import { ACTIVE_GAME } from '@match';
+import { OnlineStart } from '@online';
 import { CONFIRM_WINDOW_MS, TwoPress } from '../two-press';
 
 const MOTIONS: readonly MotionSetting[] = ['system', 'full', 'reduced'];
@@ -34,7 +35,7 @@ type Section = (typeof SECTIONS)[number];
  */
 @Component({
   selector: 'app-settings-sheet',
-  imports: [Button, ChoiceGroup, Icon],
+  imports: [Button, ChoiceGroup, Icon, OnlineStart],
   templateUrl: './settings-sheet.html',
   styleUrl: './settings-sheet.css',
 })
@@ -92,9 +93,12 @@ export class SettingsSheet {
   /** This game's saved setup: who plays it. */
   private readonly setup = computed(() => this.preferences.play()[this.game.id]);
 
-  /** Name fields: against the computer only the person has one. */
+  /** An online game: who plays is the room's, so the setup is not offered. */
+  protected readonly online = computed(() => this.game.match.mode() === 'online');
+
+  /** Name fields: against the computer or online only this device's player has one. */
   protected readonly nameFields = computed((): readonly (0 | 1)[] =>
-    this.setup().mode === 'computer' ? [0] : [0, 1],
+    this.online() || this.setup().mode === 'computer' ? [0] : [0, 1],
   );
 
   /** "New series" asks once more before clearing the score. */

@@ -15,6 +15,7 @@ export type {
 export { LocalComputer, COMPUTER_PACE_MS } from './local-computer';
 export { MATCH_STORAGE, provideMatchStorage } from './match-storage';
 export { ComputerPlayer } from './computer';
+export { RemoteSeat, type RemoteGame } from './remote-seat';
 export { withMatch } from './with-match';
 export { WorkerComputer } from './worker-computer';
 export type { ComputerReplyMessage, ComputerRequestMessage } from './worker';

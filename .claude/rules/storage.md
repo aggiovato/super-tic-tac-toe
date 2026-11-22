@@ -16,7 +16,8 @@ paths:
   only. A change of shape bumps `SCHEMA_VERSION` and needs a migration; a record that cannot be
   read is kept and a new game starts.
 - **Seats** (schema 2): `seats` is who played participant 0 and 1, as it was then: `kind`
-  (`local` a person on this device, `computer` with its `level`, `remote` reserved for online),
+  (`local` a person on this device, `computer` with its `level`, `remote` reserved for online; an
+  online game is kept by its room and not saved here yet, so `@match` refuses to save mode `online`),
   the `name` a person chose and, later, a `playerId` (accounts). `seatsOf(mode, level, names)`
   writes them; `sideOf(record)` reads the mode and level back. Schema 1 kept `mode`
   (`'humans' | 'opponent'`) and `level` instead: `readGameRecord` (`record-schema.ts`) turns those

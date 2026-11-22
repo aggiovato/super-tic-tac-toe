@@ -7,6 +7,14 @@ new version and date.
 
 ## [Unreleased]
 
+### Added
+
+- Online play by invitation, in all three games: Settings creates a private room and its link, the
+  other player opens it on their own device, and both see every move as it happens. The game shows
+  whether the connection and the rival are there, comes back by itself after a lost connection, and
+  keeps the score of the room's games, with a rematch that swaps symbols. Not live until the server
+  is deployed.
+
 ### Changed
 
 - The history names the winner of a game between two people as they were called when it was played.

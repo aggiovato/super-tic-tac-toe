@@ -3,7 +3,10 @@ import { Translator } from '@i18n';
 import { Button, Icon } from '@ui';
 import { ACTIVE_GAME } from '@match';
 
-/** Undo while the game runs (against the computer, back to the player's turn); a rematch once it is over. */
+/**
+ * Undo while the game runs (against the computer, back to the player's turn; never online); a
+ * rematch once it is over.
+ */
 @Component({
   selector: 'app-game-actions',
   imports: [Button, Icon],

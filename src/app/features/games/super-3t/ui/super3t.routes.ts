@@ -1,5 +1,6 @@
 import type { Routes } from '@angular/router';
 import { provideMatchStorage, provideActiveGame } from '@match';
+import { openOnlineRoom, provideOnlineRoom } from '@online';
 import { HistoryPage } from '@history';
 import { CHALLENGES } from '@super3t/challenge';
 import { provideChallenge, provideSuper3tSession, provideWorkerComputer } from '@super3t/session';
@@ -25,6 +26,19 @@ export const SUPER3T_ROUTES: Routes = [
     loadComponent: () => import('./challenge-page/challenge-page').then((m) => m.ChallengePage),
     // A prepared position and its defender instead of a new game and the Worker.
     providers: [provideChallenge(), Super3tStore],
+  },
+  {
+    // An online game by invitation: the room on the server is the other player; nothing is saved here.
+    path: 'online/:roomId',
+    loadComponent: () => import('./super3t-page/super3t-page').then((m) => m.Super3tPage),
+    resolve: { roomId: openOnlineRoom },
+    providers: [
+      provideSuper3tSession(),
+      provideWorkerComputer(),
+      provideOnlineRoom('super-3t'),
+      Super3tStore,
+      provideActiveGame('super-3t', Super3tStore),
+    ],
   },
   { path: 'history', component: HistoryPage, data: { gameId: 'super-3t' } },
   { path: 'challenge', pathMatch: 'full', redirectTo: `challenge/${CHALLENGES[0]?.id ?? ''}` },
