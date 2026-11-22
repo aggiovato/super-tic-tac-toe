@@ -2,7 +2,7 @@
 //
 // - DEPENDS: which blocks each block may import, by alias (the "May import" table of CLAUDE.md).
 //   Production code only: specs and `testing/` folders may import more, and ESLint still keeps
-//   `src/engine/` free of Angular and app layers.
+//   `packages/game-core/src/` free of Angular and app layers.
 // - No cycles between blocks.
 // - Structure: every alias in tsconfig.json once, pointing to an existing index.ts; every block's
 //   index.ts has an alias; every shared block is in `SHARED` and every game in `GAMES` of
@@ -57,7 +57,7 @@ const gameLayers = (game) => ({
 });
 
 export const DEPENDS = {
-  // src/engine: pure TypeScript.
+  // packages/game-core: pure TypeScript.
   '@tictac': [],
   '@catalog': ['@tictac', ...GAME_CORES],
   ...Object.assign({}, ...Object.keys(GAMES).map(gameLayers)),
@@ -74,6 +74,9 @@ export const DEPENDS = {
   '@library': ['@catalog', '@match', '@preferences', '@i18n', '@ui'],
   '@history': ['@catalog', '@storage', '@preferences', '@i18n', '@ui', '@layout', '@pwa'],
 };
+
+/** Where the code lives: the shared engine package and the web app. */
+const SOURCES = ['packages/game-core/src', 'src'];
 
 /** Imports that are not blocks of the app. */
 const EXTERNAL = /^@(?:angular|ngrx|fontsource|playwright|vitest)\//;
@@ -114,8 +117,10 @@ function blockFolders() {
       : [];
   const games = Object.values(GAMES);
   return [
-    ...children('src/engine').filter((dir) => !games.some((game) => dir.endsWith(`/${game}`))),
-    ...games.flatMap((game) => children(`src/engine/${game}`)),
+    ...children('packages/game-core/src').filter(
+      (dir) => !games.some((game) => dir.endsWith(`/${game}`)),
+    ),
+    ...games.flatMap((game) => children(`packages/game-core/src/${game}`)),
     ...children('src/app/core'),
     ...children('src/app/features').filter((dir) => !dir.endsWith('/games')),
     ...games.flatMap((game) => children(`src/app/features/games/${game}`)),
@@ -130,7 +135,7 @@ const isTestCode = (file) => file.endsWith('.spec.ts') || file.includes('/testin
 function imports(pairs) {
   const ownerOf = blockOf(pairs);
   const edges = [];
-  for (const file of walk('src')) {
+  for (const file of SOURCES.flatMap(walk)) {
     const from = ownerOf(file);
     if (!from || isTestCode(file)) {
       continue;
@@ -220,17 +225,17 @@ export function check() {
 
   // The catalog's games: their folders, their core alias and their place in ESLint's GAMES.
   const ids = [
-    ...read('src/engine/catalog/definitions.ts').matchAll(/^\s+id: '([a-z0-9-]+)',$/gm),
+    ...read('packages/game-core/src/catalog/definitions.ts').matchAll(/^\s+id: '([a-z0-9-]+)',$/gm),
   ].map(([, id]) => id);
   const folders = (dir, skip = []) =>
     readdirSync(dir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && !skip.includes(entry.name))
       .map((entry) => entry.name);
-  const engines = folders('src/engine', ['tictac', 'catalog']);
+  const engines = folders('packages/game-core/src', ['tictac', 'catalog']);
   const apps = folders('src/app/features/games');
   if (ids.length === 0) problems.push('No game ids found in the catalog.');
   for (const id of ids) {
-    if (!engines.includes(id)) problems.push(`${id}: no folder src/engine/${id}/`);
+    if (!engines.includes(id)) problems.push(`${id}: no folder packages/game-core/src/${id}/`);
     if (!apps.includes(id)) problems.push(`${id}: no folder src/app/features/games/${id}/`);
     if (!Object.values(GAMES).includes(id))
       problems.push(`${id}: missing from GAMES in this script`);

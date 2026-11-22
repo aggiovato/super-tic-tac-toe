@@ -1,0 +1,10 @@
+/* The engines, computer players, challenges and catalog: plain TypeScript, no Angular or DOM. Type-checked here (npm run typecheck:core) and tested in Node (npm run test:core). Path aliases come from the root tsconfig.json. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": [],
+    "lib": ["ES2022"]
+  },
+  "files": [],
+  "include": ["src/**/*.ts"]
+}

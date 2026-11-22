@@ -1,8 +1,8 @@
 ---
 paths:
-  - 'src/engine/super-3t/**'
+  - 'packages/game-core/src/super-3t/**'
   - 'src/app/features/games/super-3t/**'
-  - 'src/engine/tictac/**'
+  - 'packages/game-core/src/tictac/**'
 ---
 
 # Super 3T · executable rules · rulesVersion 1
@@ -38,7 +38,7 @@ belongs to the player whose turn it is.
 | A move wins the third board of a global diagonal      | Immediate win even with empty cells left.                     |
 | Zooming into a mini board and back to the global view | History, turn and score unchanged (UI, phase 2).              |
 
-## Engine contract (`src/engine/super-3t/core/`, `@super3t/core`)
+## Engine contract (`packages/game-core/src/super-3t/core/`, `@super3t/core`)
 
 - `initialState()`, `legalMoves(state)`, `applyMove(state, move)` returning a typed success or
   rejection, and `replay(moves, rulesVersion)`.
@@ -52,7 +52,7 @@ belongs to the player whose turn it is.
 Each accepted move adds exactly one piece. A closed board never reopens. No history exceeds 81
 moves. A rejection does not change the state. Record the seed and shrink path of every failure.
 
-## Computer player (`src/engine/super-3t/ai/`, `@super3t/ai`)
+## Computer player (`packages/game-core/src/super-3t/ai/`, `@super3t/ai`)
 
 Consumes `core` and always returns a legal move. Prepare a fallback move before searching. A
 terminal global result outranks any local gain. Tests use a deterministic node limit; real runs
@@ -116,7 +116,7 @@ each rematch; undo returns to the person's turn (two moves, or one while the opp
 The mode and level are preferences (`@preferences`), so they survive a reload; the game itself does
 not yet (phase 4).
 
-## Tactical challenges (`src/engine/super-3t/challenge/`, `@super3t/challenge`)
+## Tactical challenges (`packages/game-core/src/super-3t/challenge/`, `@super3t/challenge`)
 
 A challenge is a prepared position (moves from the opening, an id, a level) where X to move wins in
 two of its own moves against any defence: one **key move** leaves the defender only replies after
@@ -139,7 +139,7 @@ until phase 4 saves it, so Settings asks once more when a game is under way.
 A rules change requires a new `rulesVersion`, new fixtures and a decision on how games saved with
 the previous version are read.
 
-## Shared base (`src/engine/tictac/`, `@tictac`)
+## Shared base (`packages/game-core/src/tictac/`, `@tictac`)
 
 What every game of the family shares, plain TypeScript that never imports a game: `Player`,
 `Mark`, `Line`, `BoardStatus`, the eight `LINES`, `findLine` and `resolveBoard` (how a 3×3 grid

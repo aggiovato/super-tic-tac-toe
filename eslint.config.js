@@ -7,8 +7,8 @@ const prettier = require('eslint-config-prettier');
 
 /*
  * Functional blocks. Each has an index.ts and a tsconfig `paths` alias. Shared blocks live in
- * src/app/core/<block>/, src/app/<block>/ or src/engine/<block>/ (alias @<block>); each game's
- * pure layers in src/engine/<folder>/<layer>/ and its app layers in src/app/features/games/<folder>/<layer>/ (alias
+ * src/app/core/<block>/, src/app/<block>/ or packages/game-core/src/<block>/ (alias @<block>); each game's
+ * pure layers in packages/game-core/src/<folder>/<layer>/ and its app layers in src/app/features/games/<folder>/<layer>/ (alias
  * @<game>/<layer>). A new game adds its alias and folder to GAMES (scripts/check-architecture.mjs checks they match
  * the catalog).
  */
@@ -37,7 +37,7 @@ const OTHER_GAMES = Object.entries(GAMES)
   }))
   .filter(({ others }) => others.length > 0)
   .map(({ others, folder }) => ({
-    files: [`src/engine/${folder}/**/*.ts`, `src/app/features/games/${folder}/**/*.ts`],
+    files: [`packages/game-core/src/${folder}/**/*.ts`, `src/app/features/games/${folder}/**/*.ts`],
     rules: {
       'no-restricted-syntax': [
         'error',
@@ -127,7 +127,7 @@ module.exports = defineConfig([
   },
   {
     // Opponents and challenges do not depend on Angular, NgRx, RxJS or app layers.
-    files: ['src/engine/*/ai/**/*.ts', 'src/engine/*/challenge/**/*.ts'],
+    files: ['packages/game-core/src/*/ai/**/*.ts', 'packages/game-core/src/*/challenge/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -137,7 +137,7 @@ module.exports = defineConfig([
   },
   {
     // An engine depends on nothing else: no framework, no app layer, no opponent.
-    files: ['src/engine/*/core/**/*.ts'],
+    files: ['packages/game-core/src/*/core/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -153,7 +153,7 @@ module.exports = defineConfig([
   },
   {
     // The family's shared base: plain TypeScript that no game's layer may leak into.
-    files: ['src/engine/tictac/**/*.ts'],
+    files: ['packages/game-core/src/tictac/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
@@ -170,7 +170,7 @@ module.exports = defineConfig([
   {
     // The catalog: the games as plain data and their engines, for the app and, later, the server.
     // Plain TypeScript that reads each game's engine only.
-    files: ['src/engine/catalog/**/*.ts'],
+    files: ['packages/game-core/src/catalog/**/*.ts'],
     rules: {
       '@typescript-eslint/no-restricted-imports': [
         'error',
