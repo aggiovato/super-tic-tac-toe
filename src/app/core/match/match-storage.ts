@@ -30,6 +30,7 @@ import type {
   SaveStatus,
 } from './match.model';
 import { type MatchTurnsStore, newId } from './match-turns';
+import { SavedMatches } from './saved-matches';
 
 /** Which game a route's match is saved as. Routes without it (a challenge) save nothing. */
 export const MATCH_STORAGE = new InjectionToken<{ readonly gameId: GameId }>('MATCH_STORAGE');
@@ -56,6 +57,26 @@ function savedMode(mode: Mode): PlayMode {
     throw new Error('An online match is kept by its room, not saved on this device.');
   }
   return mode;
+}
+
+/**
+ * The saved series, read ahead by the route (`preloadMatch`, so the first render already shows the
+ * saved game) or now from storage.
+ */
+function readSaved(
+  gameId: GameId,
+  { repository, savedMatches }: { repository: GameRepository; savedMatches: SavedMatches | null },
+  begin: (stored: StoredSeries | null) => void,
+  unreadable: () => void,
+): void {
+  const preloaded = savedMatches?.take(gameId);
+  if (!preloaded) {
+    repository.load(gameId).then(begin, unreadable);
+  } else if (preloaded.ok) {
+    begin(preloaded.stored);
+  } else {
+    unreadable();
+  }
 }
 
 /** A finished game's result by participant, independent of the symbols. */
@@ -185,6 +206,7 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
 ) {
   const config = inject(MATCH_STORAGE, { optional: true });
   const repository = config ? inject(GameRepository) : null;
+  const savedMatches = config ? inject(SavedMatches) : null;
   const preferences = inject(Preferences);
   const injector = inject(Injector);
   // An unreadable record is never `unfinished` here, so it is kept, never dropped.
@@ -250,12 +272,13 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
         { injector },
       );
     };
-    repository.load(gameId).then(begin, () => {
+    const unreadable = (): void => {
       // The saved games cannot be read: play on, but never write over them.
       stopped = true;
       begin(null);
       patchState(store, { saveStatus: 'unavailable' });
-    });
+    };
+    readSaved(gameId, { repository, savedMatches }, begin, unreadable);
   };
 
   return { _startStorage: start, retrySave: save };

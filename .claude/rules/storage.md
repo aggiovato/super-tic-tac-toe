@@ -44,3 +44,7 @@ paths:
   person (participant 0), the number of games for two people and the ten latest finished games.
 - Tests: `classic-store.spec.ts` (app, `MemoryRepository`, one injector per tab) and the
   "saving and resuming" e2e, which use the browser's real IndexedDB.
+- **Reading ahead**: each game's route resolves `preloadMatch(gameId)` (`SavedMatches` in `@match`), so
+  the store's storage starts with the saved series already read and the first render shows the
+  saved game (no empty board fading in before it). The read is taken once; without it the store
+  reads storage as before.

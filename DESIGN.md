@@ -280,7 +280,7 @@ When a new version of the installed app is ready, a quiet ticket offers it in th
 
 ### Page Changes
 
-Moving between pages (a game, its history, a challenge, another game) uses the router's view transitions: the page's content (`view-transition-name: page`) fades out in 150ms and the new one fades in with a 0.75rem rise in 240ms, while the torn-paper backdrop, the same on both pages, stays put. The settings sheet and the games dialog slide in with their backdrop fading. Every one is skipped under reduced motion.
+Moving between pages (a game, its history, a challenge, another game) uses the router's view transitions: the page's content fades out in 150ms and the new one fades in with a 0.75rem rise in 240ms, while the torn-paper backdrop, the same on both pages, stays put. The named layer (`view-transition-name: page`) is each page's full-width host, never its inner column (80rem in a game, 40rem in the history), so neither snapshot is stretched into the other's box; the library aside is a layer of its own (`library`) and stays still between games. A game arrives already in place: its route reads the saved game before the page renders (`preloadMatch`), and the other games' code is preloaded in the background, so a first visit does not wait for it. The settings sheet and the games dialog slide in with their backdrop fading. Every one is skipped under reduced motion.
 
 ### Masthead on Small Phones
 

@@ -66,12 +66,24 @@
 
   /*
    * Page changes (router view transitions): the page's content (`view-transition-name: page`, on
-   * the game layout and the history) fades out and the new one fades in with a short rise; the
+   * the game layout's and the history's full-width hosts) fades out and the new one fades in with a short rise; the
    * rest, the torn-paper backdrop, is the same on both pages and only cross-fades, so it stays put.
    */
   ::view-transition-group(page) {
     animation: none;
   }
+
+  /* Each snapshot at its own size from the top: a taller page is never squeezed into a shorter one. */
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    height: auto;
+  }
+
+  /*
+   * The library aside (`view-transition-name: library`) is its own layer: the same on every game
+   * page, its default cross-fade of two identical snapshots shows no change, so it stays put; on the
+   * history, which has none, it simply fades out.
+   */
 
   ::view-transition-old(page) {
     animation: page-out var(--duration-quick) var(--ease-out) both;
