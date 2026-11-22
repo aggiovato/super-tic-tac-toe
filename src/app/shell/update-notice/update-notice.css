@@ -1,0 +1,47 @@
+/*
+ * A departure-board ticket in the page's flow, under the save notice (or the history's heading):
+ * a quiet note that a new version is ready, with the one action. It never covers the controls.
+ */
+:host {
+  display: block;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-stack);
+  justify-content: space-between;
+  max-width: 28rem;
+  padding: var(--spacing-stack-tight) var(--spacing-stack-tight) var(--spacing-stack-tight)
+    var(--spacing-stack);
+  border: var(--border-hairline) solid var(--color-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-panel);
+  box-shadow: var(--shadow-panel);
+  color: var(--color-fg-strong);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+  animation: rise var(--duration-frame) var(--ease-out);
+}
+
+.notice p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.notice button {
+  flex: none;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(:root:not([data-motion='full'])) .notice {
+    animation: none;
+  }
+}

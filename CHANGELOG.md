@@ -7,6 +7,13 @@ new version and date.
 
 ## [Unreleased]
 
+### Added
+
+- The app works offline: after the first visit every game, level and page opens and plays with no
+  connection, and the app can be installed.
+- When a new version is ready the game offers it under the controls, and switching waits until the
+  game is saved, so an update never loses a move.
+
 ### Fixed
 
 - Dots and Boxes: the lines on the board's edge take a tap at once on phones, also when the finger

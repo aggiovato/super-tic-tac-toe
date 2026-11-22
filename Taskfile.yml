@@ -27,10 +27,15 @@ tasks:
     run: once
     cmds: [npm run build]
   e2e:
-    desc: Playwright against the production build (needs `npx playwright install chromium` once)
+    desc: Playwright against the production build, Chromium and Firefox (needs `npx playwright install chromium firefox` once)
     cmds:
       - task: build
       - npm run test:e2e
+  e2e:webkit:
+    desc: Build, then the flows in WebKit inside Playwright's container (Podman; WebKit needs Ubuntu's libraries)
+    cmds:
+      - task: build
+      - podman run --rm --ipc=host -v "$PWD":/work:Z -w /work mcr.microsoft.com/playwright:v1.65.1-noble npm run test:e2e:webkit -- {{.CLI_ARGS}}
   e2e:ui:
     desc: 'Build, then Playwright UI mode to run and replay each flow (e.g. E2E_MOTION=full task e2e:ui)'
     cmds:

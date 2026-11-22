@@ -112,6 +112,14 @@ export const en: Messages = {
     retry: 'Try again',
     reload: 'Reload',
   },
+  update: {
+    available: 'A new version of the app is ready.',
+    apply: 'Update',
+    unsaved:
+      'A new version is ready, but this game is not saved: updating now loses its last moves.',
+    applyAnyway: 'Update anyway',
+    applying: 'Updating…',
+  },
   history: {
     open: 'History',
     title: (game) => `${game} history`,

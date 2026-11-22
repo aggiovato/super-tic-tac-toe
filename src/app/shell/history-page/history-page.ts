@@ -6,6 +6,7 @@ import { type GameId, OPPONENT_LEVELS, type OpponentLevel, Preferences } from '@
 import { type GameRecord, GameRepository } from '@storage';
 import { BrandTitle } from '../brand-title/brand-title';
 import { participantName } from '../participant-name';
+import { UpdateNotice } from '../update-notice/update-notice';
 
 interface LevelRow {
   readonly level: OpponentLevel;
@@ -40,7 +41,7 @@ const RECENT = 10;
  */
 @Component({
   selector: 'app-history-page',
-  imports: [Backdrop, BrandTitle, Button, Icon],
+  imports: [Backdrop, BrandTitle, Button, Icon, UpdateNotice],
   templateUrl: './history-page.html',
   styleUrl: './history-page.css',
 })

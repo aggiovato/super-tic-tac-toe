@@ -274,6 +274,10 @@ A native popover. On wide screens a full-height sheet on the right (up to 24rem)
 
 The computer opponent is named after its level, a train from slowest to fastest: Cercanías, Regional, Expreso (Local, Regional, Express). The name replaces "Rival" wherever the opponent is named: the score, the status sentences, the line and cell labels and the history. Beside its name in the score and in the settings' level choice, `LevelBars` (`@kit`) shows the level as three rising bars, filled up to it (one, two or all three), in the text's own colour: shape, not colour, so it never competes with the player inks or Apricot. Screen readers hear the level in words after the name ("Expreso, Avanzado").
 
+### Update Notice
+
+When a new version of the installed app is ready, a quiet ticket offers it in the page's flow: under the save notice in the controls column (the thumb zone on phones), under the masthead in the history; never floating over the controls. Raven Deep with a hairline Seagrass edge, the panel radius and lift, a caption-size Chalk sentence and one secondary "Actualizar" button, which reads "Actualizando…" while it switches. It never shows while a save is under way; if the game could not be saved, the sentence warns that the last moves would be lost and the button reads "Actualizar igualmente". A broken cached version reloads by itself, without asking, once no save is under way. It rises in once (240ms), not under reduced motion.
+
 ### Page Changes
 
 Moving between pages (a game, its history, a challenge, another game) uses the router's view transitions: the page's content (`view-transition-name: page`) fades out in 150ms and the new one fades in with a 0.75rem rise in 240ms, while the torn-paper backdrop, the same on both pages, stays put. The settings sheet and the games dialog slide in with their backdrop fading. Every one is skipped under reduced motion.

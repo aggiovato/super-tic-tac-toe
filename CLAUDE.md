@@ -34,23 +34,24 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 4 · Local MVP: in progress** (`phase/4-local-mvp`). Phase 3 closed with the opponent's
-three levels, the how-to-play ticket, the tactical challenges and the family of games: Super 3T in
-`src/app/games/super-3t/`, the classic tic tac toe in `src/app/games/classic/`, shared through
-`@tictac`, `@match` and `@shell`; `/` opens the last game played. Done in phase 4: every game is
-saved to IndexedDB after each change (`@storage`, `provideMatchStorage` on each game route) and
-restored on the next visit, a finished game counts once, and each game has a history
-(`/<game>/history`). Also: Dots and Boxes, the third game (`phase/4b-dots`, `/dots`, 3×3 or
-5×5 boxes, player inks). Next: measuring on a real phone, then the release that closes the MVP.
+**Phase 5 · PWA beta: in progress** (`phase/5-pwa`). Phase 4 shipped as v0.3 (saving and
+resuming in IndexedDB, one result per game, a history per game, Dots and Boxes, the game library,
+opponents named by level); its one open item is measuring interaction on a real phone (budgets in
+`quality`). Done in phase 5: the Angular service worker (`ngsw-config.json`, production builds)
+prefetches the whole app, so a second start plays offline, every game and level; a new version is
+offered by `UpdateNotice` (`AppUpdates` in `@shell`) only once the game is saved; Playwright runs
+Chromium (desktop, Pixel 7), Firefox and WebKit. Next: the release that closes the phase, then
+phase 6 (online by invitation).
 
-| Phase        | Accepted when…                                                                        |
-| ------------ | ------------------------------------------------------------------------------------- |
-| 0 Bootstrap  | A clean clone installs from the lockfile and CI runs the available checks.            |
-| 1 Engine     | The six reference scenarios, the eight lines and the sequence invariants pass.        |
-| 2 Two humans | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
-| 3 Opponent ✓ | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
-| 4 Local MVP  | A game resumes mid-turn and each game counts a single result.                         |
-| 5–7          | PWA and CD, online by invitation, accounts.                                           |
+| Phase         | Accepted when…                                                                        |
+| ------------- | ------------------------------------------------------------------------------------- |
+| 0 Bootstrap   | A clean clone installs from the lockfile and CI runs the available checks.            |
+| 1 Engine      | The six reference scenarios, the eight lines and the sequence invariants pass.        |
+| 2 Two humans  | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
+| 3 Opponent ✓  | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
+| 4 Local MVP ✓ | A game resumes mid-turn and each game counts a single result.                         |
+| 5 PWA beta    | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
+| 6–7           | Online by invitation, accounts.                                                       |
 
 Update this table when a phase closes.
 
@@ -64,9 +65,10 @@ Update this table when a phase closes.
 | `task lint`                        | ESLint (TS, templates and accessibility), zero warnings                                  |
 | `task unit`                        | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
 | `task build`                       | Production build with budgets                                                            |
-| `task e2e`                         | Production build + Playwright (desktop and mobile Chromium)                              |
+| `task e2e`                         | Production build + Playwright (Chromium desktop and mobile, Firefox; WebKit on CI)       |
 | `task e2e:ui`                      | Build + Playwright UI mode: run and replay each flow step by step                        |
 | `task e2e:headed`                  | Build + flows in a visible browser, one at a time, 300 ms per action (`SLOW_MO`)         |
+| `task e2e:webkit`                  | Build + the flows in WebKit inside Playwright's container (Podman)                       |
 | `task check`                       | `fmt-check`, `lint`, `unit` and `e2e`, in CI order                                       |
 | `task release:patch\|minor\|major` | Bump, commit `chore(release): vX.Y.Z` and tag, from an up-to-date main                   |
 | `task ci`                          | `setup` + `check` (what the workflow runs)                                               |
@@ -99,7 +101,7 @@ build output.
 | `src/app/games/<game>/state/`     | GameStore (SignalStore) provided on the route       | `core`, `session`                             |
 | `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                         |
 | `src/app/match/`                  | `withMatch` (play and storage), sessions, opponents | `tictac`, `settings`, `storage`               |
-| `src/app/shell/`                  | Layout, game library, settings, score, history      | `match`, `kit`, `settings`, `i18n`, `storage` |
+| `src/app/shell/`                  | Layout, game library, settings, history, updates    | `match`, `kit`, `settings`, `i18n`, `storage` |
 | `src/app/storage/`                | Game and series records, IndexedDB and memory       | `settings` types                              |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
@@ -144,6 +146,7 @@ Loaded automatically for the files you touch:
 | `classic`       | `src/app/games/classic/**`               | Classic rules, engine, three opponent levels     |
 | `dots`          | `src/app/games/dots/**`                  | Dots and Boxes rules, opponent, board, inks      |
 | `storage`       | `src/app/storage/**`, `match/**`         | Records, saving, restoring, history              |
+| `pwa`           | `ngsw-config.json`, headers, updates     | Service worker, offline cache, update notice     |
 | `quality`       | `src/**`, configs, CI                    | Required tests, lint, budgets, CI                |
 | `design-tokens` | styles, templates, `ui/`                 | Token layers, semantic contract, adding a design |
 

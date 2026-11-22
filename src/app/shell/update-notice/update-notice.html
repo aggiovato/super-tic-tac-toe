@@ -1,0 +1,17 @@
+<!--
+  An always-present live region, so screen readers announce the notice when its content appears
+  (a region inserted with its text is often not announced). Not role="status": the game's own
+  status sentence holds that role.
+-->
+<div aria-live="polite" aria-atomic="true">
+  @if (shown()) {
+    <div class="notice" [class.unsaved]="unsaved()">
+      <p>{{ unsaved() ? t().update.unsaved : t().update.available }}</p>
+      <button app-button="secondary" size="small" [disabled]="applying()" (click)="apply()">
+        {{
+          applying() ? t().update.applying : unsaved() ? t().update.applyAnyway : t().update.apply
+        }}
+      </button>
+    </div>
+  }
+</div>
