@@ -9,25 +9,24 @@ new version and date.
 
 ### Added
 
-- The computer opponent is named after its level, a train from slowest to fastest (Cercanías,
-  Regional, Expreso), with level bars beside its name in the score and the level choice, so the
-  level is always in sight.
-- A library of games to switch between them: beside the board on wide screens and behind a Games
-  button on phones and tablets, with Super 3T as the main game on top, a drawn preview of each game
-  and the one being played marked. Settings keep only the game's own options and the app's.
 - Dots and Boxes, the third game, at `/dots`: draw lines between dots, close a box to keep it and
   play again, the most boxes win. 3×3 or 5×5 boxes, two people or the computer at three levels (the
   advanced one solves the endgame exactly), each player's lines and boxes in their own ink, its own
   how-to-play and history, saved like the other games.
-
+- Classic tic tac toe at `/classic`, for two people or against the computer at three levels (the
+  advanced one never loses). The app opens on the last game played; Super 3T now lives at
+  `/super-3t` (old links redirect).
+- A library of games to switch between them: beside the board on wide screens and behind a Games
+  button on phones and tablets, with Super 3T as the main game on top, a drawn preview of each game
+  and the one being played marked. Settings keep only the game's own options and the app's.
+- The computer opponent is named after its level, a train from slowest to fastest (Cercanías,
+  Regional, Expreso), with level bars beside its name in the score and the level choice, so the
+  level is always in sight.
 - Games are saved on this device after every move and resume where they were after a reload or a
   return, also on the opponent's turn. A finished game counts once, however often it is reopened.
   A line under the actions says "Saved", or what went wrong with a way to try again.
 - History for each game: results against the computer by level, games for two people and the
   latest finished games, from a History button beside Settings.
-- Classic tic tac toe at `/classic`, for two people or against the computer at three levels (the
-  advanced one never loses). Switch games from Settings (Game). The app opens on the last game
-  played; Super 3T now lives at `/super-3t` (old links redirect).
 - Tactical challenges: three prepared positions (easy, medium, hard) where you play X and must
   send the opponent to a board where any reply hands you the game, then close it. A wrong move
   names the reply that would save the opponent; Try again restarts the position. Each challenge is
@@ -46,6 +45,12 @@ new version and date.
 ### Changed
 
 - Leaving a game for the challenges or another game no longer asks first: nothing is lost.
+- Settings no longer switch games; the game library does.
+- Super 3T's board stops growing at 42rem on large screens and sits centred in its space.
+- Moving between pages (a game, its history, a challenge) fades and rises instead of cutting.
+- On small phones the header buttons show only their icons, so the title's flaps have room.
+- Undo against the computer always goes back to your turn, even after it played several times in a
+  row.
 
 ### Fixed
 
