@@ -1,0 +1,16 @@
+// Cloudflare Workers: the app as static assets, no Worker code (free: assets are served without
+// running a Worker). Deployed by CI (`wrangler deploy` for a version tag, `wrangler versions upload`
+// with a `pr-N` alias for a PR preview); `task serve:cf` serves the same locally.
+{
+  "name": "super-3t",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    // The production build; CI downloads the build job's artifact to the same path.
+    "directory": "./dist/super-tic-tac-toe/browser",
+    // Every unknown navigation is served by the app shell (the Netlify `_redirects` rule before).
+    "not_found_handling": "single-page-application"
+  },
+  // The *.workers.dev address, and a preview URL per uploaded version (PR previews).
+  "workers_dev": true,
+  "preview_urls": true
+}

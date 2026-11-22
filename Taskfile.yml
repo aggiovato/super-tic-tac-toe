@@ -26,6 +26,11 @@ tasks:
     desc: Production build with budgets
     run: once
     cmds: [npm run build]
+  serve:cf:
+    desc: Build, then serve it as Cloudflare does (wrangler dev on http://localhost:8787, headers and SPA routing)
+    cmds:
+      - task: build
+      - npm run serve:cf -- {{.CLI_ARGS}}
   e2e:
     desc: Playwright against the production build, Chromium and Firefox (needs `npx playwright install chromium firefox` once)
     cmds:

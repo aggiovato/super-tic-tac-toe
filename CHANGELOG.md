@@ -7,6 +7,11 @@ new version and date.
 
 ## [Unreleased]
 
+### Changed
+
+- The app is served from Cloudflare instead of Netlify, with the same caching and security headers
+  and the same offline support.
+
 ### Added
 
 - The app works offline: after the first visit every game, level and page opens and plays with no

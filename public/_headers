@@ -1,4 +1,4 @@
-# Netlify response headers (static SPA, no server).
+# Response headers for the static app (Cloudflare Workers static assets, same format as Netlify).
 # Hashed build output never changes under the same name: cache it for a year. Only names no
 # service worker file shares (`worker-*.js` would also match `worker-basic.min.js`, which must be
 # revalidated): the opponents' Workers keep Netlify's default revalidation, and the service worker

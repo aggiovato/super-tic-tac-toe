@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build --configuration production",
+    "serve:cf": "npx -y wrangler@4.158.0 dev",
     "watch": "ng build --watch --configuration development",
     "lint": "eslint . --max-warnings=0 && node scripts/check-tokens.mjs",
     "format": "prettier --write .",
