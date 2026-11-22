@@ -7,6 +7,8 @@ new version and date.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-22
+
 ### Changed
 
 - The app is served from Cloudflare instead of Netlify, with the same caching and security headers
@@ -149,7 +151,8 @@ First production release: Ultimate Tic Tac Toe for two people on one device.
 - Continuous integration with deploys to Netlify: a preview for every pull request and production
   for every version tag.
 
-[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.1.0...v0.2.0
