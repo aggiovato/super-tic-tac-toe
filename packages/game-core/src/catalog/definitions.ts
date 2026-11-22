@@ -22,7 +22,7 @@ export const SUPER3T_GAME = {
     sameMove: super3t.sameMove,
     apply: super3t.applyMove,
   },
-} as const satisfies GameDefinition<'super-3t', super3t.GameState, super3t.Move>;
+} as const satisfies GameDefinition<'super-3t', super3t.Move, super3t.GameState>;
 
 export const CLASSIC_GAME = {
   id: 'classic',
@@ -36,7 +36,7 @@ export const CLASSIC_GAME = {
     sameMove: classic.sameMove,
     apply: classic.applyMove,
   },
-} as const satisfies GameDefinition<'classic', classic.GameState, classic.Move>;
+} as const satisfies GameDefinition<'classic', classic.Move, classic.GameState>;
 
 export const DOTS_GAME = {
   id: 'dots',
@@ -52,7 +52,7 @@ export const DOTS_GAME = {
     sameMove: dots.sameMove,
     apply: dots.applyMove,
   },
-} as const satisfies GameDefinition<'dots', dots.GameState, dots.Move>;
+} as const satisfies GameDefinition<'dots', dots.Move, dots.GameState>;
 
 /** The games of the app, in the order the library lists them. */
 export const GAMES = [SUPER3T_GAME, CLASSIC_GAME, DOTS_GAME] as const;

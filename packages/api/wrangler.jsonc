@@ -1,0 +1,15 @@
+// The API Worker: online rooms by invitation. Its own Worker, apart from the app's static one,
+// because Cloudflare gives no preview URLs to a Worker that holds a Durable Object: the app keeps its
+// PR previews and reaches this Worker through a service binding (phase 6c/6d).
+{
+  "name": "super-3t-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  // One Durable Object per room: it orders the room's moves and holds its players' sockets.
+  "durable_objects": {
+    "bindings": [{ "name": "GAME_ROOMS", "class_name": "GameRoom" }]
+  },
+  // The GameRoom keeps its state in its own SQLite database (the only kind the free plan offers).
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
+  "workers_dev": true
+}
