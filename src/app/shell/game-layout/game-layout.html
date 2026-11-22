@@ -3,7 +3,11 @@
   <header class="masthead"><ng-content select="[masthead]" /></header>
   <div class="departures"><ng-content select="[status]" /></div>
   <section class="arena" [attr.aria-label]="arenaLabel()"><ng-content select="[arena]" /></section>
-  <footer class="controls"><ng-content select="[controls]" /></footer>
+  <footer class="controls">
+    <ng-content select="[controls]" />
+    <!-- A new version, offered in the flow under the save notice: never over the controls. -->
+    <app-update-notice />
+  </footer>
   <!-- The family of games, on the left on wide screens (the games menu elsewhere); it folds away. -->
   <aside class="library" [class.folded]="!shown()" aria-labelledby="library-title">
     <div class="library-head">

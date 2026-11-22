@@ -111,6 +111,16 @@ export interface Messages {
     readonly retry: string;
     readonly reload: string;
   };
+  /** A new version of the installed app, downloaded and ready. */
+  readonly update: {
+    readonly available: string;
+    readonly apply: string;
+    /** The game could not be saved: updating now would lose its last moves. */
+    readonly unsaved: string;
+    readonly applyAnyway: string;
+    /** While the game's last save finishes before the reload. */
+    readonly applying: string;
+  };
   /** The history of a game: results against the computer by level and the latest games. */
   readonly history: {
     readonly open: string;

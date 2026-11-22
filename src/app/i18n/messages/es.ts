@@ -113,6 +113,14 @@ export const es: Messages = {
     retry: 'Reintentar',
     reload: 'Recargar',
   },
+  update: {
+    available: 'Hay una versión nueva de la app.',
+    apply: 'Actualizar',
+    unsaved:
+      'Hay una versión nueva, pero la partida no está guardada: si actualizas, se perderán las últimas jugadas.',
+    applyAnyway: 'Actualizar igualmente',
+    applying: 'Actualizando…',
+  },
   history: {
     open: 'Historial',
     title: (game) => `Historial de ${game}`,
