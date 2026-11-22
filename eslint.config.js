@@ -9,7 +9,7 @@ const prettier = require('eslint-config-prettier');
  * Functional blocks. Each has an index.ts and a tsconfig `paths` alias. Shared blocks live in
  * src/app/core/<block>/, src/app/<block>/ or src/engine/<block>/ (alias @<block>); each game's
  * pure layers in src/engine/<folder>/<layer>/ and its app layers in src/app/features/games/<folder>/<layer>/ (alias
- * @<game>/<layer>). A new game adds its alias and folder to GAMES (scripts/check-games.mjs checks they match
+ * @<game>/<layer>). A new game adds its alias and folder to GAMES (scripts/check-architecture.mjs checks they match
  * the catalog).
  */
 const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots' };

@@ -6,7 +6,8 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
     environment: 'node',
-    include: ['src/engine/**/*.spec.ts'],
+    // The engine, and the architecture checks that guard the code's structure.
+    include: ['src/engine/**/*.spec.ts', 'scripts/**/*.spec.mjs'],
     coverage: {
       provider: 'v8',
       // Engines, opponents and challenges are held to the same bar.

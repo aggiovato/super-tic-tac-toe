@@ -36,7 +36,6 @@
       "@dots/state": ["./src/app/features/games/dots/state/index.ts"],
       "@dots/ui": ["./src/app/features/games/dots/ui/index.ts"],
       "@dots/ui/preview": ["./src/app/features/games/dots/ui/preview/index.ts"],
-      "@history": ["./src/app/features/history/index.ts"],
       "@storage": ["./src/app/core/storage/index.ts"],
       "@i18n": ["./src/app/core/i18n/index.ts"],
       "@preferences": ["./src/app/core/preferences/index.ts"],

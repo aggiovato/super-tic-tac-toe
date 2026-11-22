@@ -141,6 +141,13 @@ becomes `packages/game-core` in phase 6), `src/app/` the Angular app, grouped as
 | `src/app/core/pwa/`                      | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                  |
 | `src/app/core/storage/`                  | Game and series records, IndexedDB and memory                    | `preferences` types                                    |
 
+The "May import" column is enforced: `DEPENDS` in `scripts/check-architecture.mjs` (part of `npm run
+lint`) is its source of truth for production code, together with no cycles between blocks and a
+consistent structure (each alias once, each block with an `index.ts` and an alias, each shared block
+in `SHARED` and each game in `GAMES` of ESLint). A new block or dependency is added there first.
+`scripts/*.spec.mjs` (run by `test:core`) prove that check and every ESLint boundary rule still
+fail where they should.
+
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
 `resolve.tsconfigPaths`):
@@ -163,7 +170,7 @@ with a relative path (`../core`) or into its files (`@super3t/core/engine`). Ins
 each other with relative paths. A sub-folder with its own audience gets its own `index.ts` and
 alias too (`@super3t/core/testing`). A new block needs both an `index.ts` and an alias, and its name added to
 `SHARED` in `eslint.config.js`. A new game: its definition in `@catalog` (`definitions.ts`, `GAMES`),
-its folder and aliases, its folder in `GAMES` in `eslint.config.js` (`scripts/check-games.mjs`, part
+its folder and aliases, its folder in `GAMES` in `eslint.config.js` (`scripts/check-architecture.mjs`, part
 of `npm run lint`, fails until they agree), its routes and preview in `src/app/game-ui.ts`, and its
 name and blurb in every language (typed by `GameId`). A game
 never imports another game: what they share goes to `@tictac` (logic) or `@ui` (UI).
