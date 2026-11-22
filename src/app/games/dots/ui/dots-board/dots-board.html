@@ -1,5 +1,16 @@
-<div class="platform" [class.over]="store.isOver()" [class.decided]="winner()">
-  <!-- Pointer input is resolved to the nearest line; keyboard input goes to the line buttons. -->
+<!--
+  Pointer input is resolved to the nearest line, over the whole platform: a finger aiming at an edge
+  line often lands just outside the dots, in the platform's margin. Keyboard input goes to the line
+  buttons.
+-->
+<div
+  class="platform"
+  [class.over]="store.isOver()"
+  [class.decided]="winner()"
+  (pointerup)="onPointer($event, field, true)"
+  (pointermove)="onPointer($event, field, false)"
+  (pointerleave)="hovered.set(null)"
+>
   <div
     #field
     class="field"
@@ -7,9 +18,6 @@
     [attr.aria-label]="t().dots.board"
     [style.--boxes]="size()"
     (keydown)="onKey($event)"
-    (pointerup)="onPointer($event, field, true)"
-    (pointermove)="onPointer($event, field, false)"
-    (pointerleave)="hovered.set(null)"
   >
     @for (box of boxes(); track box.index) {
       <div
