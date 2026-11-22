@@ -37,6 +37,9 @@ describe('the catalog', () => {
       const rules = gameById(game.id).rules;
       const start = rules.replay([], game.rulesVersion, game.variants[0] ?? '');
       expect(start.ok).toBe(true);
+      if (!start.state) {
+        throw new Error(`${game.id} did not start`);
+      }
       const [move] = rules.legalMoves(start.state);
       expect(rules.sameMove(move, move)).toBe(true);
       expect(rules.apply(start.state, move).ok).toBe(true);

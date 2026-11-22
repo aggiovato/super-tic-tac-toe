@@ -39,15 +39,17 @@ updates, Firefox and WebKit in e2e, hosting on Cloudflare Workers with Netlify a
 architecture was consolidated (glossary, `@catalog`, seats in records, engine and app trees,
 architecture checks). Phase 6 plan, one PR each:
 
-- 6a: npm workspaces, the engine as `packages/game-core` (done in `phase/6a-workspaces`).
-- 6b: the API with Hono on Cloudflare Workers, one Durable Object per room (SQLite), the protocol
-  (`commandId`, expected revision, full snapshots, reconnection), tested in the Workers runtime.
+- 6a: npm workspaces, the engine as `packages/game-core` (merged).
+- 6b: the API (`packages/api`, rule `api`): Hono on Cloudflare Workers, one `GameRoom` Durable Object per
+  room (SQLite), the protocol (`commandId`, expected revision, full snapshots, reconnection, one result,
+  rematch, a week's TTL), tested in the Workers runtime (done in `phase/6b-api`).
 - 6c: the online session (a `remote` seat behind `play(move)`, optimistic moves reconciled with
   the server), create a room and share its link, connection state, two-browser e2e.
 - 6d: deploy the API in CI (staging and production), abuse limits, the release that closes the phase.
 
-Decided: all three games online; the API in the same Worker as the app (`/api/*`), with a staging
-Worker if previews cannot carry Durable Objects; rooms expire after 7 days idle, a missing player is
+Decided: all three games online; the API in its own Worker (`super-3t-api`), reached by the app
+under `/api/*` through a service binding, since Cloudflare gives no preview URLs to a Worker holding a
+Durable Object (the app keeps its PR previews); rooms expire after 7 days idle, a missing player is
 waited for until then, a rematch stays in the room and swaps symbols. Accounts (phase 7) add Neon
 Postgres (Hyperdrive, Drizzle) for verified history across devices.
 
@@ -66,21 +68,22 @@ Update this table when a phase closes.
 
 ## Commands
 
-| Task                               | What it does                                                                             |
-| ---------------------------------- | ---------------------------------------------------------------------------------------- |
-| `task setup`                       | `npm ci`                                                                                 |
-| `task dev`                         | `ng serve`                                                                               |
-| `task fmt` / `task fmt-check`      | Prettier write / check                                                                   |
-| `task lint`                        | ESLint (TS, templates and accessibility), zero warnings                                  |
-| `task unit`                        | `test:core` (engine typecheck, Vitest in Node, coverage gate) and `test:app` (`ng test`) |
-| `task build`                       | Production build with budgets                                                            |
-| `task e2e`                         | Production build + Playwright (Chromium desktop and mobile, Firefox; WebKit on CI)       |
-| `task e2e:ui`                      | Build + Playwright UI mode: run and replay each flow step by step                        |
-| `task e2e:headed`                  | Build + flows in a visible browser, one at a time, 300 ms per action (`SLOW_MO`)         |
-| `task e2e:webkit`                  | Build + the flows in WebKit inside Playwright's container (Podman)                       |
-| `task check`                       | `fmt-check`, `lint`, `unit` and `e2e`, in CI order                                       |
-| `task release:patch\|minor\|major` | Bump, commit `chore(release): vX.Y.Z` and tag, from an up-to-date main                   |
-| `task ci`                          | `setup` + `check` (what the workflow runs)                                               |
+| Task                               | What it does                                                                        |
+| ---------------------------------- | ----------------------------------------------------------------------------------- |
+| `task setup`                       | `npm ci`                                                                            |
+| `task dev`                         | `ng serve`                                                                          |
+| `task fmt` / `task fmt-check`      | Prettier write / check                                                              |
+| `task lint`                        | ESLint (TS, templates and accessibility), zero warnings                             |
+| `task unit`                        | `test:core` (engine, Node), `test:app` (`ng test`) and `test:api` (Workers runtime) |
+| `task build`                       | Production build with budgets                                                       |
+| `task e2e`                         | Production build + Playwright (Chromium desktop and mobile, Firefox; WebKit on CI)  |
+| `task e2e:ui`                      | Build + Playwright UI mode: run and replay each flow step by step                   |
+| `task e2e:headed`                  | Build + flows in a visible browser, one at a time, 300 ms per action (`SLOW_MO`)    |
+| `task api:dev`                     | The API Worker locally (`wrangler dev`) with its `GameRoom` Durable Object          |
+| `task e2e:webkit`                  | Build + the flows in WebKit inside Playwright's container (Podman)                  |
+| `task check`                       | `fmt-check`, `lint`, `unit` and `e2e`, in CI order                                  |
+| `task release:patch\|minor\|major` | Bump, commit `chore(release): vX.Y.Z` and tag, from an up-to-date main              |
+| `task ci`                          | `setup` + `check` (what the workflow runs)                                          |
 
 Both watch modes take Playwright arguments after `--` (`task e2e:headed -- --project=mobile -g "won"`)
 and `E2E_MOTION=full` to play the animations. A change is not done until `task check` is green. Committing runs a pre-commit hook (husky +
@@ -179,7 +182,8 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 Another block is imported only through its alias (`import { applyMove } from '@super3t/core'`), never
 with a relative path (`../core`) or into its files (`@super3t/core/engine`). Inside a block, files import
 each other with relative paths. A sub-folder with its own audience gets its own `index.ts` and
-alias too (`@super3t/core/testing`). A new block needs both an `index.ts` and an alias, and its name added to
+alias too (`@super3t/core/testing`; `@match/worker`, the computer Worker's message types, so a
+Worker imports no Angular or DOM). A new block needs both an `index.ts` and an alias, and its name added to
 `SHARED` in `eslint.config.js`. A new game: its definition in `@catalog` (`definitions.ts`, `GAMES`),
 its folder and aliases, its folder in `GAMES` in `eslint.config.js` (`scripts/check-architecture.mjs`, part
 of `npm run lint`, fails until they agree), its routes and preview in `src/app/game-ui.ts`, and its
@@ -206,6 +210,7 @@ Loaded automatically for the files you touch:
 | `dots`          | `packages/game-core/src/dots/**`, `features/games/dots/**`                      | Dots and Boxes rules, opponent, board, inks      |
 | `storage`       | `src/app/core/storage/**`, `match/**`                                           | Records, saving, restoring, history              |
 | `pwa`           | `ngsw-config.json`, headers, updates                                            | Service worker, offline cache, update notice     |
+| `api`           | `packages/api/**`                                                               | API Worker: structure, room protocol, tests      |
 | `quality`       | `src/**`, configs, CI                                                           | Required tests, lint, budgets, CI                |
 | `design-tokens` | styles, templates, `ui/`                                                        | Token layers, semantic contract, adding a design |
 

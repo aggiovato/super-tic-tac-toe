@@ -24,7 +24,7 @@ const BLOCK_BOUNDARIES = [
     message: 'Import another block through its alias (e.g. "@super3t/core"), not a relative path.',
   },
   {
-    regex: `^@(?:${BLOCK_ALIASES})/(?!testing$|preview$)`,
+    regex: `^@(?:${BLOCK_ALIASES})/(?!testing$|preview$|worker$)`,
     message: 'Import the block alias (e.g. "@super3t/core"), not its internal files.',
   },
 ];
@@ -184,6 +184,17 @@ module.exports = defineConfig([
             },
           ],
         },
+      ],
+    },
+  },
+  {
+    // The API Worker: plain TypeScript in the Workers runtime; the engines through @catalog and the
+    // game cores, never the app's Angular layers.
+    files: ['packages/api/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        { patterns: [PLAIN_TYPESCRIPT, NO_APP_LAYERS] },
       ],
     },
   },

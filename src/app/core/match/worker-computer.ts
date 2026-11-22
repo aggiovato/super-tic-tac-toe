@@ -1,17 +1,7 @@
 import { Injectable, type OnDestroy } from '@angular/core';
 import { COMPUTER_PACE_MS } from './local-computer';
-import type { ComputerRequest } from './match.model';
 import { ComputerPlayer } from './computer';
-
-/** Main thread → Worker: one request, tagged so its reply can be matched. */
-export interface ComputerRequestMessage<M> extends ComputerRequest<M> {
-  readonly id: number;
-}
-
-/** Worker → main thread: the reply to request `id`, or why there is none. */
-export type ComputerReplyMessage<M> =
-  | { readonly id: number; readonly move: M | null }
-  | { readonly id: number; readonly error: string };
+import type { ComputerReplyMessage, ComputerRequest, ComputerRequestMessage } from './worker';
 
 interface Pending<M> {
   readonly id: number;

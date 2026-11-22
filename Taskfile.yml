@@ -18,10 +18,15 @@ tasks:
     desc: Check formatting
     cmds: [npm run format:check]
   unit:
-    desc: Engine (Node) and app (Angular) tests
+    desc: Engine (Node), app (Angular) and API (Workers runtime) tests
     cmds:
       - npm run test:core
       - npm run test:app
+      - npm run test:api
+  api:dev:
+    desc: The API Worker locally (wrangler dev), with its Room Durable Object
+    cmds:
+      - npm run dev --workspace @super-3t/api
   build:
     desc: Production build with budgets
     run: once

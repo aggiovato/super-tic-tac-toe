@@ -1,0 +1,10 @@
+/* The API Worker: plain TypeScript in the Workers runtime. The game-core aliases come from the root tsconfig.json. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-plugin/types"],
+    "lib": ["ES2022"]
+  },
+  "files": [],
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

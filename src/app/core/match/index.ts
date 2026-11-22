@@ -16,9 +16,6 @@ export { LocalComputer, COMPUTER_PACE_MS } from './local-computer';
 export { MATCH_STORAGE, provideMatchStorage } from './match-storage';
 export { ComputerPlayer } from './computer';
 export { withMatch } from './with-match';
-export {
-  type ComputerReplyMessage,
-  type ComputerRequestMessage,
-  WorkerComputer,
-} from './worker-computer';
+export { WorkerComputer } from './worker-computer';
+export type { ComputerReplyMessage, ComputerRequestMessage } from './worker';
 export { ACTIVE_GAME, provideActiveGame, type ActiveGame } from './active-game';

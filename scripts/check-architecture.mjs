@@ -27,6 +27,7 @@ const gameLayers = (game) => ({
     '@tictac',
     '@catalog',
     '@match',
+    '@match/worker',
     layer(game, 'core'),
     layer(game, 'ai'),
     layer(game, 'challenge'),
@@ -67,6 +68,8 @@ export const DEPENDS = {
   // Every game's copy lives here for now, so it reads each engine's types (rejection reasons).
   '@i18n': ['@catalog', '@preferences', ...GAME_CORES],
   '@match': ['@tictac', '@catalog', '@preferences', '@storage'],
+  // The Worker's messages: plain types, so a Worker imports nothing else of @match.
+  '@match/worker': ['@catalog'],
   '@pwa': ['@match', '@i18n', '@ui'],
   // src/app: layout, shared UI and features.
   '@ui': ['@tictac', '@preferences'],

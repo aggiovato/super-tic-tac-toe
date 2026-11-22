@@ -32,7 +32,9 @@ paths:
   last in `eslint.config.js`.
 - ESLint `--max-warnings=0`: a new warning fails CI. Active: type-aware TS
   (`no-floating-promises`, `no-explicit-any`), templates, accessibility and layer boundaries.
-- `npm run lint` also runs `scripts/check-tokens.mjs` (no raw colours in app code) and
+- `npm run lint` first runs `npm run typecheck`: every TypeScript project compiled on its own (app, specs,
+  Workers, e2e, game-core, api), so a project the build does not check alone (the Workers') cannot
+  hide errors. Then it runs `scripts/check-tokens.mjs` (no raw colours in app code) and
   `scripts/check-architecture.mjs` (the blocks' dependencies against `DEPENDS`, no cycles, and a
   consistent structure: aliases, index files, `SHARED` and `GAMES` in ESLint, the catalog's games).
   `scripts/*.spec.mjs` (in `test:core`) prove both checks and ESLint's boundary rules still bite.
