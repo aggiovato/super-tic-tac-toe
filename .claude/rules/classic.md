@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'src/engine/classic/**'
+  - 'packages/game-core/src/classic/**'
   - 'src/app/features/games/classic/**'
 ---
 

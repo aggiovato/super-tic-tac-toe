@@ -34,24 +34,33 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 5 · PWA beta: in progress** (`phase/5-pwa`). Phase 4 shipped as v0.3 (saving and
-resuming in IndexedDB, one result per game, a history per game, Dots and Boxes, the game library,
-opponents named by level); its one open item is measuring interaction on a real phone (budgets in
-`quality`). Done in phase 5: the Angular service worker (`ngsw-config.json`, production builds)
-prefetches the whole app, so a second start plays offline, every game and level; a new version is
-offered by `UpdateNotice` (`AppUpdates`, both in `@pwa`) only once the game is saved; Playwright runs
-Chromium (desktop, Pixel 7), Firefox and WebKit. Next: the release that closes the phase, then
-phase 6 (online by invitation).
+**Phase 6 · Online by invitation: in progress.** Phase 5 shipped as v0.4 (offline play, safe
+updates, Firefox and WebKit in e2e, hosting on Cloudflare Workers with Netlify as a backup) and the
+architecture was consolidated (glossary, `@catalog`, seats in records, engine and app trees,
+architecture checks). Phase 6 plan, one PR each:
 
-| Phase              | Accepted when…                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------- |
-| 0 Bootstrap        | A clean clone installs from the lockfile and CI runs the available checks.            |
-| 1 Engine           | The six reference scenarios, the eight lines and the sequence invariants pass.        |
-| 2 Two humans       | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
-| 3 ComputerPlayer ✓ | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
-| 4 Local MVP ✓      | A game resumes mid-turn and each game counts a single result.                         |
-| 5 PWA beta         | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
-| 6–7                | Online by invitation, accounts.                                                       |
+- 6a: npm workspaces, the engine as `packages/game-core` (done in `phase/6a-workspaces`).
+- 6b: the API with Hono on Cloudflare Workers, one Durable Object per room (SQLite), the protocol
+  (`commandId`, expected revision, full snapshots, reconnection), tested in the Workers runtime.
+- 6c: the online session (a `remote` seat behind `play(move)`, optimistic moves reconciled with
+  the server), create a room and share its link, connection state, two-browser e2e.
+- 6d: deploy the API in CI (staging and production), abuse limits, the release that closes the phase.
+
+Decided: all three games online; the API in the same Worker as the app (`/api/*`), with a staging
+Worker if previews cannot carry Durable Objects; rooms expire after 7 days idle, a missing player is
+waited for until then, a rematch stays in the room and swaps symbols. Accounts (phase 7) add Neon
+Postgres (Hyperdrive, Drizzle) for verified history across devices.
+
+| Phase         | Accepted when…                                                                        |
+| ------------- | ------------------------------------------------------------------------------------- |
+| 0 Bootstrap   | A clean clone installs from the lockfile and CI runs the available checks.            |
+| 1 Engine      | The six reference scenarios, the eight lines and the sequence invariants pass.        |
+| 2 Two humans  | Two people can finish and restart on mobile and desktop, by keyboard, reduced motion. |
+| 3 Opponent ✓  | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
+| 4 Local MVP ✓ | A game resumes mid-turn and each game counts a single result.                         |
+| 5 PWA beta ✓  | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
+| 6 Online      | Two browsers converge after playing, losing the connection and retrying; one result.  |
+| 7 Accounts    | One account sees verified results on two devices; local play needs no sign-in.        |
 
 Update this table when a phase closes.
 
@@ -119,27 +128,29 @@ A game record names who played each side as `seats` (`local`, `computer`, later 
 
 ## Layers and boundaries
 
-Two trees: `src/engine/` is everything pure (plain TypeScript, no Angular, tested in Node; it
-becomes `packages/game-core` in phase 6), `src/app/` the Angular app, grouped as `core/`
+Two trees in one npm workspace (`"workspaces": ["packages/*"]`, one lockfile): `packages/game-core/`
+(`@super-3t/game-core`) is everything pure (plain TypeScript, no Angular or DOM, its own
+`tsconfig.json`, tested in Node), shared by the app, its Workers and the API to come; `src/app/` the
+Angular app, grouped as `core/`
 (app-wide infrastructure), `layout/`, `features/` (what the player uses, the games among them) and
 `ui/` (shared components).
 
-| Path                                     | Responsibility                                                   | May import                                             |
-| ---------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
-| `src/engine/tictac/`                     | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                  |
-| `src/engine/catalog/`                    | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                          |
-| `src/engine/<game>/core/`                | Types, rules, replay. Deterministic.                             | `tictac`                                               |
-| `src/engine/<game>/ai/`                  | Evaluation, search, levels, Worker                               | `core`                                                 |
-| `src/engine/<game>/challenge/`           | Tactical challenges: positions and judging                       | `core`, `ai`                                           |
-| `src/app/features/games/<game>/session/` | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                   |
-| `src/app/features/games/<game>/state/`   | The game's store (SignalStore), provided on the route            | `core`, `session`                                      |
-| `src/app/features/games/<game>/ui/`      | Board, mini board, score, controls                               | `state`, `core` types                                  |
-| `src/app/core/match/`                    | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`          |
-| `src/app/layout/`                        | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `ui`, `preferences`, `i18n` |
-| `src/app/features/library/`              | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `ui`, `preferences`, `i18n`        |
-| `src/app/features/history/`              | A game's history page                                            | `layout`, `pwa`, `catalog`, `storage`, `ui`, `i18n`    |
-| `src/app/core/pwa/`                      | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                  |
-| `src/app/core/storage/`                  | Game and series records, IndexedDB and memory                    | `preferences` types                                    |
+| Path                                       | Responsibility                                                   | May import                                             |
+| ------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| `packages/game-core/src/tictac/`           | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                  |
+| `packages/game-core/src/catalog/`          | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                          |
+| `packages/game-core/src/<game>/core/`      | Types, rules, replay. Deterministic.                             | `tictac`                                               |
+| `packages/game-core/src/<game>/ai/`        | Evaluation, search, levels, Worker                               | `core`                                                 |
+| `packages/game-core/src/<game>/challenge/` | Tactical challenges: positions and judging                       | `core`, `ai`                                           |
+| `src/app/features/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                   |
+| `src/app/features/games/<game>/state/`     | The game's store (SignalStore), provided on the route            | `core`, `session`                                      |
+| `src/app/features/games/<game>/ui/`        | Board, mini board, score, controls                               | `state`, `core` types                                  |
+| `src/app/core/match/`                      | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`          |
+| `src/app/layout/`                          | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `ui`, `preferences`, `i18n` |
+| `src/app/features/library/`                | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `ui`, `preferences`, `i18n`        |
+| `src/app/features/history/`                | A game's history page                                            | `layout`, `pwa`, `catalog`, `storage`, `ui`, `i18n`    |
+| `src/app/core/pwa/`                        | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                  |
+| `src/app/core/storage/`                    | Game and series records, IndexedDB and memory                    | `preferences` types                                    |
 
 The "May import" column is enforced: `DEPENDS` in `scripts/check-architecture.mjs` (part of `npm run
 lint`) is its source of truth for production code, together with no cycles between blocks and a
@@ -152,18 +163,18 @@ Each functional block has an `index.ts` that re-exports its public API and a pat
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
 `resolve.tsconfigPaths`):
 
-| Alias                                                    | Block                                                       |
-| -------------------------------------------------------- | ----------------------------------------------------------- |
-| `@tictac`                                                | `src/engine/tictac/`                                        |
-| `@catalog` (games, rules, variants, levels)              | `src/engine/catalog/`                                       |
-| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library) | `src/app/features/games/<game>/ui/preview/`                 |
-| `@super3t/core`, `@super3t/core/testing` (tests)         | `src/engine/super-3t/core/`                                 |
-| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/engine/super-3t/` · `src/app/features/games/super-3t/` |
-| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/engine/classic/` · `src/app/features/games/classic/`   |
-| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/engine/dots/` · `src/app/features/games/dots/`         |
-| `@match`, `@pwa`, `@storage`, `@i18n`, `@preferences`    | `src/app/core/<block>/`                                     |
-| `@layout`, `@ui`                                         | `src/app/layout/`, `src/app/ui/`                            |
-| `@library`, `@history`                                   | `src/app/features/<block>/`                                 |
+| Alias                                                    | Block                                                                   |
+| -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `@tictac`                                                | `packages/game-core/src/tictac/`                                        |
+| `@catalog` (games, rules, variants, levels)              | `packages/game-core/src/catalog/`                                       |
+| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library) | `src/app/features/games/<game>/ui/preview/`                             |
+| `@super3t/core`, `@super3t/core/testing` (tests)         | `packages/game-core/src/super-3t/core/`                                 |
+| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `packages/game-core/src/super-3t/` · `src/app/features/games/super-3t/` |
+| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `packages/game-core/src/classic/` · `src/app/features/games/classic/`   |
+| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `packages/game-core/src/dots/` · `src/app/features/games/dots/`         |
+| `@match`, `@pwa`, `@storage`, `@i18n`, `@preferences`    | `src/app/core/<block>/`                                                 |
+| `@layout`, `@ui`                                         | `src/app/layout/`, `src/app/ui/`                                        |
+| `@library`, `@history`                                   | `src/app/features/<block>/`                                             |
 
 Another block is imported only through its alias (`import { applyMove } from '@super3t/core'`), never
 with a relative path (`../core`) or into its files (`@super3t/core/engine`). Inside a block, files import
@@ -175,7 +186,7 @@ of `npm run lint`, fails until they agree), its routes and preview in `src/app/g
 name and blurb in every language (typed by `GameId`). A game
 never imports another game: what they share goes to `@tictac` (logic) or `@ui` (UI).
 
-ESLint enforces it: no relative or deep imports across blocks; everything in `src/engine/` free of
+ESLint enforces it: no relative or deep imports across blocks; everything in `packages/game-core/src/` free of
 Angular, NgRx, RxJS and app layers; `core` free of `ai`; `@tictac` free
 of any game; and no game importing another. Those plain blocks run in Node with `test:core`.
 
@@ -187,16 +198,16 @@ only with its first implementation.
 
 Loaded automatically for the files you touch:
 
-| Rule            | Scope                                                               | Contents                                         |
-| --------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
-| `angular-22`    | `src/**`, Angular configs                                           | Conventions for the installed Angular version    |
-| `super-3t`      | `src/engine/super-3t/**`, `features/games/super-3t/**`, `tictac/**` | Rules v1, engine contract, fixtures, invariants  |
-| `classic`       | `src/engine/classic/**`, `features/games/classic/**`                | Classic rules, engine, three opponent levels     |
-| `dots`          | `src/engine/dots/**`, `features/games/dots/**`                      | Dots and Boxes rules, opponent, board, inks      |
-| `storage`       | `src/app/core/storage/**`, `match/**`                               | Records, saving, restoring, history              |
-| `pwa`           | `ngsw-config.json`, headers, updates                                | Service worker, offline cache, update notice     |
-| `quality`       | `src/**`, configs, CI                                               | Required tests, lint, budgets, CI                |
-| `design-tokens` | styles, templates, `ui/`                                            | Token layers, semantic contract, adding a design |
+| Rule            | Scope                                                                           | Contents                                         |
+| --------------- | ------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `angular-22`    | `src/**`, Angular configs                                                       | Conventions for the installed Angular version    |
+| `super-3t`      | `packages/game-core/src/super-3t/**`, `features/games/super-3t/**`, `tictac/**` | Rules v1, engine contract, fixtures, invariants  |
+| `classic`       | `packages/game-core/src/classic/**`, `features/games/classic/**`                | Classic rules, engine, three opponent levels     |
+| `dots`          | `packages/game-core/src/dots/**`, `features/games/dots/**`                      | Dots and Boxes rules, opponent, board, inks      |
+| `storage`       | `src/app/core/storage/**`, `match/**`                                           | Records, saving, restoring, history              |
+| `pwa`           | `ngsw-config.json`, headers, updates                                            | Service worker, offline cache, update notice     |
+| `quality`       | `src/**`, configs, CI                                                           | Required tests, lint, budgets, CI                |
+| `design-tokens` | styles, templates, `ui/`                                                        | Token layers, semantic contract, adding a design |
 
 `.claude/sources.md` records origin, revision and licence of every external resource and the
 toolchain versions. Update it when adding or updating a skill or resource.

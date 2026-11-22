@@ -1,0 +1,7 @@
+{
+  "name": "@super-3t/game-core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The family's engines, computer players, tactical challenges and game catalog: plain TypeScript with no framework, shared by the web app, its Workers and the API.",
+  "type": "module"
+}

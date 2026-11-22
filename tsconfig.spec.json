@@ -3,6 +3,5 @@
   "compilerOptions": {
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"],
-  "exclude": ["src/engine/**"]
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
 }

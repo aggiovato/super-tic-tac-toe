@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'src/engine/dots/**'
+  - 'packages/game-core/src/dots/**'
   - 'src/app/features/games/dots/**'
 ---
 

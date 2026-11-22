@@ -36,7 +36,7 @@ async function playAll(page: Page, notation: string): Promise<void> {
   }
 }
 
-// Fixtures from src/engine/super-3t/core/testing/fixtures.ts.
+// Fixtures from packages/game-core/src/super-3t/core/testing/fixtures.ts.
 const CLOSES_OWN_TARGET = '4.0 0.2 2.0 0.4 4.1 1.2 2.1 1.4 4.3 3.2 2.2';
 const GLOBAL_DIAGONAL_WIN =
   '8.6 6.4 4.5 5.2 2.7 7.0 0.3 3.0 0.0 0.8 8.3 3.8 8.0 0.4 4.2 2.0 0.6 6.0 4.8';

@@ -7,11 +7,11 @@ export default defineConfig({
   test: {
     environment: 'node',
     // The engine, and the architecture checks that guard the code's structure.
-    include: ['src/engine/**/*.spec.ts', 'scripts/**/*.spec.mjs'],
+    include: ['packages/game-core/src/**/*.spec.ts', 'scripts/**/*.spec.mjs'],
     coverage: {
       provider: 'v8',
       // Engines, opponents and challenges are held to the same bar.
-      include: ['src/engine/**/*.ts'],
+      include: ['packages/game-core/src/**/*.ts'],
       exclude: ['**/*.spec.ts', '**/testing/**'],
       reporter: ['text-summary', 'html'],
       thresholds: { branches: 95, lines: 95, functions: 95, statements: 95 },
