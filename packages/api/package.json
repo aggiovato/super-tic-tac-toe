@@ -5,7 +5,7 @@
   "description": "Online rooms by invitation: Hono on Cloudflare Workers, one Durable Object per room, moves validated with @super-3t/game-core.",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --port 8787",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

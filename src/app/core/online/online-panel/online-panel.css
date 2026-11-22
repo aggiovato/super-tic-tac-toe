@@ -1,0 +1,102 @@
+/*
+ * A ticket in the page's flow under the score, like the save and update notices: the room's link
+ * while the rival is on the way, then one line on the connection. It never covers the board.
+ */
+:host {
+  display: block;
+}
+
+.online {
+  display: grid;
+  gap: var(--spacing-stack-tight);
+  max-width: 28rem;
+  padding: var(--spacing-stack-tight) var(--spacing-stack);
+  border: var(--border-hairline) solid var(--color-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-panel);
+  color: var(--color-fg);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  margin: 0;
+  color: var(--color-fg-strong);
+  text-wrap: pretty;
+}
+
+.lead {
+  font-weight: 600;
+}
+
+.warn {
+  color: var(--color-target);
+}
+
+/* Presence: a filled dot when connected, a ring when not (shape, not only colour). */
+.dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.dot.off {
+  background: transparent;
+  box-shadow: inset 0 0 0 var(--border-line) var(--color-target);
+}
+
+.hint {
+  margin: 0;
+}
+
+.share {
+  display: flex;
+  gap: calc(var(--spacing) * 2);
+  min-width: 0;
+}
+
+.link {
+  flex: 1;
+  min-width: 0;
+  padding: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
+  border: var(--border-hairline) solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-fg-strong);
+  font: inherit;
+  text-overflow: ellipsis;
+}
+
+.link:focus-visible {
+  outline: var(--border-emphasis) solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.share button {
+  flex: none;
+}
+
+/* The state and the way out share a row; the link to share goes under it. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing) * 2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.state {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing) * 2);
+}

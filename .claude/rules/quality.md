@@ -71,13 +71,15 @@ version) and cd, which calls `cd.yml` (delivery, reusable and also manual): it p
 CD as `deploy-api.yml`, before the app. Check workflow changes with actionlint. Actions are pinned by SHA. `task check` is the local equivalent. Each new
 Taskfile entry lands with the npm script it calls.
 
-E2E specs run against the production build served by `scripts/serve-dist.mjs` (SPA fallback) on
+E2E specs run against the production build served by `scripts/serve-dist.mjs` (SPA fallback, and
+`/api` with its WebSocket upgrades passed to the API Worker that Playwright starts with `wrangler dev`) on
 desktop and Pixel 7 Chromium, desktop Firefox and, where its Ubuntu libraries are (CI, or
 `task e2e:webkit` in Playwright's container), desktop WebKit with a 60 s test timeout. The service
 worker is blocked in every spec but `e2e/offline.spec.ts`, which installs the app online, goes
 offline and plays every game (Chromium only). A spec waits for a save by reading IndexedDB (an
 observation, never a way to drive the game), and records a short-lived animation with a
-MutationObserver instead of polling for each frame. They play through the UI with accessible names, never by reaching
+MutationObserver instead of polling for each frame. `e2e/online.spec.ts` plays one game on two browser contexts (two devices), cutting one off with
+`routeWebSocket` and checking both converge. They play through the UI with accessible names, never by reaching
 into the store, and wait for the view a move produces before the next one. They run with reduced
 motion so every view settles at once; one spec covers the animated narrow-screen path. Cells are
 addressed by engine coordinates and named 1–9, as players see them.

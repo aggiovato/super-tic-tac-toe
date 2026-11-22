@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4400;
+const API_PORT = 8787;
 
 // Optional, for watching the flows (`task e2e:ui`, `task e2e:headed`); CI sets neither.
 // SLOW_MO: milliseconds to wait before each browser action. E2E_MOTION=full: play the animations.
@@ -37,9 +38,21 @@ export default defineConfig({
     // (`task e2e:webkit`). It runs the animated flows a good deal slower under parallel load.
     ...(WEBKIT ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] }, timeout: 60_000 }] : []),
   ],
-  webServer: {
-    command: `node scripts/serve-dist.mjs ${PORT}`,
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env['CI'],
-  },
+  webServer: [
+    // The API Worker (wrangler dev), for the online flows; the build reaches it under /api.
+    {
+      // Its port is pinned in packages/api (8787), where `task dev` also proxies /api.
+      command: 'npm run dev --workspace @super-3t/api',
+      url: `http://localhost:${API_PORT}/api/health`,
+      reuseExistingServer: !process.env['CI'],
+      env: { WRANGLER_SEND_METRICS: 'false' },
+      timeout: 60_000,
+    },
+    {
+      command: `node scripts/serve-dist.mjs ${PORT}`,
+      url: `http://localhost:${PORT}`,
+      reuseExistingServer: !process.env['CI'],
+      env: { API_ORIGIN: `http://localhost:${API_PORT}` },
+    },
+  ],
 });

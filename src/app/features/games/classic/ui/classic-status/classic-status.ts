@@ -29,7 +29,11 @@ export class ClassicStatus {
   protected readonly store = inject(ClassicStore);
   protected readonly t = inject(Translator).t;
   /** Who plays: the opponent is named after its level. */
-  private readonly side = computed(() => ({ mode: this.store.mode(), level: this.store.level() }));
+  private readonly side = computed(() => ({
+    mode: this.store.mode(),
+    level: this.store.level(),
+    seat: this.store.seat(),
+  }));
   private readonly preferences = inject(Preferences);
 
   /** How a player is named in sentences: their custom name, otherwise their symbol. */

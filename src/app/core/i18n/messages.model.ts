@@ -183,6 +183,33 @@ export interface Messages {
   };
   /** Each game's name, in the game library. */
   readonly games: Readonly<Record<GameId, string>>;
+  /** Online play by invitation: a private room and its link. */
+  readonly online: {
+    readonly title: string;
+    readonly invite: string;
+    readonly inviteHint: string;
+    readonly creating: string;
+    readonly createFailed: string;
+    /** This device's player, when no name was typed. */
+    readonly you: string;
+    readonly rival: string;
+    readonly waiting: string;
+    readonly waitingHint: string;
+    readonly link: string;
+    readonly share: string;
+    readonly copy: string;
+    readonly copied: string;
+    readonly shareText: (game: string) => string;
+    readonly connecting: string;
+    readonly reconnecting: string;
+    readonly rivalAway: string;
+    readonly connected: string;
+    readonly leave: string;
+    readonly retry: string;
+    readonly playHere: string;
+    /** Why this device cannot play in the room. */
+    readonly problems: Readonly<Record<'missing' | 'full' | 'expired' | 'unreachable', string>>;
+  };
   /** The library of games: the aside on wide screens, the games dialog elsewhere. */
   readonly library: {
     readonly open: string;

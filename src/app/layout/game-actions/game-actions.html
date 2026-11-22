@@ -1,7 +1,10 @@
-<button app-button="secondary" [disabled]="!store.canUndo()" (click)="store.undo()">
-  <app-icon name="undo" />
-  {{ t().undo }}
-</button>
+<!-- Online, a move sent is the other player's to see: there is no undo. -->
+@if (store.mode() !== 'online') {
+  <button app-button="secondary" [disabled]="!store.canUndo()" (click)="store.undo()">
+    <app-icon name="undo" />
+    {{ t().undo }}
+  </button>
+}
 @if (store.isOver()) {
   <button app-button="primary" (click)="store.rematch()">{{ t().rematch }}</button>
 }

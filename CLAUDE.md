@@ -42,10 +42,16 @@ architecture checks). Phase 6 plan, one PR each:
 - 6a: npm workspaces, the engine as `packages/game-core` (merged).
 - 6b: the API (`packages/api`, rule `api`): Hono on Cloudflare Workers, one `GameRoom` Durable Object per
   room (SQLite), the protocol (`commandId`, expected revision, full snapshots, reconnection, one result,
-  rematch, a week's TTL), tested in the Workers runtime (done in `phase/6b-api`).
-- 6c: the online session (a `remote` seat behind `play(move)`, optimistic moves reconciled with
-  the server), create a room and share its link, connection state, two-browser e2e.
-- 6d: deploy the API in CI (staging and production), abuse limits, the release that closes the phase.
+  rematch, a week's TTL), tested in the Workers runtime (merged).
+- 6c: online play (`@online`, done in `phase/6c-online`): the protocol's types shared as `@protocol`;
+  `/<game>/online/:roomId` with an `OnlineRoom` as the match's `RemoteSeat` (the match mirrors the
+  server; this player's moves show at once and go back if refused; no undo, the rematch is the
+  room's; nothing saved on the device); the invitation from Settings, the online panel (link,
+  connection, rival present, leave); `/api` proxied to `wrangler dev` locally and in e2e; a
+  two-browser e2e that drops the connection and retries.
+- 6d: the app's Worker with the service binding to `super-3t-api`, deploy the API in CI (staging and
+  production, before the app), abuse limits, a socket heartbeat (a lost network is only noticed by
+  the server after a while), the release that closes the phase.
 
 Decided: all three games online; the API in its own Worker (`super-3t-api`), reached by the app
 under `/api/*` through a service binding, since Cloudflare gives no preview URLs to a Worker holding a
@@ -71,12 +77,12 @@ Update this table when a phase closes.
 | Task                               | What it does                                                                        |
 | ---------------------------------- | ----------------------------------------------------------------------------------- |
 | `task setup`                       | `npm ci`                                                                            |
-| `task dev`                         | `ng serve`                                                                          |
+| `task dev`                         | `ng serve`, with `/api` proxied to `task api:dev` (port 8787) for online play       |
 | `task fmt` / `task fmt-check`      | Prettier write / check                                                              |
 | `task lint`                        | ESLint (TS, templates and accessibility), zero warnings                             |
 | `task unit`                        | `test:core` (engine, Node), `test:app` (`ng test`) and `test:api` (Workers runtime) |
 | `task build`                       | Production build with budgets                                                       |
-| `task e2e`                         | Production build + Playwright (Chromium desktop and mobile, Firefox; WebKit on CI)  |
+| `task e2e`                         | Build + Playwright (Chromium desktop and mobile, Firefox; WebKit on CI), API local  |
 | `task e2e:ui`                      | Build + Playwright UI mode: run and replay each flow step by step                   |
 | `task e2e:headed`                  | Build + flows in a visible browser, one at a time, 300 ms per action (`SLOW_MO`)    |
 | `task api:dev`                     | The API Worker locally (`wrangler dev`) with its `GameRoom` Durable Object          |
@@ -146,6 +152,7 @@ Angular app, grouped as `core/`
 | ------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------ |
 | `packages/game-core/src/tictac/`           | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                  |
 | `packages/game-core/src/catalog/`          | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                          |
+| `packages/game-core/src/protocol/`         | The online protocol's types, shared with the API Worker          | `catalog`                                              |
 | `packages/game-core/src/<game>/core/`      | Types, rules, replay. Deterministic.                             | `tictac`                                               |
 | `packages/game-core/src/<game>/ai/`        | Evaluation, search, levels, Worker                               | `core`                                                 |
 | `packages/game-core/src/<game>/challenge/` | Tactical challenges: positions and judging                       | `core`, `ai`                                           |
@@ -156,6 +163,7 @@ Angular app, grouped as `core/`
 | `src/app/layout/`                          | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `ui`, `preferences`, `i18n` |
 | `src/app/features/library/`                | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `ui`, `preferences`, `i18n`        |
 | `src/app/features/history/`                | A game's history page                                            | `layout`, `pwa`, `catalog`, `storage`, `ui`, `i18n`    |
+| `src/app/core/online/`                     | Online play: rooms, the route's `OnlineRoom`, its panel          | `catalog`, `protocol`, `match`, `ui`, `i18n`           |
 | `src/app/core/pwa/`                        | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                  |
 | `src/app/core/storage/`                    | Game and series records, IndexedDB and memory                    | `preferences` types                                    |
 
@@ -170,18 +178,19 @@ Each functional block has an `index.ts` that re-exports its public API and a pat
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
 `resolve.tsconfigPaths`):
 
-| Alias                                                    | Block                                                                   |
-| -------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `@tictac`                                                | `packages/game-core/src/tictac/`                                        |
-| `@catalog` (games, rules, variants, levels)              | `packages/game-core/src/catalog/`                                       |
-| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library) | `src/app/features/games/<game>/ui/preview/`                             |
-| `@super3t/core`, `@super3t/core/testing` (tests)         | `packages/game-core/src/super-3t/core/`                                 |
-| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `packages/game-core/src/super-3t/` · `src/app/features/games/super-3t/` |
-| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `packages/game-core/src/classic/` · `src/app/features/games/classic/`   |
-| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `packages/game-core/src/dots/` · `src/app/features/games/dots/`         |
-| `@match`, `@pwa`, `@storage`, `@i18n`, `@preferences`    | `src/app/core/<block>/`                                                 |
-| `@layout`, `@ui`                                         | `src/app/layout/`, `src/app/ui/`                                        |
-| `@library`, `@history`                                   | `src/app/features/<block>/`                                             |
+| Alias                                                            | Block                                                                   |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `@tictac`                                                        | `packages/game-core/src/tictac/`                                        |
+| `@catalog` (games, rules, variants, levels)                      | `packages/game-core/src/catalog/`                                       |
+| `@protocol` (online messages, shared with the API)               | `packages/game-core/src/protocol/`                                      |
+| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library)         | `src/app/features/games/<game>/ui/preview/`                             |
+| `@super3t/core`, `@super3t/core/testing` (tests)                 | `packages/game-core/src/super-3t/core/`                                 |
+| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui`         | `packages/game-core/src/super-3t/` · `src/app/features/games/super-3t/` |
+| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`              | `packages/game-core/src/classic/` · `src/app/features/games/classic/`   |
+| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`                 | `packages/game-core/src/dots/` · `src/app/features/games/dots/`         |
+| `@match`, `@online`, `@pwa`, `@storage`, `@i18n`, `@preferences` | `src/app/core/<block>/`                                                 |
+| `@layout`, `@ui`                                                 | `src/app/layout/`, `src/app/ui/`                                        |
+| `@library`, `@history`                                           | `src/app/features/<block>/`                                             |
 
 Another block is imported only through its alias (`import { applyMove } from '@super3t/core'`), never
 with a relative path (`../core`) or into its files (`@super3t/core/engine`). Inside a block, files import

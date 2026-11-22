@@ -37,6 +37,10 @@ implementations, with the contract spec. Phase 7's Postgres (Neon) adds implemen
 
 ## Protocol
 
+Its types live in `@protocol` (`packages/game-core/src/protocol/`), shared with the app
+(`@online`), so both ends compile against the same messages; `src/models/` re-exports them.
+`GET /api/health` answers `ok` (the e2e servers wait on it).
+
 - **Create / join**: `POST /api/game-rooms {gameId, variant?}` checks the game against `@catalog` and
   reads the variant with it; the creator gets seat 0 and its token. `POST /api/game-rooms/:id/join` gives
   seat 1 once (`409 full`, `404` for an unknown id).

@@ -46,33 +46,37 @@
       role="tabpanel"
       aria-labelledby="settings-tab-game"
     >
-      <!-- The game's own settings. -->
-      <ng-content />
+      @if (!online()) {
+        <!-- The game's own settings. -->
+        <ng-content />
 
-      <app-choice-group
-        name="mode"
-        layout="segmented"
-        [legend]="t().settings.mode"
-        [options]="modeOptions()"
-        [selected]="shownMode()"
-        (chosen)="setMode($event)"
-      />
-
-      @if (shownMode() === 'computer') {
         <app-choice-group
-          name="level"
+          name="mode"
           layout="segmented"
-          [legend]="t().settings.level"
-          [options]="levelOptions()"
-          [selected]="shownLevel()"
-          (chosen)="setLevel($event)"
+          [legend]="t().settings.mode"
+          [options]="modeOptions()"
+          [selected]="shownMode()"
+          (chosen)="setMode($event)"
         />
-      }
 
-      @if (pendingSetup()) {
-        <button app-button="primary" class="w-full" (click)="confirmPending()">
-          {{ t().settings.confirmModeChange }}
-        </button>
+        @if (shownMode() === 'computer') {
+          <app-choice-group
+            name="level"
+            layout="segmented"
+            [legend]="t().settings.level"
+            [options]="levelOptions()"
+            [selected]="shownLevel()"
+            (chosen)="setLevel($event)"
+          />
+        }
+
+        @if (pendingSetup()) {
+          <button app-button="primary" class="w-full" (click)="confirmPending()">
+            {{ t().settings.confirmModeChange }}
+          </button>
+        }
+
+        <app-online-start [gameId]="game.id" [variant]="game.match.variant()" (opened)="close()" />
       }
 
       <fieldset>
@@ -92,13 +96,15 @@
         }
       </fieldset>
 
-      <button
-        [app-button]="reset.pending() ? 'primary' : 'secondary'"
-        class="w-full"
-        (click)="newSeries()"
-      >
-        {{ reset.pending() ? t().settings.confirmNewSeries : t().settings.newSeries }}
-      </button>
+      @if (!online()) {
+        <button
+          [app-button]="reset.pending() ? 'primary' : 'secondary'"
+          class="w-full"
+          (click)="newSeries()"
+        >
+          {{ reset.pending() ? t().settings.confirmNewSeries : t().settings.newSeries }}
+        </button>
+      }
     </div>
   } @else {
     <div
