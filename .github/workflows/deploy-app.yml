@@ -130,6 +130,13 @@ jobs:
           URL: ${{ steps.deploy.outputs.url }}
           HEAD_SHA: ${{ inputs.head-sha }}
         run: |
-          label=$([ "$HOST" = "cloudflare" ] && echo Cloudflare || echo Netlify)
-          body="Preview ($label): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
-          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          # Cloudflare keeps one comment up to date (its alias URL is stable); Netlify's URL
+          # changes per deploy, so each gets its own.
+          if [ "$HOST" = "cloudflare" ]; then
+            body="Preview (Cloudflare): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --edit-last --body "$body" \
+              || gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            body="Preview (Netlify): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          fi
