@@ -61,11 +61,14 @@ paths:
 
 ## CI
 
-`.github/workflows/ci.yml` runs on PRs, pushes to `main` and version tags, in jobs: quality (format,
-lint with the token check, unit tests), build (production build, uploaded as the `dist` artifact),
-e2e (Playwright against that artifact; report and traces uploaded on failure), release-check (tags:
-tag equals `package.json` version) and deploy (Cloudflare, or the Netlify backup per the `DEPLOY_TARGETS` variable: a `pr-N` preview for PRs, production for tags; skipped
-without secrets). Actions are pinned by SHA. `task check` is the local equivalent. Each new
+`.github/workflows/ci.yml` (integration, no deploy secrets) runs on PRs, pushes to `main` and
+version tags, in jobs: quality (format, lint with the typecheck, token and architecture checks, unit
+tests), build (production build, uploaded as the `dist` artifact), e2e (Playwright against that
+artifact; report and traces uploaded on failure), release-check (tags: tag equals `package.json`
+version) and cd, which calls `cd.yml` (delivery, reusable and also manual): it picks the hosts
+(`DEPLOY_TARGETS`) and calls `deploy-app.yml` once per host (Cloudflare, or the Netlify backup: a
+`pr-N` preview for PRs, production for tags; skipped without secrets). The API's deploy (6d) joins
+CD as `deploy-api.yml`, before the app. Check workflow changes with actionlint. Actions are pinned by SHA. `task check` is the local equivalent. Each new
 Taskfile entry lands with the npm script it calls.
 
 E2E specs run against the production build served by `scripts/serve-dist.mjs` (SPA fallback) on

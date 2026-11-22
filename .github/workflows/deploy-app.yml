@@ -1,0 +1,142 @@
+name: Deploy the app
+
+# Publishes the app's tested build (the `dist` artifact of a CI run) to one host:
+#   cloudflare → Workers static assets (wrangler.jsonc): production replaces the live version; a
+#                preview uploads a version served only at its pr-N alias, never in production.
+#   netlify    → the backup host, with its own SPA fallback (_redirects) written here.
+# A preview is linked in its PR. Without the host's secrets (forks, Dependabot) it skips quietly.
+on:
+  workflow_call:
+    inputs:
+      host:
+        description: cloudflare or netlify
+        type: string
+        required: true
+      environment:
+        description: preview or production
+        type: string
+        required: true
+      pr-number:
+        type: number
+        default: 0
+      head-sha:
+        type: string
+        required: true
+      message:
+        type: string
+        required: true
+      run-id:
+        description: The CI run that built and tested the artifact
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy (${{ inputs.host }}, ${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A preview may be replaced by a newer push; a production deploy always runs to the end.
+    concurrency:
+      group: deploy-${{ inputs.host }}-${{ inputs.environment }}-${{ inputs.pr-number }}
+      cancel-in-progress: ${{ inputs.environment != 'production' }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    env:
+      HOST: ${{ inputs.host }}
+      PROD: ${{ inputs.environment == 'production' }}
+      PR_NUMBER: ${{ inputs.pr-number }}
+      MESSAGE: ${{ inputs.message }}
+      DIST: dist/super-tic-tac-toe/browser
+      CLOUDFLARE_API_TOKEN: ${{ inputs.host == 'cloudflare' && secrets.CLOUDFLARE_API_TOKEN || '' }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ inputs.host == 'cloudflare' && secrets.CLOUDFLARE_ACCOUNT_ID || '' }}
+      NETLIFY_AUTH_TOKEN: ${{ inputs.host == 'netlify' && secrets.NETLIFY_AUTH_TOKEN || '' }}
+      NETLIFY_SITE_ID: ${{ inputs.host == 'netlify' && secrets.NETLIFY_SITE_ID || '' }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: Check credentials
+        id: creds
+        run: |
+          case "$HOST" in
+            cloudflare) [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] && ok=true ;;
+            netlify) [ -n "$NETLIFY_AUTH_TOKEN" ] && [ -n "$NETLIFY_SITE_ID" ] && ok=true ;;
+            *) echo "::error::Unknown host $HOST."; exit 1 ;;
+          esac
+          if [ "${ok:-}" = "true" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$HOST secrets not available for this run; skipping deploy."
+          fi
+      # Only .nvmrc and wrangler.jsonc are needed; checkout runs first because it cleans the
+      # workspace.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.creds.outputs.ok == 'true'
+        with:
+          sparse-checkout: |
+            .nvmrc
+            wrangler.jsonc
+          sparse-checkout-cone-mode: false
+      # The very build the e2e job tested, where wrangler.jsonc expects it.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: steps.creds.outputs.ok == 'true'
+        with:
+          name: dist
+          path: ${{ env.DIST }}
+          run-id: ${{ inputs.run-id }}
+          github-token: ${{ github.token }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.creds.outputs.ok == 'true'
+        with:
+          node-version-file: .nvmrc
+      - name: Deploy
+        id: deploy
+        if: steps.creds.outputs.ok == 'true'
+        run: |
+          if [ "$HOST" = "cloudflare" ]; then
+            wrangler=(npx -y wrangler@4.158.0)
+            if [ "$PROD" = "true" ]; then
+              "${wrangler[@]}" deploy --message "$MESSAGE" | tee deploy.log
+              url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+            else
+              "${wrangler[@]}" versions upload --preview-alias "pr-$PR_NUMBER" \
+                --message "$MESSAGE" | tee deploy.log
+              url=$(grep -oE "https://pr-$PR_NUMBER-[a-z0-9.-]+\.workers\.dev" deploy.log | head -1)
+            fi
+          else
+            # Cloudflare routes unknown paths to the app by itself (wrangler.jsonc); Netlify
+            # needs the rule in the build output.
+            printf '/*  /index.html  200\n' > "$DIST/_redirects"
+            if [ "$PROD" = "true" ]; then target=(--prod); else target=(--alias "pr-$PR_NUMBER"); fi
+            npx -y netlify-cli@27.20.0 deploy --dir "$DIST" --site "$NETLIFY_SITE_ID" --no-build \
+              "${target[@]}" --message "$MESSAGE" --json > deploy.json
+            url=$(node -e "const d=require('./deploy.json'); console.log(process.env.PROD==='true' ? d.url : d.deploy_url)")
+          fi
+          if [ -z "$url" ]; then
+            echo "::error::No URL in the $HOST deploy's output."; exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed ($HOST): $url" >> "$GITHUB_STEP_SUMMARY"
+      - name: Link the preview in the PR
+        if: steps.creds.outputs.ok == 'true' && inputs.pr-number > 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.deploy.outputs.url }}
+          HEAD_SHA: ${{ inputs.head-sha }}
+        run: |
+          # Cloudflare keeps one comment up to date (its alias URL is stable); Netlify's URL
+          # changes per deploy, so each gets its own.
+          if [ "$HOST" = "cloudflare" ]; then
+            body="Preview (Cloudflare): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --edit-last --body "$body" \
+              || gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            body="Preview (Netlify): $URL (commit ${HEAD_SHA::7}, after quality, build and e2e passed)"
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$body"
+          fi
