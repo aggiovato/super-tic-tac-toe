@@ -17,11 +17,19 @@ new version and date.
 
 ### Changed
 
+- On phones, Settings and the game library open as departure tickets, like the how-to-play
+  ticket.
 - The history names the winner of a game between two people as they were called when it was played.
   Games saved by earlier versions are read as before.
 
 ### Fixed
 
+- Leaving an online room now closes its connection, so the rival sees you go; coming back to it
+  with the back button or the link asks first ("Back to the room") instead of reconnecting
+  silently, and "Leave the room" no longer stays behind the back button.
+- The online panel shows both players' presence by shape (a filled dot, a ring, a dashed ring)
+  instead of an orange dot that read as a warning, and no longer leaves empty rows on phones.
+- Returning to Super 3T from its history no longer flashes TIP·TAP·TOE in the title.
 - The history of Dots and Boxes shows 3×3 games in a single table, whether they were played on the
   default board or chose 3×3 in the settings.
 

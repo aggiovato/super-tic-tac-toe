@@ -13,6 +13,11 @@ export interface RoomCredentials {
   readonly seat: Seat;
   readonly token: string;
   readonly savedAt: number;
+  /**
+   * This device left the room (navigated away inside the app): coming back, by the browser's back
+   * button or the link, asks before taking the seat again instead of reconnecting silently.
+   */
+  readonly left?: boolean;
 }
 
 /** What the room says of the other player. */

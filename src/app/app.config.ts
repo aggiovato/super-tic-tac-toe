@@ -4,7 +4,7 @@ import {
   isDevMode,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter, withViewTransitions } from '@angular/router';
+import { provideRouter, withAutoCleanupInjectors, withViewTransitions } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { Preferences } from '@preferences';
 import { GAME_PREVIEWS } from '@library';
@@ -20,6 +20,9 @@ export const appConfig: ApplicationConfig = {
     // short rise (styles.css), skipped when motion is reduced.
     provideRouter(
       routes,
+      // A route's providers (a game's store and Worker, an online room and its socket) are destroyed
+      // when the route is left, as their DestroyRef hooks expect; without it they would live on.
+      withAutoCleanupInjectors(),
       withViewTransitions({
         onViewTransitionCreated: ({ transition }) => {
           if (inject(Preferences).reducedMotion()) {

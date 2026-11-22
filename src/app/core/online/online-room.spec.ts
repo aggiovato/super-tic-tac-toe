@@ -228,10 +228,20 @@ describe('an online room', () => {
     expect(last().sent).toEqual([{ type: 'rematch', game: 3 }]);
   });
 
-  it('closes its socket when the route goes', async () => {
-    const { injector, last, room } = await open();
-    last().open();
-    injector.destroy();
-    expect(room.connection()).toBe('closed');
+  it('closes its socket when the route goes, and asks before taking the seat back', async () => {
+    const first = await open();
+    first.last().open();
+    first.injector.destroy();
+    expect(first.room.connection()).toBe('closed');
+    expect(TestBed.inject(RoomCredentialsStore).get('room-1')?.left).toBe(true);
+
+    // Back in the room (the back button, the link again): it waits for the player.
+    const again = await open();
+    expect(again.room.left()).toBe(true);
+    expect(again.sockets).toHaveLength(0);
+    again.room.rejoin();
+    expect(again.room.left()).toBe(false);
+    expect(again.sockets).toHaveLength(1);
+    expect(TestBed.inject(RoomCredentialsStore).get('room-1')?.left).toBe(false);
   });
 });

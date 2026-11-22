@@ -9,7 +9,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { type Lang, MESSAGES, Translator } from '@i18n';
-import { Button, ChoiceGroup, type ChoiceOption, Icon, injectMediaQuery, swipeToClose } from '@ui';
+import {
+  Button,
+  ChoiceGroup,
+  type ChoiceOption,
+  Icon,
+  injectMediaQuery,
+  swipeToClose,
+  trackTear,
+} from '@ui';
 import { type ComputerLevel, COMPUTER_LEVELS } from '@catalog';
 import {
   type Design,
@@ -116,6 +124,7 @@ export class SettingsSheet {
 
   private readonly sheet = viewChild.required<ElementRef<HTMLElement>>('sheet');
   private readonly handle = viewChild.required<ElementRef<HTMLElement>>('handle');
+  private readonly card = viewChild.required<ElementRef<HTMLElement>>('card');
   /** Phones get a bottom sheet, which can be dragged down to close. */
   private readonly narrow = injectMediaQuery('(max-width: 34.99rem)');
 
@@ -134,6 +143,7 @@ export class SettingsSheet {
         this.narrow,
       );
       destroyRef.onDestroy(stop);
+      destroyRef.onDestroy(trackTear(this.handle().nativeElement, this.card().nativeElement));
     });
   }
 

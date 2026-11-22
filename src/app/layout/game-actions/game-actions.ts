@@ -12,6 +12,8 @@ import { ACTIVE_GAME } from '@match';
   imports: [Button, Icon],
   templateUrl: './game-actions.html',
   styleUrl: './game-actions.css',
+  // Online there is no undo: until the rematch there is nothing here, so no row either.
+  host: { '[hidden]': "store.mode() === 'online' && !store.isOver()" },
 })
 export class GameActions {
   protected readonly store = inject(ACTIVE_GAME).match;

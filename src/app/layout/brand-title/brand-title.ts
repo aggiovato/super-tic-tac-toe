@@ -53,18 +53,26 @@ export class BrandTitle {
   protected readonly shown = signal(false);
   protected readonly letters = computed(() => [...this.ending()]);
 
-  /** Boards won in the current game (draws do not count); the endings play when it grows. */
-  readonly wonBoards = input(0);
+  /**
+   * Boards won in the current game (draws do not count); the endings play when it grows. Null while
+   * the game is still being restored: the first count after it is the baseline, so a saved game
+   * coming back (from the history, a reload) never plays the endings.
+   */
+  readonly wonBoards = input<number | null>(null);
 
   private timers: ReturnType<typeof setTimeout>[] = [];
 
   constructor() {
-    // The count a game is shown with (a resumed one, a rematch) is the baseline, not a closing.
-    let seen = untracked(this.wonBoards);
+    // The first count a game is shown with (a resumed one) is the baseline, not a closing. Inputs
+    // are not set yet in the constructor, so the effect's first run takes it.
+    let seen: number | null = null;
     // Drives timers only: the flaps change in the timer callbacks.
     effect(() => {
       const won = this.wonBoards();
-      const grew = won > seen;
+      if (won === null) {
+        return;
+      }
+      const grew = seen !== null && won > seen;
       seen = won;
       if (grew) {
         untracked(() => this.play());

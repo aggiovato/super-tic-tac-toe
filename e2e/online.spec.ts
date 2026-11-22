@@ -56,14 +56,14 @@ test('two browsers play online, lose the connection, retry and converge on one r
   await host.page.getByRole('button', { name: 'Settings' }).click();
   await host.page.getByRole('button', { name: 'Invite someone online' }).click();
   await expect(host.page).toHaveURL(/\/classic\/online\/[0-9a-f]{64}$/);
-  await expect(online(host.page)).toContainText('Waiting for your rival');
+  await expect(online(host.page)).toContainText(/Rival\s*not in yet/);
   const link = await online(host.page).getByRole('textbox', { name: 'Room link' }).inputValue();
   expect(link).toBe(host.page.url());
 
   // The guest opens the invitation and takes the other seat.
   await guest.page.goto(link);
   for (const { page } of [host, guest]) {
-    await expect(online(page)).toContainText('Connected with your rival');
+    await expect(online(page)).toContainText(/Rival\s*connected/);
   }
   await expect(host.page.locator('app-score-board')).toContainText('You');
   await expect(host.page.locator('app-score-board')).toContainText('Rival');
@@ -85,7 +85,7 @@ test('two browsers play online, lose the connection, retry and converge on one r
   // Back online, the socket comes back by itself and the move reaches the guest once.
   host.restore();
   await expect(cell(guest.page, 1)).toHaveAccessibleName(/^Cell 2, X/, { timeout: 15_000 });
-  await expect(online(host.page)).toContainText('Connected with your rival');
+  await expect(online(host.page)).toContainText(/Rival\s*connected/);
 
   await cell(guest.page, 4).click();
   await expect(cell(host.page, 4)).toHaveAccessibleName(/^Cell 5, O/);
@@ -103,7 +103,7 @@ test('two browsers play online, lose the connection, retry and converge on one r
   await guest.page.goto(link);
   await expect(status(guest.page)).toHaveText('Game over. X wins.');
   await expect(firstScore(guest.page)).toHaveText('01');
-  await expect(online(host.page)).toContainText('Connected with your rival');
+  await expect(online(host.page)).toContainText(/Rival\s*connected/);
 
   // The rematch swaps symbols: the guest plays X and opens.
   await host.page.getByRole('button', { name: 'Rematch' }).click();
@@ -125,4 +125,38 @@ test('an invitation to a room that does not exist says so and offers local play'
   await expect(online(page)).toContainText('This room does not exist.');
   await online(page).getByRole('link', { name: 'Play on this device' }).click();
   await expect(page).toHaveURL(/\/classic$/);
+});
+
+test('coming back to a room left by navigating asks first; leaving it skips it in the history', async ({
+  browser,
+}) => {
+  const host = await device(browser);
+  const guest = await device(browser);
+  await host.page.goto('/classic');
+  await host.page.getByRole('button', { name: 'Settings' }).click();
+  await host.page.getByRole('button', { name: 'Invite someone online' }).click();
+  await expect(host.page).toHaveURL(/\/classic\/online\//);
+  const link = host.page.url();
+  await guest.page.goto(link);
+  await expect(online(guest.page)).toContainText('connected');
+
+  // The host goes to the history and back: the room waits for them, and so does their rival.
+  await host.page.getByRole('button', { name: 'History' }).click();
+  await expect(online(guest.page).getByText('offline')).toBeVisible();
+  await host.page.goBack();
+  await expect(online(host.page)).toContainText('You left this room.');
+  await expect(cell(host.page, 0)).toBeDisabled();
+  await online(host.page).getByRole('button', { name: 'Back to the room' }).click();
+  await expect(online(guest.page).getByText('offline')).toBeHidden();
+  await cell(host.page, 4).click();
+  await expect(cell(guest.page, 4)).toHaveAccessibleName(/^Cell 5, X/);
+
+  // "Leave the room" replaces its entry: the back button does not reopen it.
+  await online(host.page).getByRole('link', { name: 'Leave the room' }).click();
+  await expect(host.page).toHaveURL(/\/classic$/);
+  await host.page.goBack();
+  await expect(host.page).not.toHaveURL(/online/);
+
+  await host.context.close();
+  await guest.context.close();
 });

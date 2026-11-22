@@ -6,18 +6,21 @@
 <!-- A click on the backdrop closes it; Escape is the dialog's own keyboard way out. -->
 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 <dialog #dialog class="sheet" aria-labelledby="games-title" (click)="onDialogClick($event)">
-  <header class="sheet-head">
-    <span class="grip" aria-hidden="true"></span>
-    <div class="sheet-title">
-      <h2 id="games-title" class="text-title font-semibold text-fg-strong">
-        {{ t().library.title }}
-      </h2>
-      <button app-button="quiet" [attr.aria-label]="t().library.close" (click)="close()">
-        <app-icon name="close" />
-      </button>
+  <!-- On phones a ticket: the head is its stub, torn off along a notched perforation. -->
+  <div #card class="card">
+    <header #head class="sheet-head">
+      <span class="grip" aria-hidden="true"></span>
+      <div class="sheet-title">
+        <h2 id="games-title" class="text-title font-semibold text-fg-strong">
+          {{ t().library.title }}
+        </h2>
+        <button app-button="quiet" [attr.aria-label]="t().library.close" (click)="close()">
+          <app-icon name="close" />
+        </button>
+      </div>
+    </header>
+    <div class="sheet-body">
+      <app-game-library (chosen)="close()" />
     </div>
-  </header>
-  <div class="sheet-body">
-    <app-game-library (chosen)="close()" />
   </div>
 </dialog>

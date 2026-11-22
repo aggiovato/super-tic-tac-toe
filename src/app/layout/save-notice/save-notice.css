@@ -2,6 +2,10 @@
   display: block;
 }
 
+:host([hidden]) {
+  display: none;
+}
+
 /* One line, reserved so the controls never jump when it appears. */
 .notice {
   display: flex;
