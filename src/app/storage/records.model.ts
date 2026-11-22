@@ -1,8 +1,24 @@
 import type { GameId, ComputerLevel } from '@catalog';
-import type { PlayMode } from '@preferences';
 
-/** Version of the stored records' shape; a change needs a migration in the repository. */
-export const SCHEMA_VERSION = 1;
+/**
+ * Version of the stored records' shape; a change needs a migration (`record-schema.ts`). 2: who
+ * played each side is a seat (version 1 kept a mode and a level).
+ */
+export const SCHEMA_VERSION = 2;
+
+/** Who sits on a side: a person on this device, the computer player, or (online) a remote person. */
+export type SeatKind = 'local' | 'computer' | 'remote';
+
+/** One side of a game and who played it, as it was when the game was played. */
+export interface Seat {
+  readonly kind: SeatKind;
+  /** The name the player chose for this side, if any (people only). */
+  readonly name?: string;
+  /** How strong the computer played (computer seats only). */
+  readonly level?: ComputerLevel;
+  /** The account that played this side, once there are accounts (phase 7). */
+  readonly playerId?: string;
+}
 
 /** How a finished game ended, by participant (0 or 1), independent of the symbols. */
 export type GameResult = 'won-0' | 'won-1' | 'draw';
@@ -16,8 +32,8 @@ export interface GameRecord {
   /** The game's variant (a board size); absent in records of games with one shape. */
   readonly variant?: string;
   readonly seriesId: string;
-  readonly mode: PlayMode;
-  readonly level: ComputerLevel;
+  /** Participant 0 and 1: who played each side. */
+  readonly seats: readonly [Seat, Seat];
   readonly seed: number;
   /** Participant playing X in this game. */
   readonly xPlayer: 0 | 1;

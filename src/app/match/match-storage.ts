@@ -18,6 +18,8 @@ import {
   SCHEMA_VERSION,
   type StoredMatch,
   type StoredSeries,
+  seatsOf,
+  sideOf,
 } from '@storage';
 import type {
   MatchGame,
@@ -73,6 +75,7 @@ function recordOf<S extends MatchGame<M>, M, R>(
   store: MatchStorageStore<S, M, R>,
   gameId: GameId,
   memory: StorageMemory,
+  names: readonly [string, string],
 ): StoredMatch {
   const game = store.position();
   const id = store.id();
@@ -88,8 +91,8 @@ function recordOf<S extends MatchGame<M>, M, R>(
     rulesVersion: game.rulesVersion,
     variant: store.variant(),
     seriesId: store.seriesId(),
-    mode: store.mode(),
-    level: store.level(),
+    // Who played each side, with the names chosen at the time.
+    seats: seatsOf(store.mode(), store.level(), names),
     seed: store.seed(),
     xPlayer: store.xPlayer(),
     moves: game.moves,
@@ -140,8 +143,7 @@ function restoreMatch<S extends MatchGame<M>, M, R>(
   patchState(store, {
     game: replayed.state,
     variant: game.variant ?? '',
-    mode: game.mode,
-    level: game.level,
+    ...sideOf(game),
     seed: game.seed,
     xPlayer: game.xPlayer,
     wins: series.wins,
@@ -192,7 +194,7 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
       }
       patchState(store, { saveStatus: 'saving' });
       try {
-        const match = recordOf(store, config.gameId, memory);
+        const match = recordOf(store, config.gameId, memory, preferences.names());
         await repository.save(match, memory.version);
         memory.version = match.series.version;
         memory.unfinished = match.game.result === null ? match.game.id : null;

@@ -1,4 +1,5 @@
 import type { GameId } from '@catalog';
+import { readGameRecord } from './record-schema';
 import { GameRepository, type StoredMatch, type StoredSeries } from './game-repository';
 import { type GameRecord, SaveError, type SeriesRecord } from './records.model';
 
@@ -44,7 +45,7 @@ export class IndexedDbRepository extends GameRepository {
     const game = await asPromise<GameRecord | undefined>(
       tx.objectStore(GAMES).get(series.currentGameId),
     );
-    return { series, game: game ?? null };
+    return { series, game: game ? readGameRecord(game) : null };
   }
 
   async save({ series, game, drop }: StoredMatch, expectedVersion: number): Promise<void> {
@@ -91,7 +92,7 @@ export class IndexedDbRepository extends GameRepository {
     const games = await asPromise<GameRecord[]>(
       db.transaction(GAMES, 'readonly').objectStore(GAMES).index(FINISHED).getAll(range),
     );
-    return games.reverse();
+    return games.reverse().map(readGameRecord);
   }
 
   private open(): Promise<IDBDatabase> {

@@ -10,10 +10,18 @@ paths:
 
 - **Records** (`@storage`, IndexedDB database `super-3t`, version 1): `series` keyed by game
   (`gameId`, `seriesId`, `currentGameId`, `wins`, `draws`, `version`) and `games` keyed by id
-  (`gameId`, `schemaVersion`, `rulesVersion`, optional `variant` (a board size), `seriesId`, `mode`, `level`, `seed`, `xPlayer`,
-  `moves`, `revision`, `result` by participant, `startedAt`, `updatedAt`, `finishedAt`). The
-  `finished` index (`[gameId, finishedAt]`) holds finished games only. A change of shape bumps
-  `SCHEMA_VERSION` and needs a migration; a record that cannot be read is kept and a new game starts.
+  (`gameId`, `schemaVersion`, `rulesVersion`, optional `variant` (a board size), `seriesId`,
+  `seats`, `seed`, `xPlayer`, `moves`, `revision`, `result` by participant, `startedAt`,
+  `updatedAt`, `finishedAt`). The `finished` index (`[gameId, finishedAt]`) holds finished games
+  only. A change of shape bumps `SCHEMA_VERSION` and needs a migration; a record that cannot be
+  read is kept and a new game starts.
+- **Seats** (schema 2): `seats` is who played participant 0 and 1, as it was then: `kind`
+  (`local` a person on this device, `computer` with its `level`, `remote` reserved for online),
+  the `name` a person chose and, later, a `playerId` (accounts). `seatsOf(mode, level, names)`
+  writes them; `sideOf(record)` reads the mode and level back. Schema 1 kept `mode`
+  (`'humans' | 'opponent'`) and `level` instead: `readGameRecord` (`record-schema.ts`) turns those
+  into seats whenever a repository reads a record, so stored games are never rewritten just to
+  migrate them; the next save writes schema 2. Preferences read the old mode names the same way.
 - **Saving** (`matchStorage` in `@match`, on routes with `provideMatchStorage(gameId)`): after the
   restore, an effect saves every change in order, the series and its current game in one
   transaction. The series' `version` is checked inside it: a save that lost a race with another tab

@@ -4,7 +4,7 @@ import { Translator } from '@i18n';
 import { Backdrop, Button, Icon } from '@kit';
 import { COMPUTER_LEVELS, type ComputerLevel, gameById, type GameId } from '@catalog';
 import { Preferences } from '@preferences';
-import { type GameRecord, GameRepository } from '@storage';
+import { type GameRecord, GameRepository, sideOf } from '@storage';
 import { BrandTitle, participantName } from '@shell';
 import { UpdateNotice } from '@pwa';
 
@@ -76,7 +76,7 @@ export class HistoryPage {
         variant,
         label: variants.length > 1 && variant ? this.t().history.board(variant) : null,
         levels: this.levelsOf(played),
-        humans: played.filter((game) => game.mode === 'humans').length,
+        humans: played.filter((game) => sideOf(game).mode === 'local').length,
       };
     });
   });
@@ -87,17 +87,20 @@ export class HistoryPage {
       dateStyle: 'medium',
       timeStyle: 'short',
     });
-    return (this.games() ?? []).slice(0, RECENT).map((game) => ({
-      id: game.id,
-      when: date.format(game.finishedAt ?? game.updatedAt),
-      setup:
-        (this.game.variants.length > 1 ? `${t.history.board(this.variantOf(game))} · ` : '') +
-        (game.mode === 'opponent'
-          ? `${t.opponents[game.level]} · ${t.settings.levels[game.level]}`
-          : t.settings.modes.humans),
-      result: this.resultOf(game),
-      moves: t.history.moves(game.revision),
-    }));
+    return (this.games() ?? []).slice(0, RECENT).map((game) => {
+      const { mode, level } = sideOf(game);
+      return {
+        id: game.id,
+        when: date.format(game.finishedAt ?? game.updatedAt),
+        setup:
+          (this.game.variants.length > 1 ? `${t.history.board(this.variantOf(game))} · ` : '') +
+          (mode === 'computer'
+            ? `${t.opponents[level]} · ${t.settings.levels[level]}`
+            : t.settings.modes.local),
+        result: this.resultOf(game),
+        moves: t.history.moves(game.revision),
+      };
+    });
   });
 
   constructor() {
@@ -110,9 +113,11 @@ export class HistoryPage {
   }
 
   private levelsOf(games: readonly GameRecord[]): LevelRow[] {
-    const against = games.filter((game) => game.mode === 'opponent');
+    const against = games.map((game) => ({ game, side: sideOf(game) }));
     return COMPUTER_LEVELS.map((level) => {
-      const at = against.filter((game) => game.level === level);
+      const at = against
+        .filter(({ side }) => side.mode === 'computer' && side.level === level)
+        .map(({ game }) => game);
       return {
         level,
         label: `${this.t().opponents[level]} · ${this.t().settings.levels[level]}`,
@@ -129,11 +134,14 @@ export class HistoryPage {
       return h.draw;
     }
     const winner = game.result === 'won-0' ? 0 : 1;
-    if (game.mode === 'opponent') {
+    const side = sideOf(game);
+    if (side.mode === 'computer') {
       return winner === 0 ? h.won : h.lost;
     }
+    // The name the winner had when the game was played; older records fall back to today's.
     const name =
-      participantName(this.t(), this.preferences.names(), game, winner) ??
+      game.seats[winner].name ??
+      participantName(this.t(), this.preferences.names(), side, winner) ??
       this.t().defaultName(winner + 1);
     return h.winner(name);
   }

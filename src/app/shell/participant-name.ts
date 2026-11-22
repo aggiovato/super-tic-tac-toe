@@ -17,7 +17,7 @@ export function participantName(
   { mode, level }: PlaySide,
   participant: Participant,
 ): string | null {
-  if (mode === 'opponent' && participant === 1) {
+  if (mode === 'computer' && participant === 1) {
     return t.opponents[level];
   }
   return names[participant] || null;

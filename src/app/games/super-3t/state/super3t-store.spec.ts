@@ -56,7 +56,7 @@ function setupWith(): { store: Super3tStore; opponent: FakeComputer } {
 
 function againstComputer(): { store: Super3tStore; opponent: FakeComputer } {
   const setup = setupWith();
-  setup.store.setMode('opponent', 'beginner');
+  setup.store.setMode('computer', 'beginner');
   return setup;
 }
 
@@ -174,7 +174,7 @@ describe('Super3tStore', () => {
   describe('against the computer', () => {
     it('starts a new series with the person playing X', () => {
       const { store, opponent } = againstComputer();
-      expect(store.mode()).toBe('opponent');
+      expect(store.mode()).toBe('computer');
       expect(store.symbolOf(0)).toBe('X');
       expect(store.toMove()).toBe(0);
       expect(opponent.requests).toHaveLength(0);

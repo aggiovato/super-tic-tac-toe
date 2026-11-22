@@ -308,7 +308,7 @@ export class Super3tBoard {
         return this.settleInto(board, from).then(() => {
           const target = this.store.game().target;
           // Against the computer the next board opens after its reply (`followComputer`).
-          if (this.store.mode() === 'opponent') {
+          if (this.store.mode() === 'computer') {
             return;
           }
           if (target.kind !== 'forced' || !this.preferences.autoZoom()) {

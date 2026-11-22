@@ -1,4 +1,5 @@
 import type { GameId } from '@catalog';
+import type { PlayMode } from '@preferences';
 import type { RejectionReason } from '@super3t/core';
 
 export type Lang = 'es' | 'en';
@@ -200,7 +201,7 @@ export interface Messages {
     readonly title: string;
     readonly close: string;
     readonly mode: string;
-    readonly modes: { readonly humans: string; readonly opponent: string };
+    readonly modes: Readonly<Record<PlayMode, string>>;
     readonly level: string;
     readonly levels: {
       readonly beginner: string;

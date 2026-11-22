@@ -4,7 +4,14 @@ import type { Move } from '@classic/core';
 import { ClassicSession } from '@classic/session';
 import { GameSession, ComputerPlayer, type ComputerRequest, provideMatchStorage } from '@match';
 import { Preferences } from '@preferences';
-import { GameRepository, MemoryRepository, SaveError, type StoredSeries } from '@storage';
+import {
+  type GameRecord,
+  GameRepository,
+  MemoryRepository,
+  SaveError,
+  SCHEMA_VERSION,
+  type StoredSeries,
+} from '@storage';
 import { ClassicStore } from './classic-store';
 
 /** An opponent the test answers by hand. */
@@ -111,19 +118,62 @@ describe('saving and restoring a classic match', () => {
 
   it('asks the opponent once when the saved game stopped on its turn', async () => {
     const repository = new MemoryRepository(true);
-    TestBed.inject(Preferences).setPlay('classic', { mode: 'opponent', level: 'advanced' });
+    TestBed.inject(Preferences).setPlay('classic', { mode: 'computer', level: 'advanced' });
     const first = await open(repository);
     first.store.play({ cell: 4 });
     await settle();
     expect(first.opponent.requests).toHaveLength(1);
 
     const { store, opponent } = await open(repository);
-    expect(store.mode()).toBe('opponent');
+    expect(store.mode()).toBe('computer');
     expect(opponent.requests).toHaveLength(1);
     expect(opponent.requests[0]?.moves).toEqual([{ cell: 4 }]);
     opponent.answer(0);
     await settle();
     expect(store.game().moves).toHaveLength(2);
+  });
+
+  it('restores a game saved before seats (schema 1) and saves it in the new shape', async () => {
+    const repository = new MemoryRepository(true);
+    const series = {
+      gameId: 'classic',
+      seriesId: 's1',
+      currentGameId: 'g1',
+      wins: [1, 0],
+      draws: 0,
+      version: 1,
+    } as const;
+    // As version 1 stored it: a mode and a level instead of seats.
+    const game = {
+      id: 'g1',
+      gameId: 'classic',
+      schemaVersion: 1,
+      rulesVersion: 1,
+      seriesId: 's1',
+      mode: 'opponent',
+      level: 'intermediate',
+      seed: 3,
+      xPlayer: 0,
+      moves: [{ cell: 4 }, { cell: 0 }],
+      revision: 2,
+      result: null,
+      startedAt: 1,
+      updatedAt: 2,
+      finishedAt: null,
+    } as unknown as GameRecord;
+    await repository.save({ series, game }, 0);
+
+    const { store } = await open(repository);
+    expect(store.mode()).toBe('computer');
+    expect(store.level()).toBe('intermediate');
+    expect(store.game().moves).toEqual([{ cell: 4 }, { cell: 0 }]);
+    expect(store.wins()).toEqual([1, 0]);
+
+    store.play({ cell: 8 });
+    await settle();
+    const saved = (await repository.load('classic'))?.game;
+    expect(saved?.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(saved?.seats).toEqual([{ kind: 'local' }, { kind: 'computer', level: 'intermediate' }]);
   });
 
   it('counts a finished game once, however often it is reopened', async () => {

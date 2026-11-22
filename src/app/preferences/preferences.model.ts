@@ -2,8 +2,11 @@ import type { ComputerLevel, GameId } from '@catalog';
 
 export type MotionSetting = 'system' | 'full' | 'reduced';
 export type Design = 'departures' | 'departures-contrast';
-/** Two people on one device, or a person against the computer. */
-export type PlayMode = 'humans' | 'opponent';
+/**
+ * Who plays the other side: a second person on this device, or the computer player. (Stored as
+ * 'humans' and 'opponent' before schema 2; `readSetup` reads those too.)
+ */
+export type PlayMode = 'local' | 'computer';
 
 /** Who plays a game: two people, or a person against the computer at a level. */
 export interface PlaySetup {

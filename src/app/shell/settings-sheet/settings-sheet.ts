@@ -94,7 +94,7 @@ export class SettingsSheet {
 
   /** Name fields: against the computer only the person has one. */
   protected readonly nameFields = computed((): readonly (0 | 1)[] =>
-    this.setup().mode === 'opponent' ? [0] : [0, 1],
+    this.setup().mode === 'computer' ? [0] : [0, 1],
   );
 
   /** "New series" asks once more before clearing the score. */
@@ -143,7 +143,7 @@ export class SettingsSheet {
   }
 
   protected setLevel(level: ComputerLevel): void {
-    this.requestSetup({ mode: 'opponent', level });
+    this.requestSetup({ mode: 'computer', level });
   }
 
   protected confirmPending(): void {

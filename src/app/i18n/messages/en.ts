@@ -198,7 +198,7 @@ export const en: Messages = {
     title: 'Settings',
     close: 'Close settings',
     mode: 'Game mode',
-    modes: { humans: 'Two players', opponent: 'Against the opponent' },
+    modes: { local: 'Two players', computer: 'Against the opponent' },
     level: 'ComputerPlayer level',
     levels: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' },
     players: 'Players',

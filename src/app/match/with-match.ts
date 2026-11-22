@@ -50,7 +50,7 @@ function stepsToPerson<S extends MatchGame<M>, M>(
 }
 
 /** Against the computer, participant 0 is the person and participant 1 the opponent. */
-const OPPONENT: Participant = 1;
+const COMPUTER: Participant = 1;
 
 /**
  * A match of a turn-based game for two: the position, the series score, symbols that swap on every
@@ -83,7 +83,7 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
       ready: !inject(MATCH_STORAGE, { optional: true }),
       saveStatus: 'idle',
       seed: newSeed(),
-      mode: 'humans',
+      mode: 'local',
       level: 'beginner',
       thinking: false,
       computerMoves: 0,
@@ -102,7 +102,7 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
       const isOver = computed(() => game().status.kind !== 'in-progress');
       /** The computer moves now: the person cannot play. */
       const computerTurn = computed(
-        () => mode() === 'opponent' && !isOver() && toMove() === OPPONENT,
+        () => mode() === 'computer' && !isOver() && toMove() === COMPUTER,
       );
       return { toMove, isOver, computerTurn };
     }),
@@ -114,7 +114,7 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
         );
         // Moves one undo takes back: one between two people, back to the person's turn otherwise.
         const undoSteps = computed(() =>
-          mode() === 'opponent'
+          mode() === 'computer'
             ? stepsToPerson(rules, position(), xPlayer(), variant())
             : Math.min(1, position().moves.length),
         );

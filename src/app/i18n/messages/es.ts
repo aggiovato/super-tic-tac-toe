@@ -201,7 +201,7 @@ export const es: Messages = {
     title: 'Ajustes',
     close: 'Cerrar ajustes',
     mode: 'Modo de juego',
-    modes: { humans: 'Dos personas', opponent: 'Contra el rival' },
+    modes: { local: 'Dos personas', computer: 'Contra el rival' },
     level: 'Nivel del rival',
     levels: { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' },
     players: 'Jugadores',

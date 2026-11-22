@@ -10,7 +10,7 @@ import type {
 
 export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
-export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
+export const PLAY_MODES: readonly PlayMode[] = ['local', 'computer'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 
@@ -18,12 +18,16 @@ const isDesign = (value: unknown): value is Design => DESIGNS.some((design) => d
 const isMode = (value: unknown): value is PlayMode => PLAY_MODES.some((mode) => mode === value);
 const isLevel = (value: unknown): value is ComputerLevel =>
   COMPUTER_LEVELS.some((level) => level === value);
-const TWO_PEOPLE: PlaySetup = { mode: 'humans', level: 'beginner' };
+const TWO_PEOPLE: PlaySetup = { mode: 'local', level: 'beginner' };
+/** Modes as stored before schema 2, read as today's. */
+const LEGACY_MODES: Readonly<Record<string, PlayMode>> = { humans: 'local', opponent: 'computer' };
 
 /** A saved setup, or the default for what is missing or unknown. */
 function readSetup(saved: Partial<PlaySetup> | undefined): PlaySetup {
+  const mode: unknown = saved?.mode;
+  const read = typeof mode === 'string' ? (LEGACY_MODES[mode] ?? mode) : mode;
   return {
-    mode: isMode(saved?.mode) ? saved.mode : TWO_PEOPLE.mode,
+    mode: isMode(read) ? read : TWO_PEOPLE.mode,
     level: isLevel(saved?.level) ? saved.level : TWO_PEOPLE.level,
     ...(typeof saved?.variant === 'string' ? { variant: saved.variant } : {}),
   };

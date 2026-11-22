@@ -113,8 +113,9 @@ train names).
 | variant         | A game's shape that is not a rule change, e.g. the Dots board size (`'3'`, `'5'`).                |
 | preferences     | What a person chose on this device (`@preferences`); the Settings sheet edits them.               |
 
-The stored values `PlayMode` `'humans' | 'opponent'` keep their names until the records move to seats
-(schema 2).
+A game record names who played each side as `seats` (`local`, `computer`, later `remote`), and
+`PlayMode` is `'local' | 'computer'`; records and preferences from before schema 2 (`'humans' |
+'opponent'`) are read into today's shape (`readGameRecord`, `readSetup`).
 
 ## Layers and boundaries
 

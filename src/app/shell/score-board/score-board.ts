@@ -34,7 +34,7 @@ export class ScoreBoard {
     const names = this.preferences.names();
     const toMove = this.store.isOver() ? null : this.store.toMove();
     const side = { mode: this.store.mode(), level: this.store.level() };
-    const computer = (participant: Participant) => side.mode === 'opponent' && participant === 1;
+    const computer = (participant: Participant) => side.mode === 'computer' && participant === 1;
     const player = (participant: Participant): ScoreEntry => ({
       label: participantName(t, names, side, participant) ?? t.defaultName(participant + 1),
       bars: computer(participant) ? COMPUTER_LEVELS.indexOf(side.level) + 1 : null,

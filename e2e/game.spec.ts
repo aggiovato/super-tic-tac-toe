@@ -660,6 +660,55 @@ test.describe('saving and resuming', () => {
   const classicCell = (page: Page, at: number) =>
     page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
 
+  test('a game saved before seats (schema 1) resumes with its mode and level', async ({ page }) => {
+    // The app creates its database on the first visit; then a game is stored as version 1 did.
+    await page.goto('/classic');
+    await expect(page.getByText('Saved')).toBeVisible();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const open = indexedDB.open('super-3t');
+          open.onsuccess = () => {
+            const tx = open.result.transaction(['series', 'games'], 'readwrite');
+            tx.objectStore('series').put({
+              gameId: 'classic',
+              seriesId: 'old-series',
+              currentGameId: 'old-game',
+              wins: [0, 1],
+              draws: 0,
+              version: 100,
+            });
+            tx.objectStore('games').put({
+              id: 'old-game',
+              gameId: 'classic',
+              schemaVersion: 1,
+              rulesVersion: 1,
+              seriesId: 'old-series',
+              mode: 'opponent',
+              level: 'advanced',
+              seed: 11,
+              xPlayer: 0,
+              moves: [{ cell: 4 }, { cell: 0 }],
+              revision: 2,
+              result: null,
+              startedAt: 1,
+              updatedAt: 2,
+              finishedAt: null,
+            });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error ?? new Error('write failed'));
+          };
+          open.onerror = () => reject(open.error ?? new Error('open failed'));
+        }),
+    );
+    await page.reload();
+    await expect(classicCell(page, 4)).toHaveAccessibleName(/^Cell 5, X/);
+    await expect(classicCell(page, 0)).toHaveAccessibleName(/^Cell 1, O/);
+    // Against the computer at the advanced level: its train name, and X to move.
+    await expect(page.locator('app-score-board dt').last()).toHaveText('Express, Advanced');
+    await expect(status(page)).toHaveText(/^X to move/);
+  });
+
   test('a game resumes after a reload, on the same turn', async ({ page }) => {
     await play(page, 4, 2);
     await play(page, 2, 4);

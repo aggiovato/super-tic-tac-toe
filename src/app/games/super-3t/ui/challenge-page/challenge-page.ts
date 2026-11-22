@@ -47,7 +47,7 @@ export class ChallengePage {
           return;
         }
         run.challenge.set(challenge);
-        store.setMode('opponent', 'beginner');
+        store.setMode('computer', 'beginner');
       });
   }
 

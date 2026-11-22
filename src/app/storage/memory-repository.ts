@@ -1,4 +1,5 @@
 import type { GameId } from '@catalog';
+import { readGameRecord } from './record-schema';
 import { GameRepository, type StoredMatch, type StoredSeries } from './game-repository';
 import { type GameRecord, SaveError, type SeriesRecord } from './records.model';
 
@@ -19,9 +20,12 @@ export class MemoryRepository extends GameRepository {
 
   load(gameId: GameId): Promise<StoredSeries | null> {
     const series = this.series.get(gameId);
-    return Promise.resolve(
-      series ? { series, game: this.games.get(series.currentGameId) ?? null } : null,
-    );
+    return Promise.resolve(series ? { series, game: this.readGame(series.currentGameId) } : null);
+  }
+
+  private readGame(id: string): GameRecord | null {
+    const game = this.games.get(id);
+    return game ? readGameRecord(game) : null;
   }
 
   /** Whether a game record is kept, finished or not (for tests). */
@@ -47,6 +51,7 @@ export class MemoryRepository extends GameRepository {
   finished(gameId: GameId): Promise<GameRecord[]> {
     return Promise.resolve(
       [...this.games.values()]
+        .map(readGameRecord)
         .filter((game) => game.gameId === gameId && game.finishedAt !== null)
         .sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0)),
     );
