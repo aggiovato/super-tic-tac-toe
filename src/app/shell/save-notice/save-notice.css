@@ -13,6 +13,11 @@
   line-height: 1.35;
 }
 
+/* The live region stays in the page to announce a failure, but takes no slot while empty. */
+.notice > [aria-live]:empty {
+  position: absolute;
+}
+
 .saved {
   display: inline-flex;
   align-items: center;

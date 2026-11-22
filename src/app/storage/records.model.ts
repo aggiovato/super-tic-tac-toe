@@ -12,6 +12,8 @@ export interface GameRecord {
   readonly gameId: GameId;
   readonly schemaVersion: number;
   readonly rulesVersion: number;
+  /** The game's variant (a board size); absent in records of games with one shape. */
+  readonly variant?: string;
   readonly seriesId: string;
   readonly mode: PlayMode;
   readonly level: OpponentLevel;

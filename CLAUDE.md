@@ -40,7 +40,8 @@ three levels, the how-to-play ticket, the tactical challenges and the family of 
 `@tictac`, `@match` and `@shell`; `/` opens the last game played. Done in phase 4: every game is
 saved to IndexedDB after each change (`@storage`, `provideMatchStorage` on each game route) and
 restored on the next visit, a finished game counts once, and each game has a history
-(`/<game>/history`). Next: measuring on a real phone, then the release that closes the MVP.
+(`/<game>/history`). Also: Dots and Boxes, the third game (`phase/4b-dots`, `/dots`, 3×3 or
+5×5 boxes, player inks). Next: measuring on a real phone, then the release that closes the MVP.
 
 | Phase        | Accepted when…                                                                        |
 | ------------ | ------------------------------------------------------------------------------------- |
@@ -98,7 +99,7 @@ build output.
 | `src/app/games/<game>/state/`     | GameStore (SignalStore) provided on the route       | `core`, `session`                             |
 | `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                         |
 | `src/app/match/`                  | `withMatch` (play and storage), sessions, opponents | `tictac`, `settings`, `storage`               |
-| `src/app/shell/`                  | Layout, settings sheet, score, actions, history     | `match`, `kit`, `settings`, `i18n`, `storage` |
+| `src/app/shell/`                  | Layout, game library, settings, score, history      | `match`, `kit`, `settings`, `i18n`, `storage` |
 | `src/app/storage/`                | Game and series records, IndexedDB and memory       | `settings` types                              |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
@@ -111,6 +112,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@super3t/core`, `@super3t/core/testing` (tests)         | `src/app/games/super-3t/core/`    |
 | `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/app/games/super-3t/<layer>/` |
 | `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/app/games/classic/<layer>/`  |
+| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/app/games/dots/<layer>/`     |
 | `@match`, `@shell`                                       | `src/app/<block>/`                |
 | `@storage`, `@i18n`                                      | `src/app/<block>/`                |
 | `@settings` (player preferences)                         | `src/app/settings/`               |
@@ -139,6 +141,9 @@ Loaded automatically for the files you touch:
 | --------------- | ---------------------------------------- | ------------------------------------------------ |
 | `angular-22`    | `src/**`, Angular configs                | Conventions for the installed Angular version    |
 | `super-3t`      | `src/app/games/super-3t/**`, `tictac/**` | Rules v1, engine contract, fixtures, invariants  |
+| `classic`       | `src/app/games/classic/**`               | Classic rules, engine, three opponent levels     |
+| `dots`          | `src/app/games/dots/**`                  | Dots and Boxes rules, opponent, board, inks      |
+| `storage`       | `src/app/storage/**`, `match/**`         | Records, saving, restoring, history              |
 | `quality`       | `src/**`, configs, CI                    | Required tests, lint, budgets, CI                |
 | `design-tokens` | styles, templates, `ui/`                 | Token layers, semantic contract, adding a design |
 

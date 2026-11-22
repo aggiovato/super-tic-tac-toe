@@ -1,0 +1,95 @@
+/* Dots and Boxes' rules inside the shared ticket: the type of Super 3T's, drawings in player inks. */
+h2:focus-visible {
+  outline: none;
+}
+
+h2 {
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  font-weight: 600;
+  color: var(--color-fg-strong);
+}
+
+.intro {
+  margin-top: var(--spacing-stack-tight);
+  font-size: var(--text-caption);
+  line-height: 1.35;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack);
+  margin: var(--spacing-stack) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--spacing-stack);
+}
+
+.rule p {
+  text-wrap: pretty;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  color: var(--color-fg-strong);
+}
+
+/* 30-unit drawings at 2.9rem, as Super 3T's: a Raven Teal tile with the board's own parts. */
+.mini {
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: var(--radius-tile);
+  background: var(--color-surface);
+}
+
+.mini .ink {
+  fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.mini .x {
+  --ink: var(--color-player-x);
+}
+
+.mini .o {
+  --ink: var(--color-player-o);
+}
+
+.mini .ink,
+.mini .mark {
+  stroke: var(--ink);
+}
+
+.mini .mark {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.mini .win {
+  stroke: var(--color-win);
+}
+
+.mini .veil {
+  fill: color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+/* The third side to beware of: a dotted Chalk line. */
+.mini .hint {
+  fill: none;
+  stroke: var(--color-preview);
+  stroke-width: 2;
+  stroke-dasharray: 1.5 2.5;
+  stroke-linecap: round;
+}
+
+.mini .dot,
+.mini .dots circle {
+  fill: var(--color-fg-strong);
+}

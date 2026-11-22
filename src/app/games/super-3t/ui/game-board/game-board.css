@@ -3,8 +3,18 @@
  * largest area the screen allows in every layout.
  */
 :host {
-  display: block;
+  /* The largest the whole board grows on big screens: cells stay a comfortable reach apart. */
+  --board-max: 42rem;
+
+  /* A column, so the whole board sits centred in the arena's height, as the other games' boards. */
+  display: flex;
+  flex-direction: column;
   height: 100%;
+}
+
+/* The whole board, centred in the height; the zoomed view fills it instead. */
+.board:not(.board-zoom) {
+  margin-block: auto;
 }
 
 .board {
@@ -20,9 +30,10 @@
   gap: var(--spacing-board-gap);
   /*
    * Every platform's grid is square, so the board is three head rows taller than it is wide:
-   * full width on phones, and on short screens as wide as the height leaves after those rows.
+   * full width on phones, and on short screens as wide as the height leaves after those rows,
+   * never past --board-max on large screens (as the classic and Dots boards are capped).
    */
-  width: min(100cqw, 100cqh - 3 * var(--head-row));
+  width: min(100cqw, 100cqh - 3 * var(--head-row), var(--board-max));
   margin-inline: auto;
 }
 

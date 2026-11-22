@@ -13,7 +13,7 @@ export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
 export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
 export const OPPONENT_LEVELS: readonly OpponentLevel[] = ['beginner', 'intermediate', 'advanced'];
-export const GAME_IDS: readonly GameId[] = ['super-3t', 'classic'];
+export const GAME_IDS: readonly GameId[] = ['super-3t', 'classic', 'dots'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 
@@ -29,6 +29,7 @@ function readSetup(saved: Partial<PlaySetup> | undefined): PlaySetup {
   return {
     mode: isMode(saved?.mode) ? saved.mode : TWO_PEOPLE.mode,
     level: isLevel(saved?.level) ? saved.level : TWO_PEOPLE.level,
+    ...(typeof saved?.variant === 'string' ? { variant: saved.variant } : {}),
   };
 }
 
@@ -44,20 +45,30 @@ function readNames(saved: unknown): [string, string] {
 const readIds = (saved: unknown): string[] =>
   Array.isArray(saved) ? saved.filter((id): id is string => typeof id === 'string') : [];
 
+/** Games whose tutorial was seen; older versions kept one flag, Super 3T's. */
+function readTutorials(saved: Partial<PreferencesState> & LegacyPreferences): GameId[] {
+  const games = Array.isArray(saved.seenTutorials) ? saved.seenTutorials.filter(isGame) : [];
+  return saved.tutorialSeen === true && !games.includes('super-3t')
+    ? [...games, 'super-3t']
+    : games;
+}
+
 /** What older versions stored: one mode and level, Super 3T's, before there were several games. */
 interface LegacyPreferences {
   readonly mode?: unknown;
   readonly level?: unknown;
+  readonly tutorialSeen?: unknown;
 }
 const DEFAULTS: PreferencesState = {
   names: ['', ''],
   motion: 'system',
   autoZoom: true,
   hints: true,
+  libraryShown: true,
   design: 'departures',
-  play: { 'super-3t': TWO_PEOPLE, classic: TWO_PEOPLE },
+  play: { 'super-3t': TWO_PEOPLE, classic: TWO_PEOPLE, dots: TWO_PEOPLE },
   lastGame: 'super-3t',
-  tutorialSeen: false,
+  seenTutorials: [],
   solvedChallenges: [],
 };
 
@@ -74,10 +85,11 @@ export class Preferences {
   readonly motion = computed(() => this.state().motion);
   readonly autoZoom = computed(() => this.state().autoZoom);
   readonly hints = computed(() => this.state().hints);
+  readonly libraryShown = computed(() => this.state().libraryShown);
   readonly design = computed(() => this.state().design);
   readonly play = computed(() => this.state().play);
   readonly lastGame = computed(() => this.state().lastGame);
-  readonly tutorialSeen = computed(() => this.state().tutorialSeen);
+  readonly seenTutorials = computed(() => new Set(this.state().seenTutorials));
   readonly solvedChallenges = computed(() => new Set(this.state().solvedChallenges));
 
   private readonly systemReducedMotion = signal(false);
@@ -127,13 +139,19 @@ export class Preferences {
     this.update({ hints });
   }
 
+  setLibraryShown(libraryShown: boolean): void {
+    this.update({ libraryShown });
+  }
+
   setDesign(design: Design): void {
     this.update({ design });
   }
 
   /** Who plays `game` from now on. */
   setPlay(game: GameId, setup: PlaySetup): void {
-    this.update({ play: { ...this.state().play, [game]: setup } });
+    // A setup without a variant keeps the one already chosen.
+    const merged = { ...this.state().play[game], ...setup };
+    this.update({ play: { ...this.state().play, [game]: merged } });
   }
 
   /** The game the app opens on next time. */
@@ -150,8 +168,10 @@ export class Preferences {
     }
   }
 
-  markTutorialSeen(): void {
-    this.update({ tutorialSeen: true });
+  markTutorialSeen(game: GameId): void {
+    if (!this.seenTutorials().has(game)) {
+      this.update({ seenTutorials: [...this.state().seenTutorials, game] });
+    }
   }
 
   private update(change: Partial<PreferencesState>): void {
@@ -176,14 +196,17 @@ export class Preferences {
         motion: saved.motion === 'full' || saved.motion === 'reduced' ? saved.motion : 'system',
         autoZoom: saved.autoZoom ?? DEFAULTS.autoZoom,
         hints: saved.hints ?? DEFAULTS.hints,
+        libraryShown:
+          typeof saved.libraryShown === 'boolean' ? saved.libraryShown : DEFAULTS.libraryShown,
         design: isDesign(saved.design) ? saved.design : DEFAULTS.design,
         play: {
           // Before several games, `mode` and `level` were Super 3T's: they move into its setup.
           'super-3t': readSetup(play?.['super-3t'] ?? (saved as Partial<PlaySetup>)),
           classic: readSetup(play?.classic),
+          dots: readSetup(play?.dots),
         },
         lastGame: isGame(saved.lastGame) ? saved.lastGame : DEFAULTS.lastGame,
-        tutorialSeen: saved.tutorialSeen === true,
+        seenTutorials: readTutorials(saved),
         solvedChallenges: readIds(saved.solvedChallenges),
       };
     } catch {

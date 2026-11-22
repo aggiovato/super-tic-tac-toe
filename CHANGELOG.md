@@ -9,6 +9,17 @@ new version and date.
 
 ### Added
 
+- The computer opponent is named after its level, a train from slowest to fastest (Cercanías,
+  Regional, Expreso), with level bars beside its name in the score and the level choice, so the
+  level is always in sight.
+- A library of games to switch between them: beside the board on wide screens and behind a Games
+  button on phones and tablets, with Super 3T as the main game on top, a drawn preview of each game
+  and the one being played marked. Settings keep only the game's own options and the app's.
+- Dots and Boxes, the third game, at `/dots`: draw lines between dots, close a box to keep it and
+  play again, the most boxes win. 3×3 or 5×5 boxes, two people or the computer at three levels (the
+  advanced one solves the endgame exactly), each player's lines and boxes in their own ink, its own
+  how-to-play and history, saved like the other games.
+
 - Games are saved on this device after every move and resume where they were after a reload or a
   return, also on the opponent's turn. A finished game counts once, however often it is reopened.
   A line under the actions says "Saved", or what went wrong with a way to try again.

@@ -1,0 +1,6 @@
+<dialog #dialog class="ticket" [attr.aria-labelledby]="labelledBy()" (close)="closed.emit()">
+  <div class="card">
+    <div class="body"><ng-content /></div>
+    <div class="actions"><ng-content select="[actions]" /></div>
+  </div>
+</dialog>

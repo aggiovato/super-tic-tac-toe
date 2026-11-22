@@ -34,6 +34,12 @@ export interface Messages {
   readonly defaultName: (index: number) => string;
   /** How the computer player is named in sentences and the score. */
   readonly opponent: string;
+  /** The computer opponent's name at each level: trains, slowest to fastest. */
+  readonly opponents: {
+    readonly beginner: string;
+    readonly intermediate: string;
+    readonly advanced: string;
+  };
   readonly draws: string;
   readonly score: string;
   readonly rematch: string;
@@ -123,9 +129,64 @@ export interface Messages {
     readonly draw: string;
     readonly winner: (name: string) => string;
     readonly moves: (count: number) => string;
+    /** A board size's name, from its variant ('3' → 3×3). */
+    readonly board: (variant: string) => string;
   };
-  /** Each game's name, in the game switcher. */
-  readonly games: { readonly 'super-3t': string; readonly classic: string };
+  /** The Dots and Boxes screen. */
+  readonly dots: {
+    /** Flap word after the player and the arrow while the game goes on (five letters). */
+    readonly flapTurn: string;
+    readonly opening: string;
+    readonly drew: (mover: string, next: string) => string;
+    readonly closed: (mover: string, boxes: number) => string;
+    readonly won: (winner: string, theirs: number, others: number) => string;
+    readonly drawn: string;
+    readonly rejected: (reason: 'game-over' | 'invalid-coordinates' | 'line-taken') => string;
+    readonly status: {
+      readonly turn: (next: string) => string;
+      readonly won: (winner: string) => string;
+      readonly drawn: string;
+    };
+    /** The boxes each player holds in the game on the board, for screen readers. */
+    readonly tallyStatus: (x: number, o: number) => string;
+    readonly board: string;
+    /** A line's accessible name: rows and columns of dots counted from 1. */
+    readonly line: (
+      orientation: 'h' | 'v',
+      row: number,
+      col: number,
+      owner: string | null,
+    ) => string;
+    readonly size: string;
+    readonly sizeName: (boxes: number) => string;
+    readonly confirmSize: string;
+    readonly howToPlay: {
+      readonly title: string;
+      readonly intro: string;
+      readonly draw: string;
+      readonly close: string;
+      readonly careful: string;
+      readonly win: string;
+    };
+  };
+  /** Each game's name, in the game library. */
+  readonly games: { readonly 'super-3t': string; readonly classic: string; readonly dots: string };
+  /** The library of games: the aside on wide screens, the games dialog elsewhere. */
+  readonly library: {
+    readonly open: string;
+    readonly title: string;
+    readonly close: string;
+    /** Folds the aside to a rail and unfolds it again (wide screens). */
+    readonly hide: string;
+    readonly show: string;
+    /** The badge on the game on screen. */
+    readonly playing: string;
+    readonly blurbs: {
+      readonly 'super-3t': string;
+      readonly classic: string;
+      readonly dots: string;
+    };
+  };
   readonly settings: {
     readonly open: string;
     readonly title: string;
@@ -158,8 +219,6 @@ export interface Messages {
     /** Reopens the how-to-play ticket. */
     readonly howToPlay: string;
     readonly challenges: string;
-    /** The game switcher's legend. */
-    readonly game: string;
     /** The tab list's accessible name. */
     readonly sections: string;
     readonly sectionNames: { readonly game: string; readonly app: string };

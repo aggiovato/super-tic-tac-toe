@@ -1,7 +1,7 @@
 import type { Signal } from '@angular/core';
 import type { OpponentLevel, PlayMode } from '@settings';
 import type { SaveFailure } from '@storage';
-import type { GameStatus, Player } from '@tictac';
+import type { Player } from '@tictac';
 
 /** Participant index (0 or 1) in a series; symbols swap on every rematch. */
 export type Participant = 0 | 1;
@@ -12,11 +12,17 @@ export type Mode = PlayMode;
 /** How strong the computer plays. */
 export type Level = OpponentLevel;
 
+/** How a game stands, in any game of the family: a win need not be a line (boxes are counted). */
+export type MatchStatus =
+  | { readonly kind: 'in-progress' }
+  | { readonly kind: 'won'; readonly winner: Player }
+  | { readonly kind: 'drawn' };
+
 /** What a match needs from any game's position: whose turn, how it stands and its moves. */
 export interface MatchGame<M> {
   readonly rulesVersion: number;
   readonly turn: Player;
-  readonly status: GameStatus;
+  readonly status: MatchStatus;
   readonly moves: readonly M[];
 }
 
@@ -31,13 +37,21 @@ export interface OpponentRequest<M> {
   readonly level: Level;
   /** Integer seed kept for the whole game. */
   readonly seed: number;
+  /** The game's variant (a board size), '' for games that have one shape. */
+  readonly variant: string;
 }
 
 /** The engine calls a match makes besides the session's. */
 export interface MatchRules<S, M> {
   legalMoves(state: S): readonly M[];
-  replay(moves: readonly M[], rulesVersion: number): { readonly ok: boolean; readonly state?: S };
+  replay(
+    moves: readonly M[],
+    rulesVersion: number,
+    variant: string,
+  ): { readonly ok: boolean; readonly state?: S };
   sameMove(a: M, b: M): boolean;
+  /** The engine's move, for walking a game forward once (undo steps). */
+  apply(state: S, move: M): { readonly ok: boolean; readonly state: S };
 }
 
 /** A series between two participants, in any game of the family. */
@@ -46,6 +60,8 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | SaveFailure;
 
 export interface MatchState<S, R> {
   readonly game: S;
+  /** The game's variant (a board size), '' for games that have one shape; kept by rematches. */
+  readonly variant: string;
   /** This game's identity: a result is recorded once per id. */
   readonly id: string;
   /** The series it belongs to; a rematch keeps it, a new series or mode starts another. */
@@ -77,6 +93,8 @@ export interface MatchApi {
   readonly wins: Signal<readonly [number, number]>;
   readonly draws: Signal<number>;
   readonly mode: Signal<Mode>;
+  /** The computer's level (kept while two people play, for when it comes back). */
+  readonly level: Signal<Level>;
   readonly toMove: Signal<Participant>;
   readonly isOver: Signal<boolean>;
   readonly canUndo: Signal<boolean>;
@@ -88,5 +106,5 @@ export interface MatchApi {
   undo(): void;
   rematch(): void;
   newSeries(): void;
-  setMode(mode: Mode, level: Level): void;
+  setMode(mode: Mode, level: Level, variant?: string): void;
 }

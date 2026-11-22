@@ -15,6 +15,14 @@ interface LevelRow {
   readonly losses: number;
 }
 
+interface HistorySection {
+  readonly variant: string;
+  /** The variant's name (a board size), when there is more than one to tell apart. */
+  readonly label: string | null;
+  readonly levels: readonly LevelRow[];
+  readonly humans: number;
+}
+
 interface RecentGame {
   readonly id: string;
   readonly when: string;
@@ -47,23 +55,23 @@ export class HistoryPage {
   private readonly games = signal<readonly GameRecord[] | null>(null);
   protected readonly loaded = computed(() => this.games() !== null);
 
-  protected readonly levels = computed((): readonly LevelRow[] => {
-    const games = (this.games() ?? []).filter((game) => game.mode === 'opponent');
-    return OPPONENT_LEVELS.map((level) => {
-      const at = games.filter((game) => game.level === level);
+  /**
+   * Results by variant (a board size): one section per variant played, so 3×3 and 5×5 never share a
+   * table. Games with one shape have a single section without a heading.
+   */
+  protected readonly sections = computed((): readonly HistorySection[] => {
+    const games = this.games() ?? [];
+    const variants = [...new Set(games.map((game) => game.variant ?? ''))].sort();
+    return (variants.length > 0 ? variants : ['']).map((variant) => {
+      const played = games.filter((game) => (game.variant ?? '') === variant);
       return {
-        level,
-        label: this.t().settings.levels[level],
-        wins: at.filter((game) => game.result === 'won-0').length,
-        draws: at.filter((game) => game.result === 'draw').length,
-        losses: at.filter((game) => game.result === 'won-1').length,
+        variant,
+        label: variants.length > 1 && variant ? this.t().history.board(variant) : null,
+        levels: this.levelsOf(played),
+        humans: played.filter((game) => game.mode === 'humans').length,
       };
     });
   });
-
-  protected readonly humans = computed(
-    () => (this.games() ?? []).filter((game) => game.mode === 'humans').length,
-  );
 
   protected readonly recent = computed((): readonly RecentGame[] => {
     const t = this.t();
@@ -75,9 +83,10 @@ export class HistoryPage {
       id: game.id,
       when: date.format(game.finishedAt ?? game.updatedAt),
       setup:
-        game.mode === 'opponent'
-          ? `${t.settings.modes.opponent} · ${t.settings.levels[game.level]}`
-          : t.settings.modes.humans,
+        (game.variant ? `${t.history.board(game.variant)} · ` : '') +
+        (game.mode === 'opponent'
+          ? `${t.opponents[game.level]} · ${t.settings.levels[game.level]}`
+          : t.settings.modes.humans),
       result: this.resultOf(game),
       moves: t.history.moves(game.revision),
     }));
@@ -92,6 +101,20 @@ export class HistoryPage {
       );
   }
 
+  private levelsOf(games: readonly GameRecord[]): LevelRow[] {
+    const against = games.filter((game) => game.mode === 'opponent');
+    return OPPONENT_LEVELS.map((level) => {
+      const at = against.filter((game) => game.level === level);
+      return {
+        level,
+        label: `${this.t().opponents[level]} · ${this.t().settings.levels[level]}`,
+        wins: at.filter((game) => game.result === 'won-0').length,
+        draws: at.filter((game) => game.result === 'draw').length,
+        losses: at.filter((game) => game.result === 'won-1').length,
+      };
+    });
+  }
+
   private resultOf(game: GameRecord): string {
     const h = this.t().history;
     if (game.result === 'draw') {
@@ -102,7 +125,7 @@ export class HistoryPage {
       return winner === 0 ? h.won : h.lost;
     }
     const name =
-      participantName(this.t(), this.preferences.names(), game.mode, winner) ??
+      participantName(this.t(), this.preferences.names(), game, winner) ??
       this.t().defaultName(winner + 1);
     return h.winner(name);
   }

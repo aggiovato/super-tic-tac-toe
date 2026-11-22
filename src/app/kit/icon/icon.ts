@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 
-export type IconName = 'settings' | 'undo' | 'grid' | 'close' | 'history' | 'check';
+export type IconName =
+  'settings' | 'undo' | 'grid' | 'games' | 'fold' | 'close' | 'history' | 'check';
 
 /** Authored line icons in one stroke weight; decorative, so hidden from assistive tech. */
 @Component({
@@ -31,6 +32,16 @@ export type IconName = 'settings' | 'undo' | 'grid' | 'close' | 'history' | 'che
         }
         @case ('grid') {
           <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+        }
+        @case ('games') {
+          <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+          <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+          <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+          <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+        }
+        @case ('fold') {
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path d="M9 4v16M16 9l-3 3 3 3" />
         }
         @case ('close') {
           <path d="M6 6l12 12M18 6 6 18" />

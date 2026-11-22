@@ -45,6 +45,7 @@ export const en: Messages = {
   showAll: 'Show all',
   defaultName: (index) => `Player ${index}`,
   opponent: 'Opponent',
+  opponents: { beginner: 'Local', intermediate: 'Regional', advanced: 'Express' },
   draws: 'Draws',
   score: 'Series score',
   rematch: 'Rematch',
@@ -128,8 +129,62 @@ export const en: Messages = {
     draw: 'Draw',
     winner: (name) => `${name} wins`,
     moves: (count) => `${count} moves`,
+    board: (variant) => `${variant}×${variant}`,
   },
-  games: { 'super-3t': 'Super 3T', classic: 'Classic' },
+  dots: {
+    flapTurn: 'PLAYS',
+    opening: 'Draw a line between two neighbouring dots. Close a box to keep it and play again.',
+    drew: (mover, next) => `${mover} drew a line. ${next} to move.`,
+    closed: (mover, boxes) =>
+      boxes === 1
+        ? `${mover} closed a box and plays again.`
+        : `${mover} closed ${boxes} boxes and plays again.`,
+    won: (winner, theirs, others) => `${winner} wins ${theirs} boxes to ${others}.`,
+    drawn: 'Draw: the same number of boxes each.',
+    rejected: (reason) =>
+      reason === 'line-taken'
+        ? 'That line is already drawn.'
+        : reason === 'game-over'
+          ? 'The game is over: press Rematch to play another.'
+          : 'That line is not on the board.',
+    status: {
+      turn: (next) => `${next} to move.`,
+      won: (winner) => `Game over. ${winner} wins.`,
+      drawn: 'Game over, a draw.',
+    },
+    tallyStatus: (x, o) => `Boxes: X ${x}, O ${o}.`,
+    board: 'Dot board',
+    line: (orientation, row, col, owner) =>
+      (orientation === 'h'
+        ? `Horizontal line, row ${row}, dots ${col} and ${col + 1}`
+        : `Vertical line, column ${col}, dots ${row} and ${row + 1}`) +
+      (owner ? `, ${owner}'s` : ', free'),
+    size: 'Board',
+    sizeName: (boxes) => `${boxes}×${boxes} boxes`,
+    confirmSize: 'Switch and clear the score',
+    howToPlay: {
+      title: 'How to play',
+      intro: 'Dots and Boxes: whoever closes more boxes wins.',
+      draw: 'On your turn, draw a line between two neighbouring dots, across or down.',
+      close: 'If your line closes the fourth side of a box, it is yours and you play again.',
+      careful: 'Mind the third side: it hands the box to your opponent.',
+      win: 'Once every line is drawn, whoever holds more boxes wins.',
+    },
+  },
+  games: { 'super-3t': 'Super 3T', classic: 'Classic', dots: 'Boxes' },
+  library: {
+    open: 'Games',
+    title: 'Games',
+    close: 'Close games',
+    hide: 'Hide games',
+    show: 'Show games',
+    playing: 'Playing',
+    blurbs: {
+      'super-3t': 'Nine boards in one: every move decides where your opponent plays.',
+      classic: 'The tic tac toe you know, against a friend or the computer.',
+      dots: 'Join the dots, close boxes and play again.',
+    },
+  },
   settings: {
     open: 'Settings',
     title: 'Settings',
@@ -155,7 +210,6 @@ export const en: Messages = {
     confirmModeChange: 'Switch and clear the score',
     howToPlay: 'How to play',
     challenges: 'Tactical challenges',
-    game: 'Game',
     sections: 'Settings sections',
     sectionNames: { game: 'Game', app: 'App' },
     confirmNewSeries: 'Clear the score and start',

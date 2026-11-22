@@ -8,7 +8,7 @@ import {
   untracked,
 } from '@angular/core';
 import { patchState } from '@ngrx/signals';
-import { type GameId, Preferences } from '@settings';
+import { type GameId, type PlaySetup, Preferences } from '@settings';
 import {
   type GameRecord,
   type GameResult,
@@ -85,6 +85,7 @@ function recordOf<S extends MatchGame<M>, M, R>(
     gameId,
     schemaVersion: SCHEMA_VERSION,
     rulesVersion: game.rulesVersion,
+    variant: store.variant(),
     seriesId: store.seriesId(),
     mode: store.mode(),
     level: store.level(),
@@ -115,7 +116,7 @@ function replayRecord<S, M>(rules: MatchRules<S, M>, game: GameRecord) {
     return null;
   }
   try {
-    return rules.replay(game.moves as readonly M[], game.rulesVersion);
+    return rules.replay(game.moves as readonly M[], game.rulesVersion, game.variant ?? '');
   } catch {
     // Moves that are not moves (a damaged record) make the engine throw.
     return null;
@@ -137,6 +138,7 @@ function restoreMatch<S extends MatchGame<M>, M, R>(
   memory.unfinished = game.result === null ? game.id : null;
   patchState(store, {
     game: replayed.state,
+    variant: game.variant ?? '',
     mode: game.mode,
     level: game.level,
     seed: game.seed,
@@ -150,6 +152,14 @@ function restoreMatch<S extends MatchGame<M>, M, R>(
     lastRejection: null,
   });
   return true;
+}
+
+/** A first game of the saved setup (mode, level and variant), in a new series. */
+function startSetup<S, M, R>(
+  store: MatchStorageStore<S, M, R>,
+  { mode, level, variant = '' }: PlaySetup,
+): void {
+  store._startGame({ seriesId: newId(), mode, level, variant, xPlayer: 0, wins: [0, 0], draws: 0 });
 }
 
 /**
@@ -206,10 +216,13 @@ export function matchStorage<S extends MatchGame<M>, M, R>(
       memory.version = stored?.series.version ?? 0;
       const game = stored?.game;
       if (stored && game && restoreMatch(store, rules, { series: stored.series, game }, memory)) {
-        preferences.setPlay(gameId, { mode: store.mode(), level: store.level() });
+        preferences.setPlay(gameId, {
+          mode: store.mode(),
+          level: store.level(),
+          variant: store.variant(),
+        });
       } else {
-        const { mode, level } = preferences.play()[gameId];
-        store._startGame({ seriesId: newId(), mode, level, xPlayer: 0, wins: [0, 0], draws: 0 });
+        startSetup(store, preferences.play()[gameId]);
       }
       patchState(store, { ready: true });
       store._requestOpponent();

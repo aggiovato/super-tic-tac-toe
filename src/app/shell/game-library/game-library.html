@@ -1,0 +1,37 @@
+<a
+  class="game banner"
+  [routerLink]="['/', banner().id]"
+  [attr.aria-current]="banner().playing ? 'page' : null"
+  (click)="chosen.emit(banner().id)"
+>
+  <app-game-preview class="preview" [game]="banner().id" />
+  <span class="body">
+    <span class="name">{{ banner().name }}</span>
+    <span class="blurb">{{ banner().blurb }}</span>
+    @if (banner().playing) {
+      <span class="badge">{{ t().library.playing }}</span>
+    }
+  </span>
+</a>
+
+<ul class="cards" role="list">
+  @for (card of rest(); track card.id) {
+    <li>
+      <a
+        class="game card"
+        [routerLink]="['/', card.id]"
+        [attr.aria-current]="card.playing ? 'page' : null"
+        (click)="chosen.emit(card.id)"
+      >
+        <app-game-preview class="preview" [game]="card.id" [square]="true" />
+        <span class="body">
+          <span class="name">{{ card.name }}</span>
+          <span class="blurb">{{ card.blurb }}</span>
+          @if (card.playing) {
+            <span class="badge">{{ t().library.playing }}</span>
+          }
+        </span>
+      </a>
+    </li>
+  }
+</ul>

@@ -6,6 +6,13 @@ import type { FlapTile } from './flap-tile.model';
 @Component({
   selector: 'app-departure-board',
   imports: [SplitFlap],
+  styles: `
+    /* A dimmed tile steps back (the player who waits) without changing its ink. */
+    .dim {
+      opacity: 0.4;
+      transition: opacity var(--duration-quick) var(--ease-out);
+    }
+  `,
   template: `
     <div class="flex gap-[0.08em]" role="img" [attr.aria-label]="label()">
       @for (tile of tiles(); track $index) {
@@ -14,6 +21,9 @@ import type { FlapTile } from './flap-tile.model';
           [accent]="tile.accent"
           [index]="$index"
           [maxSteps]="tile.steps ?? 6"
+          [style.--flap-fg]="tile.ink ? 'var(--color-player-' + tile.ink + ')' : null"
+          [style.--flap-mark]="tile.ink ? 'var(--color-player-' + tile.ink + ')' : null"
+          [class.dim]="tile.dim"
         />
       }
     </div>

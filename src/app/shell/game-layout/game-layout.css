@@ -13,6 +13,8 @@
    * page scrolls instead of the board running under the score.
    */
   --arena-min: 18rem;
+  /* The part that rises in on a page change (styles.css). */
+  view-transition-name: page;
 
   display: grid;
   grid-template:
@@ -51,6 +53,10 @@
   container-type: size;
 }
 
+.library {
+  display: none;
+}
+
 .controls {
   grid-area: controls;
   display: flex;
@@ -69,5 +75,130 @@
     row-gap: var(--spacing-stack-loose);
     column-gap: var(--spacing-stack-loose);
     padding-block: var(--spacing-stack-loose);
+  }
+}
+
+/* Registered so the library column's width animates when it folds and unfolds. */
+@property --library-width {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 27rem;
+}
+
+/*
+ * Wide landscape screens: the library of games joins as a column on the left, folding to a rail.
+ * It sits outside the 80rem the game had on its own, so the board never grows past that size.
+ */
+@media (min-width: 87.5rem) and (min-aspect-ratio: 5 / 4) {
+  .game {
+    /* Open: wide enough for Super 3T's banner over the other games two by two. */
+    --library-open: 27rem;
+    --library-width: var(--library-open);
+    /* As wide as the largest board (Super 3T's 42rem), so the game sits balanced in its room. */
+    --arena-max: 42rem;
+    /*
+     * Between the side column and the board: 32px where room is tight, opening up to 96px on big
+     * screens, so the two read as one composition instead of a column pressed against the board.
+     */
+    --game-gap: clamp(var(--spacing-stack-loose), 5vw - 2rem, 6rem);
+
+    /*
+     * The library holds the page's left edge; the game (side column and board) is centred in the
+     * room left on the right, between two flexible tracks. Column
+     * gaps are explicit tracks, so an empty flexible track adds no gap of its own.
+     */
+    grid-template:
+      'library . . masthead . arena .' auto
+      'library . . departures . arena .' auto
+      'library . . controls . arena .' auto
+      'library . . . . arena .' minmax(0, 1fr)
+      / var(--library-width) var(--spacing-stack-loose) minmax(0, 1fr) minmax(18rem, 26rem)
+      var(--game-gap) minmax(0, var(--arena-max))
+      minmax(0, 1fr);
+    column-gap: 0;
+    max-width: none;
+    /* The page's edge as wide as its top. */
+    padding-inline: var(--spacing-stack-loose);
+    transition: --library-width var(--duration-frame) var(--ease-out);
+  }
+
+  .game:has(.library.folded) {
+    --library-width: 2.75rem;
+  }
+
+  .library {
+    grid-area: library;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-stack);
+    min-height: 0;
+    padding-right: var(--spacing-stack-loose);
+    border-right: var(--border-hairline) solid var(--color-line);
+    overflow: hidden auto;
+    transition:
+      padding var(--duration-frame) var(--ease-out),
+      border-color var(--duration-frame) var(--ease-out);
+  }
+
+  /*
+   * The games keep their open width while the column narrows, so they slide out of view clipped
+   * instead of squeezing; they start right under the heading.
+   */
+  .library app-game-library {
+    flex: none;
+    width: calc(var(--library-open) - var(--spacing-stack-loose));
+    transition:
+      opacity var(--duration-quick) var(--ease-out),
+      visibility 0s linear;
+  }
+
+  .library.folded {
+    padding-right: 0;
+    border-right-color: transparent;
+    overflow: hidden;
+  }
+
+  .library.folded app-game-library {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-quick) var(--ease-out),
+      visibility 0s linear var(--duration-quick);
+  }
+}
+
+.library-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-stack-tight);
+}
+
+.library-title {
+  color: var(--color-fg-strong);
+  font-size: var(--text-body);
+  font-weight: 600;
+  line-height: var(--text-body--line-height);
+  white-space: nowrap;
+  transition: opacity var(--duration-quick) var(--ease-out);
+}
+
+/* Folded: only the button that unfolds it is left, at the top of the rail. */
+.folded .library-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(:root:not([data-motion='full'])) .game,
+  :host-context(:root:not([data-motion='full'])) .library,
+  :host-context(:root:not([data-motion='full'])) .library app-game-library,
+  :host-context(:root:not([data-motion='full'])) .library-title {
+    transition: none;
   }
 }

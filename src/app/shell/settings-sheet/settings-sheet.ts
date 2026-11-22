@@ -8,14 +8,11 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Router } from '@angular/router';
 import { type Lang, MESSAGES, Translator } from '@i18n';
 import { Button, ChoiceGroup, type ChoiceOption, Icon, injectMediaQuery, swipeToClose } from '@kit';
 import {
   type Design,
   DESIGNS,
-  GAME_IDS,
-  type GameId,
   type MotionSetting,
   NAME_MAX_LENGTH,
   type OpponentLevel,
@@ -48,7 +45,6 @@ export class SettingsSheet {
   protected readonly preferences = inject(Preferences);
   protected readonly game = inject(ACTIVE_GAME);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly router = inject(Router);
 
   protected readonly nameMaxLength = NAME_MAX_LENGTH;
 
@@ -57,10 +53,6 @@ export class SettingsSheet {
 
   protected readonly tabs = computed(() =>
     SECTIONS.map((id) => ({ id, label: this.t().settings.sectionNames[id] })),
-  );
-
-  protected readonly gameOptions = computed((): readonly ChoiceOption<GameId>[] =>
-    GAME_IDS.map((id) => ({ value: id, label: this.t().games[id] })),
   );
 
   /** Each language is offered in its own name and language. */
@@ -87,7 +79,11 @@ export class SettingsSheet {
   );
 
   protected readonly levelOptions = computed((): readonly ChoiceOption<OpponentLevel>[] =>
-    OPPONENT_LEVELS.map((level) => ({ value: level, label: this.t().settings.levels[level] })),
+    OPPONENT_LEVELS.map((level, i) => ({
+      value: level,
+      label: this.t().opponents[level],
+      bars: i + 1,
+    })),
   );
 
   protected readonly designOptions = computed((): readonly ChoiceOption<Design>[] =>
@@ -149,15 +145,6 @@ export class SettingsSheet {
 
   protected setLevel(level: OpponentLevel): void {
     this.requestSetup({ mode: 'opponent', level });
-  }
-
-  /** Another game: every game is saved, so switching loses nothing. */
-  protected switchGame(id: GameId): void {
-    this.clearPending();
-    if (id !== this.game.id) {
-      this.close();
-      void this.router.navigate(['/', id]);
-    }
   }
 
   protected confirmPending(): void {

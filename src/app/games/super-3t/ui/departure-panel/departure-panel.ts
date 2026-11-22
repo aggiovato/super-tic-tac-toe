@@ -28,15 +28,15 @@ const word = (text: string, accent = false, steps?: number, length = WORD_LENGTH
 export class DeparturePanel {
   protected readonly store = inject(GameStore);
   protected readonly t = inject(Translator).t;
+  /** Who plays: the opponent is named after its level. */
+  private readonly side = computed(() => ({ mode: this.store.mode(), level: this.store.level() }));
   private readonly preferences = inject(Preferences);
 
   /** How a player is named in sentences: their custom name, otherwise their symbol. */
   private who(player: Player): string {
     const x = this.store.xPlayer();
     const participant: Participant = player === 'X' ? x : x === 0 ? 1 : 0;
-    return (
-      participantName(this.t(), this.preferences.names(), this.store.mode(), participant) ?? player
-    );
+    return participantName(this.t(), this.preferences.names(), this.side(), participant) ?? player;
   }
 
   /** Departure row: [player][arrow][destination…], or the result once the game ends. */

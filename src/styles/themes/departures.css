@@ -13,6 +13,11 @@
   --ref-seagrass-400: #9fb3ab; /* Seagrass Grey, 30 % */
   --ref-chalk-100: #dce6e1; /* derived tint */
   --ref-apricot-500: #ff8a1f; /* Apricot Flare, 10 % */
+  /* Player inks for games that colour each player (Dots and Boxes): derived from the palette. */
+  --ref-verdigris-300: #7cc4b4; /* Seagrass pushed toward teal; 7.4:1 on raven-800 */
+  --ref-sand-300: #d9b98f; /* Apricot muted to sand; 8.0:1 on raven-800 */
+  --ref-verdigris-200: #9adccd; /* high contrast */
+  --ref-sand-200: #ecd0a6; /* high contrast */
 
   --ref-family-sans: 'Barlow Semi Condensed', ui-sans-serif, system-ui, sans-serif;
 }

@@ -11,6 +11,8 @@
   --color-fg-disabled: var(--ref-seagrass-400);
   --color-mark-x: var(--ref-chalk-100);
   --color-mark-o: var(--ref-chalk-100);
+  --color-player-x: var(--ref-verdigris-200);
+  --color-player-o: var(--ref-sand-200);
   --backdrop-opacity: 0; /* no texture behind the board */
   --color-glow: transparent;
 }

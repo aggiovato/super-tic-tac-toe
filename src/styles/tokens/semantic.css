@@ -35,6 +35,12 @@
   --color-preview: var(--ref-chalk-100); /* board a hovered cell would send to */
   --color-win: var(--ref-apricot-500);
   --color-spark: var(--ref-chalk-100); /* the brief flash of a board closing */
+  /*
+   * Player inks, for games that colour each player's lines and boxes (Dots and Boxes). Super 3T
+   * and the classic game keep the shared ink above; the shape still tells X from O here too.
+   */
+  --color-player-x: var(--ref-verdigris-300);
+  --color-player-o: var(--ref-sand-300);
 
   /* Atmosphere: light and shade (torn strips come from artwork, see Backdrop). Decorative only; never carries information. */
   --color-glow: color-mix(in srgb, var(--ref-raven-700) 85%, transparent); /* soft light */

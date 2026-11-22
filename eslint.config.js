@@ -10,7 +10,7 @@ const prettier = require('eslint-config-prettier');
  * src/app/<block>/ (alias @<block>); each game's layers in src/app/games/<folder>/<layer>/ (alias
  * @<game>/<layer>). A new game adds its alias and folder to GAMES.
  */
-const GAMES = { super3t: 'super-3t', classic: 'classic' };
+const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots' };
 const GAME_ALIASES = Object.keys(GAMES).join('|');
 const LAYERS = 'core|ai|challenge|session|state|ui';
 const SHARED = 'tictac|match|shell|history|storage|i18n|settings|kit';
@@ -83,6 +83,7 @@ module.exports = defineConfig([
       'docs/',
       '.claude/skills/',
       '.impeccable/',
+      '.archify/',
     ],
   },
   {

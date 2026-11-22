@@ -11,7 +11,8 @@ import { ACTIVE_GAME } from '../active-game';
   template: `
     <button app-button="quiet" size="small" (click)="open()">
       <app-icon name="history" />
-      {{ t().history.open }}
+      <!-- Small phones: the icon only, so the brand's flaps have room; the name stays for readers. -->
+      <span class="max-[30rem]:sr-only">{{ t().history.open }}</span>
     </button>
   `,
 })

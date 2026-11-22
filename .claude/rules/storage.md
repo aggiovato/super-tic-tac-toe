@@ -10,7 +10,7 @@ paths:
 
 - **Records** (`@storage`, IndexedDB database `super-3t`, version 1): `series` keyed by game
   (`gameId`, `seriesId`, `currentGameId`, `wins`, `draws`, `version`) and `games` keyed by id
-  (`gameId`, `schemaVersion`, `rulesVersion`, `seriesId`, `mode`, `level`, `seed`, `xPlayer`,
+  (`gameId`, `schemaVersion`, `rulesVersion`, optional `variant` (a board size), `seriesId`, `mode`, `level`, `seed`, `xPlayer`,
   `moves`, `revision`, `result` by participant, `startedAt`, `updatedAt`, `finishedAt`). The
   `finished` index (`[gameId, finishedAt]`) holds finished games only. A change of shape bumps
   `SCHEMA_VERSION` and needs a migration; a record that cannot be read is kept and a new game starts.

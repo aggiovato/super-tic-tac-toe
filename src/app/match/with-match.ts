@@ -9,10 +9,45 @@ import {
 } from '@ngrx/signals';
 import type { Player } from '@tictac';
 import { GameSession } from './game-session';
-import type { Level, MatchGame, MatchRules, MatchState, Mode, Participant } from './match.model';
+import type { MatchGame, MatchRules, MatchState, Participant } from './match.model';
 import { MATCH_STORAGE, matchStorage } from './match-storage';
+import { matchCommands } from './match-commands';
 import { matchTurns, newId, newSeed, other } from './match-turns';
 import { Opponent } from './opponent';
+
+/**
+ * Moves one undo takes back against the computer: back to the person's last turn, however many
+ * moves that is (a game with extra turns may need more than two). Zero when there is none.
+ */
+function stepsToPerson<S extends MatchGame<M>, M>(
+  rules: MatchRules<S, M>,
+  { moves, rulesVersion }: S,
+  xPlayer: Participant,
+  variant: string,
+): number {
+  const person = xPlayer === 0 ? 'X' : 'O';
+  // One pass forward: whose turn it was after each prefix of the moves.
+  const start = rules.replay([], rulesVersion, variant);
+  if (!start.ok || !start.state) {
+    return 0;
+  }
+  const turns = [start.state.turn];
+  let state = start.state;
+  for (const move of moves) {
+    const next = rules.apply(state, move);
+    if (!next.ok) {
+      return 0;
+    }
+    state = next.state;
+    turns.push(state.turn);
+  }
+  for (let steps = 1; steps <= moves.length; steps++) {
+    if (turns[moves.length - steps] === person) {
+      return steps;
+    }
+  }
+  return 0;
+}
 
 /** Against the computer, participant 0 is the person and participant 1 the opponent. */
 const OPPONENT: Participant = 1;
@@ -39,7 +74,8 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
       _opponent: inject(Opponent) as Opponent<M>,
     })),
     withState<MatchState<S, R>>(() => ({
-      game: (inject(GameSession) as GameSession<S, M, R>).start(),
+      game: (inject(GameSession) as GameSession<S, M, R>).start(''),
+      variant: '',
       id: newId(),
       seriesId: newId(),
       startedAt: Date.now(),
@@ -70,24 +106,30 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
       );
       return { toMove, isOver, opponentTurn };
     }),
-    withComputed(({ game, position, opponentTurn, isOver, mode, wins, draws, ready }) => {
-      // The person has no legal move while the opponent plays or the saved match loads.
-      const legal = computed((): readonly M[] =>
-        opponentTurn() || !ready() ? [] : rules.legalMoves(position()),
-      );
-      /** Moves one undo takes back: against the computer, back to the person's turn. */
-      const undoSteps = computed(() => (mode() === 'opponent' && !opponentTurn() ? 2 : 1));
-      return {
-        legal,
-        lastMove: computed((): M | null => game().moves.at(-1) ?? null),
-        undoSteps,
-        canUndo: computed(() => !isOver() && game().moves.length >= undoSteps()),
-        /** Something a mode change would throw away: a score or a game under way. */
-        seriesStarted: computed(
-          () => game().moves.length > 0 || wins()[0] + wins()[1] + draws() > 0,
-        ),
-      };
-    }),
+    withComputed(
+      ({ game, position, opponentTurn, isOver, mode, wins, draws, ready, xPlayer, variant }) => {
+        // The person has no legal move while the opponent plays or the saved match loads.
+        const legal = computed((): readonly M[] =>
+          opponentTurn() || !ready() ? [] : rules.legalMoves(position()),
+        );
+        // Moves one undo takes back: one between two people, back to the person's turn otherwise.
+        const undoSteps = computed(() =>
+          mode() === 'opponent'
+            ? stepsToPerson(rules, position(), xPlayer(), variant())
+            : Math.min(1, position().moves.length),
+        );
+        return {
+          legal,
+          lastMove: computed((): M | null => game().moves.at(-1) ?? null),
+          undoSteps,
+          canUndo: computed(() => !isOver() && undoSteps() > 0),
+          /** Something a mode change would throw away: a score or a game under way. */
+          seriesStarted: computed(
+            () => game().moves.length > 0 || wins()[0] + wins()[1] + draws() > 0,
+          ),
+        };
+      },
+    ),
     withMethods((store) => ({
       symbolOf(participant: Participant): Player {
         return participant === store.xPlayer() ? 'X' : 'O';
@@ -102,17 +144,6 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
     // Leaving the route: a reply still on its way must not land in a store that is gone.
     withHooks({ onDestroy: (store) => store._stopOpponent() }),
     // What the player does; ignored until the saved match is back (`ready`).
-    withMethods((store) => {
-      const start: typeof store._startGame = (changes) =>
-        store.ready() ? store._startGame(changes) : undefined;
-      return {
-        /** Next game of the series: symbols swapped. */
-        rematch: (): void => start({ xPlayer: other(store.xPlayer()) }),
-        newSeries: (): void => start({ seriesId: newId(), xPlayer: 0, wins: [0, 0], draws: 0 }),
-        /** Two people or against the computer at `level`: a new series either way. */
-        setMode: (mode: Mode, level: Level): void =>
-          start({ seriesId: newId(), mode, level, xPlayer: 0, wins: [0, 0], draws: 0 }),
-      };
-    }),
+    withMethods((store) => matchCommands<S, M, R>(store, rules)),
   );
 }

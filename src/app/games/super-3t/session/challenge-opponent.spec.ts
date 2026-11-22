@@ -40,9 +40,11 @@ describe('the challenge session and its defender', () => {
 
   it('defends after the key move, at the pace of the Worker', async () => {
     let reply: Move | null | undefined;
-    void opponent.reply({ moves: movesAfter(KEY), level: 'beginner', seed: 1 }).then((move) => {
-      reply = move;
-    });
+    void opponent
+      .reply({ moves: movesAfter(KEY), level: 'beginner', seed: 1, variant: '' })
+      .then((move) => {
+        reply = move;
+      });
     await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS - 1);
     expect(reply).toBeUndefined();
     await vi.advanceTimersByTimeAsync(1);
@@ -50,13 +52,23 @@ describe('the challenge session and its defender', () => {
   });
 
   it('passes after any other move, so the attempt stops there', async () => {
-    const answer = opponent.reply({ moves: movesAfter(WRONG), level: 'beginner', seed: 1 });
+    const answer = opponent.reply({
+      moves: movesAfter(WRONG),
+      level: 'beginner',
+      seed: 1,
+      variant: '',
+    });
     await vi.advanceTimersByTimeAsync(OPPONENT_PACE_MS);
     expect(await answer).toBeNull();
   });
 
   it('resolves a cancelled request with null', async () => {
-    const answer = opponent.reply({ moves: movesAfter(KEY), level: 'beginner', seed: 1 });
+    const answer = opponent.reply({
+      moves: movesAfter(KEY),
+      level: 'beginner',
+      seed: 1,
+      variant: '',
+    });
     opponent.cancel();
     expect(await answer).toBeNull();
   });
