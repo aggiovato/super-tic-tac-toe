@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { Choice } from '../choice/choice';
+import { LevelBars } from '../level-bars/level-bars';
 import type { ChoiceOption } from './choice-option.model';
 
 /**
@@ -8,7 +9,7 @@ import type { ChoiceOption } from './choice-option.model';
  */
 @Component({
   selector: 'app-choice-group',
-  imports: [Choice],
+  imports: [Choice, LevelBars],
   templateUrl: './choice-group.html',
   styleUrl: './choice-group.css',
 })

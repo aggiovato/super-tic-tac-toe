@@ -10,6 +10,7 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: () => inject(Preferences).lastGame() },
   { path: 'super-3t', loadChildren: () => import('@super3t/ui').then((m) => m.SUPER3T_ROUTES) },
   { path: 'classic', loadChildren: () => import('@classic/ui').then((m) => m.CLASSIC_ROUTES) },
+  { path: 'dots', loadChildren: () => import('@dots/ui').then((m) => m.DOTS_ROUTES) },
   { path: 'challenge/:id', redirectTo: 'super-3t/challenge/:id' },
   { path: 'challenge', redirectTo: 'super-3t/challenge' },
   { path: '**', redirectTo: '' },

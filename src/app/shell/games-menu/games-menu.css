@@ -1,0 +1,129 @@
+:host {
+  /* The dialog slides in from the right on tablets and from the bottom on phones. */
+  --sheet-from: 100% 0;
+  --sheet-duration: var(--duration-frame);
+
+  display: contents;
+}
+
+/* The library has its own aside on wide landscape screens: no button there. */
+@media (min-width: 87.5rem) and (min-aspect-ratio: 5 / 4) {
+  :host {
+    display: none;
+  }
+}
+
+.sheet {
+  inset: 0 0 0 auto;
+  width: min(26rem, 100vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: var(--border-hairline) solid var(--color-line);
+  background: var(--color-surface-panel);
+  color: var(--color-fg);
+  overflow: hidden;
+  translate: var(--sheet-from);
+  transition:
+    translate var(--sheet-duration) var(--ease-out),
+    display var(--sheet-duration) allow-discrete,
+    overlay var(--sheet-duration) allow-discrete;
+}
+
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+  translate: 0 0;
+}
+
+@starting-style {
+  .sheet[open] {
+    translate: var(--sheet-from);
+  }
+}
+
+.sheet::backdrop {
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  opacity: 0;
+  transition:
+    opacity var(--sheet-duration) var(--ease-out),
+    display var(--sheet-duration) allow-discrete,
+    overlay var(--sheet-duration) allow-discrete;
+}
+
+.sheet[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .sheet[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.sheet-head {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-stack) var(--spacing-gutter);
+  border-bottom: var(--border-hairline) solid var(--color-line);
+}
+
+.sheet-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grip {
+  display: none;
+}
+
+.sheet-body {
+  flex: 1;
+  padding: var(--spacing-stack-loose) var(--spacing-gutter);
+  padding-bottom: calc(var(--spacing-stack-loose) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Phones: a bottom sheet as tall as its games need. */
+@media (max-width: 34.99rem) {
+  :host {
+    --sheet-from: 0 100%;
+    --sheet-duration: var(--duration-zoom);
+  }
+
+  .sheet {
+    inset: auto 0 0 0;
+    width: 100vw;
+    height: auto;
+    max-height: 90dvh;
+    border-left: 0;
+    border-top: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+  }
+
+  .sheet-head {
+    padding-top: 0;
+  }
+
+  .grip {
+    display: block;
+    align-self: center;
+    width: 2.5rem;
+    height: 0.3rem;
+    margin-block: var(--spacing-stack-tight);
+    border-radius: var(--radius-pill);
+    background: var(--color-line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(:root:not([data-motion='full'])) .sheet,
+  :host-context(:root:not([data-motion='full'])) .sheet::backdrop {
+    transition: none;
+  }
+}

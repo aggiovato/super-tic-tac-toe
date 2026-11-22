@@ -64,6 +64,36 @@
     outline-offset: var(--border-emphasis);
   }
 
+  /*
+   * Page changes (router view transitions): the page's content (`view-transition-name: page`, on
+   * the game layout and the history) fades out and the new one fades in with a short rise; the
+   * rest, the torn-paper backdrop, is the same on both pages and only cross-fades, so it stays put.
+   */
+  ::view-transition-group(page) {
+    animation: none;
+  }
+
+  ::view-transition-old(page) {
+    animation: page-out var(--duration-quick) var(--ease-out) both;
+  }
+
+  ::view-transition-new(page) {
+    animation: page-in var(--duration-frame) var(--ease-out) both;
+  }
+
+  @keyframes page-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      translate: 0 0.75rem;
+    }
+  }
+
   /* The player's motion setting overrides the system one in both directions. */
   [data-motion='reduced'] *,
   [data-motion='reduced'] *::before,

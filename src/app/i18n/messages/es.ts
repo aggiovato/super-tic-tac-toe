@@ -46,6 +46,7 @@ export const es: Messages = {
   showAll: 'Ver todos',
   defaultName: (index) => `Jugador ${index}`,
   opponent: 'Rival',
+  opponents: { beginner: 'Cercanías', intermediate: 'Regional', advanced: 'Expreso' },
   draws: 'Tablas',
   score: 'Marcador de la serie',
   rematch: 'Revancha',
@@ -130,8 +131,63 @@ export const es: Messages = {
     draw: 'Tablas',
     winner: (name) => `Gana ${name}`,
     moves: (count) => `${count} jugadas`,
+    board: (variant) => `${variant}×${variant}`,
   },
-  games: { 'super-3t': 'Super 3T', classic: 'Clásico' },
+  dots: {
+    flapTurn: 'JUEGA',
+    opening:
+      'Traza una línea entre dos puntos vecinos. Quien cierra una caja se la queda y vuelve a jugar.',
+    drew: (mover, next) => `${mover} trazó una línea. Turno de ${next}.`,
+    closed: (mover, boxes) =>
+      boxes === 1
+        ? `${mover} cerró una caja y vuelve a jugar.`
+        : `${mover} cerró ${boxes} cajas y vuelve a jugar.`,
+    won: (winner, theirs, others) => `${winner} gana por ${theirs} cajas a ${others}.`,
+    drawn: 'Tablas: las mismas cajas para cada uno.',
+    rejected: (reason) =>
+      reason === 'line-taken'
+        ? 'Esa línea ya está trazada.'
+        : reason === 'game-over'
+          ? 'La partida ha terminado: pulsa Revancha para jugar otra.'
+          : 'Esa línea no existe en el tablero.',
+    status: {
+      turn: (next) => `Turno de ${next}.`,
+      won: (winner) => `Partida terminada. Gana ${winner}.`,
+      drawn: 'Partida terminada en tablas.',
+    },
+    tallyStatus: (x, o) => `Cajas: X ${x}, O ${o}.`,
+    board: 'Tablero de puntos',
+    line: (orientation, row, col, owner) =>
+      (orientation === 'h'
+        ? `Línea horizontal, fila ${row}, puntos ${col} y ${col + 1}`
+        : `Línea vertical, columna ${col}, puntos ${row} y ${row + 1}`) +
+      (owner ? `, de ${owner}` : ', libre'),
+    size: 'Tablero',
+    sizeName: (boxes) => `${boxes}×${boxes} cajas`,
+    confirmSize: 'Cambiar y borrar marcador',
+    howToPlay: {
+      title: 'Cómo se juega',
+      intro: 'Puntos y cajas: gana quien cierre más cajas.',
+      draw: 'En tu turno, traza una línea entre dos puntos vecinos, en horizontal o en vertical.',
+      close: 'Si tu línea cierra el cuarto lado de una caja, es tuya y vuelves a jugar.',
+      careful: 'Ojo con el tercer lado: le dejas la caja a tu rival.',
+      win: 'Cuando se trazan todas las líneas, gana quien tenga más cajas.',
+    },
+  },
+  games: { 'super-3t': 'Super 3T', classic: 'Clásico', dots: 'Cajas' },
+  library: {
+    open: 'Juegos',
+    title: 'Juegos',
+    close: 'Cerrar juegos',
+    hide: 'Ocultar juegos',
+    show: 'Mostrar juegos',
+    playing: 'En juego',
+    blurbs: {
+      'super-3t': 'Nueve tableros en uno: cada jugada decide dónde juega el rival.',
+      classic: 'El tres en raya de siempre, contra otra persona o la máquina.',
+      dots: 'Une puntos, cierra cajas y vuelve a jugar.',
+    },
+  },
   settings: {
     open: 'Ajustes',
     title: 'Ajustes',
@@ -158,7 +214,6 @@ export const es: Messages = {
     confirmModeChange: 'Cambiar y borrar marcador',
     howToPlay: 'Cómo se juega',
     challenges: 'Retos tácticos',
-    game: 'Juego',
     sections: 'Secciones de ajustes',
     sectionNames: { game: 'Partida', app: 'Aplicación' },
   },

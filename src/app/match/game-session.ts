@@ -5,6 +5,7 @@ import type { MatchResult } from './match.model';
  * its engine; later sessions add saving and the network behind the same two calls.
  */
 export abstract class GameSession<S = unknown, M = unknown, R = unknown> {
-  abstract start(): S;
+  /** A new game of `variant` ('' for games that have one shape). */
+  abstract start(variant: string): S;
   abstract play(state: S, move: M): MatchResult<S, R>;
 }

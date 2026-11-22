@@ -4,4 +4,21 @@
   <div class="departures"><ng-content select="[status]" /></div>
   <section class="arena" [attr.aria-label]="arenaLabel()"><ng-content select="[arena]" /></section>
   <footer class="controls"><ng-content select="[controls]" /></footer>
+  <!-- The family of games, on the left on wide screens (the games menu elsewhere); it folds away. -->
+  <aside class="library" [class.folded]="!shown()" aria-labelledby="library-title">
+    <div class="library-head">
+      <h2 id="library-title" class="library-title">{{ t().library.title }}</h2>
+      <button
+        app-button="quiet"
+        size="small"
+        aria-controls="library-games"
+        [attr.aria-expanded]="shown()"
+        [attr.aria-label]="shown() ? t().library.hide : t().library.show"
+        (click)="toggle()"
+      >
+        <app-icon [name]="shown() ? 'fold' : 'games'" />
+      </button>
+    </div>
+    <app-game-library id="library-games" [attr.inert]="shown() ? null : ''" />
+  </aside>
 </div>

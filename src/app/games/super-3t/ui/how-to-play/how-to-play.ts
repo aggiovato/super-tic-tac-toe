@@ -1,7 +1,7 @@
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
-import { Button } from '@kit';
+import { Button, Ticket } from '@kit';
 import { Preferences } from '@settings';
 import { GameStore } from '@super3t/state';
 
@@ -14,7 +14,7 @@ import { GameStore } from '@super3t/state';
  */
 @Component({
   selector: 'app-how-to-play',
-  imports: [Button, RouterLink],
+  imports: [Button, RouterLink, Ticket],
   templateUrl: './how-to-play.html',
   styleUrl: './how-to-play.css',
 })
@@ -22,20 +22,17 @@ export class HowToPlay {
   protected readonly t = inject(Translator).t;
   private readonly preferences = inject(Preferences);
   protected readonly store = inject(GameStore);
-  private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('ticket');
+  private readonly ticket = viewChild.required(Ticket);
 
   open(): void {
-    const dialog = this.dialog().nativeElement;
-    if (!dialog.open) {
-      dialog.showModal();
-    }
+    this.ticket().open();
   }
 
   protected dismiss(): void {
-    this.dialog().nativeElement.close();
+    this.ticket().close();
   }
 
   protected onClose(): void {
-    this.preferences.markTutorialSeen();
+    this.preferences.markTutorialSeen('super-3t');
   }
 }

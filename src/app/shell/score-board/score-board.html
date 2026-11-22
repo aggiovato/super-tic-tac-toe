@@ -6,6 +6,10 @@
           <app-split-flap class="score-glyph" [char]="entry.glyph" [maxSteps]="1" />
         }
         <span class="truncate">{{ entry.label }}</span>
+        @if (entry.bars) {
+          <app-level-bars class="level" [value]="entry.bars" />
+          <span class="sr-only">{{ ', ' + entry.levelName }}</span>
+        }
       </dt>
       <dd class="text-score">
         <span class="sr-only">{{ entry.digits.join('') }}</span>

@@ -37,3 +37,12 @@
   gap: 0.08em;
   margin: 0;
 }
+
+/* Compact: the series steps back under a game's own score (Dots and Boxes counts boxes above). */
+:host(.compact) .score-entry dd {
+  font-size: var(--text-title);
+}
+
+:host(.compact) .score-glyph {
+  font-size: var(--text-caption);
+}

@@ -1,0 +1,16 @@
+<app-dots-how-to-play />
+<app-game-layout [arenaLabel]="t().boardLabel">
+  <app-brand-title masthead />
+  <div masthead class="flex items-center gap-1">
+    <app-games-menu />
+    <app-history-link />
+    <app-settings-sheet>
+      <app-dots-settings (howToPlay)="howToPlay().open()" />
+    </app-settings-sheet>
+  </div>
+  <app-dots-status status />
+  <app-dots-board arena />
+  <app-score-board controls [compact]="true" />
+  <app-game-actions controls />
+  <app-save-notice controls />
+</app-game-layout>

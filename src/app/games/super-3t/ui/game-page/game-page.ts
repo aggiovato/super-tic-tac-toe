@@ -6,6 +6,7 @@ import {
   BrandTitle,
   GameActions,
   GameLayout,
+  GamesMenu,
   HistoryLink,
   SaveNotice,
   ScoreBoard,
@@ -25,6 +26,7 @@ import { Super3tSettings } from '../super3t-settings/super3t-settings';
     GameActions,
     GameBoard,
     GameLayout,
+    GamesMenu,
     HistoryLink,
     HowToPlay,
     ScoreBoard,
@@ -49,7 +51,7 @@ export class GamePage {
     preferences.setLastGame('super-3t');
     // First visit: the how-to-play ticket, once; Settings reopens it.
     afterNextRender(() => {
-      if (!preferences.tutorialSeen()) {
+      if (!preferences.seenTutorials().has('super-3t')) {
         this.howToPlay().open();
       }
     });

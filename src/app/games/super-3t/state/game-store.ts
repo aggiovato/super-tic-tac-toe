@@ -20,7 +20,7 @@ const sameMove = (a: Move, b: Move): boolean => a.board === b.board && a.cell ==
  * this game has, the open board and the departure preview.
  */
 export const GameStore = signalStore(
-  withMatch<GameState, Move, RejectionReason>({ legalMoves, replay, sameMove }),
+  withMatch<GameState, Move, RejectionReason>({ legalMoves, replay, sameMove, apply: applyMove }),
   // Every new position (a move, a reply, an undo, a new game) starts on the whole board, with no
   // preview; the UI decides whether to open the next board.
   withLinkedState(({ game }) => ({

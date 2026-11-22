@@ -1,6 +1,7 @@
 :host {
   /*
-   * Component tokens with defaults; a parent may set --flap-bg, --flap-fg, --flap-accent,
+   * Component tokens with defaults; a parent may set --flap-bg, --flap-fg, --flap-mark (the X and O
+   * glyphs' ink), --flap-accent,
    * --flap-split or --flap-radius (e.g. a board cell, the brand mark's flaps), so they are read with
    * fallbacks and never set here.
    */
@@ -81,12 +82,12 @@
 }
 
 .mark-x {
-  stroke: var(--color-mark-x);
+  stroke: var(--flap-mark, var(--color-mark-x));
   stroke-width: 1.3;
 }
 
 .mark-o {
-  stroke: var(--color-mark-o);
+  stroke: var(--flap-mark, var(--color-mark-o));
   stroke-width: 1.7;
 }
 

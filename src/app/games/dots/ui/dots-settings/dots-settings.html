@@ -1,0 +1,18 @@
+<button app-button="secondary" class="w-full" (click)="openHowToPlay()">
+  {{ t().settings.howToPlay }}
+</button>
+
+<app-choice-group
+  name="dots-size"
+  layout="segmented"
+  [legend]="t().dots.size"
+  [options]="options()"
+  [selected]="'' + shown()"
+  (chosen)="choose($event)"
+/>
+
+@if (pending()) {
+  <button app-button="primary" class="w-full" (click)="confirm()">
+    {{ t().dots.confirmSize }}
+  </button>
+}

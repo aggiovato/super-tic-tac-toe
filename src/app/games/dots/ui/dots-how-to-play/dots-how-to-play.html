@@ -1,0 +1,59 @@
+<app-ticket labelledBy="dots-how-to-play-title" (closed)="onClose()">
+  <h2 id="dots-how-to-play-title" tabindex="-1">{{ t().dots.howToPlay.title }}</h2>
+  <p class="intro">{{ t().dots.howToPlay.intro }}</p>
+  <ol class="rules">
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <path class="ink x" d="M7 15 H23" />
+        <circle class="dot" cx="7" cy="15" r="2" />
+        <circle class="dot" cx="23" cy="15" r="2" />
+      </svg>
+      <p>{{ t().dots.howToPlay.draw }}</p>
+    </li>
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <rect class="veil x" x="7" y="7" width="16" height="16" />
+        <path class="ink x" d="M7 7 H23 M7 7 V23 M23 7 V23" />
+        <path class="ink x" d="M7 23 H23" />
+        <path class="mark x" d="M11.5 11.5 l7 7 m0 -7 l-7 7" />
+        <g class="dots">
+          <circle cx="7" cy="7" r="2" />
+          <circle cx="23" cy="7" r="2" />
+          <circle cx="7" cy="23" r="2" />
+          <circle cx="23" cy="23" r="2" />
+        </g>
+      </svg>
+      <p>{{ t().dots.howToPlay.close }}</p>
+    </li>
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <path class="ink x" d="M7 7 H23" />
+        <path class="ink o" d="M7 7 V23" />
+        <path class="hint" d="M23 7 V23" />
+        <g class="dots">
+          <circle cx="7" cy="7" r="2" />
+          <circle cx="23" cy="7" r="2" />
+          <circle cx="7" cy="23" r="2" />
+          <circle cx="23" cy="23" r="2" />
+        </g>
+      </svg>
+      <p>{{ t().dots.howToPlay.careful }}</p>
+    </li>
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <rect class="veil x" x="4" y="4" width="11" height="11" />
+        <rect class="veil x" x="15" y="4" width="11" height="11" />
+        <rect class="veil o" x="4" y="15" width="11" height="11" />
+        <rect class="veil x" x="15" y="15" width="11" height="11" />
+        <path
+          class="mark win"
+          d="M7 7 l5 5 m0 -5 l-5 5 M18 7 l5 5 m0 -5 l-5 5 M18 18 l5 5 m0 -5 l-5 5"
+        />
+        <circle class="mark o" cx="9.5" cy="20.5" r="3" />
+      </svg>
+      <p>{{ t().dots.howToPlay.win }}</p>
+    </li>
+  </ol>
+  <button actions app-button="quiet" (click)="dismiss()">{{ t().howToPlay.skip }}</button>
+  <button actions app-button="primary" (click)="dismiss()">{{ t().howToPlay.play }}</button>
+</app-ticket>

@@ -10,7 +10,12 @@
             [checked]="option.value === selected()"
             (change)="chosen.emit(option.value)"
           />
-          <span>{{ option.label }}</span>
+          <span>
+            {{ option.label }}
+            @if (option.bars) {
+              <app-level-bars class="bars" [value]="option.bars" />
+            }
+          </span>
         </label>
       }
     </div>
@@ -24,6 +29,9 @@
         (changed)="chosen.emit(option.value)"
       >
         {{ option.label }}
+        @if (option.bars) {
+          <app-level-bars class="bars" [value]="option.bars" />
+        }
       </app-choice>
     }
   }

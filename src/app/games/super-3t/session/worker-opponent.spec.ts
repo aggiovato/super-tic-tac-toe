@@ -31,7 +31,7 @@ class FakeWorker extends EventTarget {
   }
 }
 
-const request = { moves: [], level: 'beginner' as const, seed: 1 };
+const request = { moves: [], level: 'beginner' as const, seed: 1, variant: '' };
 
 describe('WorkerOpponent', () => {
   let opponent: WorkerOpponent;

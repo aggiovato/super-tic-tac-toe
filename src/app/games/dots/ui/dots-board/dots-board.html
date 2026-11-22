@@ -1,0 +1,59 @@
+<div class="platform" [class.over]="store.isOver()" [class.decided]="winner()">
+  <!-- Pointer input is resolved to the nearest line; keyboard input goes to the line buttons. -->
+  <div
+    #field
+    class="field"
+    role="group"
+    [attr.aria-label]="t().dots.board"
+    [style.--boxes]="size()"
+    (keydown)="onKey($event)"
+    (pointerup)="onPointer($event, field, true)"
+    (pointermove)="onPointer($event, field, false)"
+    (pointerleave)="hovered.set(null)"
+  >
+    @for (box of boxes(); track box.index) {
+      <div
+        class="box"
+        [class.x]="box.owner === 'X'"
+        [class.o]="box.owner === 'O'"
+        [class.fresh]="box.fresh"
+        [class.winning]="box.winning"
+        [class.celebrate]="box.celebrate"
+        [style.left.%]="box.left"
+        [style.top.%]="box.top"
+        aria-hidden="true"
+      >
+        <app-closing-mark [mark]="box.owner" [animate]="box.fresh" />
+      </div>
+    }
+
+    @for (line of lines(); track line.key) {
+      <button
+        type="button"
+        class="line"
+        [class.h]="line.move.orientation === 'h'"
+        [class.v]="line.move.orientation === 'v'"
+        [class.drawn]="line.owner"
+        [class.x]="line.owner === 'X'"
+        [class.o]="line.owner === 'O'"
+        [class.fresh]="line.fresh"
+        [class.last]="line.last"
+        [class.winning]="line.winning"
+        [class.hovered]="line.key === hovered()"
+        [style.left.%]="line.left"
+        [style.top.%]="line.top"
+        [attr.data-line]="line.key"
+        [attr.tabindex]="line.key === roving() ? 0 : -1"
+        [attr.aria-disabled]="!!line.owner || !store.isLegal(line.move)"
+        [attr.aria-label]="line.label"
+        (click)="onActivate($event, line)"
+      >
+        <span class="ink"></span>
+      </button>
+    }
+
+    @for (dot of dots(); track $index) {
+      <span class="dot" [style.left.%]="dot.left" [style.top.%]="dot.top" aria-hidden="true"></span>
+    }
+  </div>
+</div>

@@ -18,6 +18,7 @@ export interface MatchTurnsStore<S, M, R> extends WritableStateSource<MatchState
   readonly xPlayer: Signal<Participant>;
   readonly level: Signal<Level>;
   readonly seed: Signal<number>;
+  readonly variant: Signal<string>;
   readonly canUndo: Signal<boolean>;
   readonly undoSteps: Signal<number>;
   /** The saved match is back: until then the player's commands are ignored. */
@@ -71,12 +72,16 @@ function applyOpponentMove<S extends MatchGame<M>, M, R>(
 }
 
 /** Replays the game without its last `undoSteps` moves. */
-function takeBack<S extends MatchGame<M>, M, R>(
+export function takeBack<S extends MatchGame<M>, M, R>(
   store: MatchTurnsStore<S, M, R>,
   rules: MatchRules<S, M>,
 ): void {
   const { moves, rulesVersion } = store.position();
-  const result = rules.replay(moves.slice(0, moves.length - store.undoSteps()), rulesVersion);
+  const result = rules.replay(
+    moves.slice(0, moves.length - store.undoSteps()),
+    rulesVersion,
+    store.variant(),
+  );
   if (result.ok && result.state) {
     patchState(store, { game: result.state, lastRejection: null });
   }
@@ -84,7 +89,7 @@ function takeBack<S extends MatchGame<M>, M, R>(
 
 /**
  * The match's machinery: accepting positions and scoring each game once, the opponent's turn with
- * its ticket, starting a new game, and the player's moves and undo.
+ * its ticket, and starting a new game.
  */
 export function matchTurns<S extends MatchGame<M>, M, R>(
   store: MatchTurnsStore<S, M, R>,
@@ -92,7 +97,13 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
 ) {
   const accept = (game: S): void => acceptPosition(store, game);
 
-  const applyReply = (move: M | null): void => applyOpponentMove(store, rules, move);
+  // A game with extra turns (Dots and Boxes) may leave the opponent to move again: ask again.
+  const applyReply = (move: M | null): void => {
+    applyOpponentMove(store, rules, move);
+    if (move !== null) {
+      requestOpponent();
+    }
+  };
 
   /**
    * The request whose reply still counts. Every request and every stop moves it on, so a reply to
@@ -109,7 +120,12 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
     const asked = ++ticket;
     patchState(store, { thinking: true });
     store._opponent
-      .reply({ moves: store.position().moves, level: store.level(), seed: store.seed() })
+      .reply({
+        moves: store.position().moves,
+        level: store.level(),
+        seed: store.seed(),
+        variant: store.variant(),
+      })
       .then(
         (move) => {
           if (asked === ticket) {
@@ -139,7 +155,7 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
     stopOpponent();
     patchState(store, {
       ...changes,
-      game: store._session.start(),
+      game: store._session.start(changes.variant ?? store.variant()),
       id: newId(),
       startedAt: Date.now(),
       seed: newSeed(),
@@ -149,31 +165,7 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
     requestOpponent();
   };
 
-  /** The player's move: refused moves are recorded, accepted ones may hand the turn over. */
-  const play = (move: M): void => {
-    if (store.opponentTurn() || !store.ready()) {
-      return;
-    }
-    const result = store._session.play(store.position(), move);
-    if (!result.ok) {
-      patchState(store, { lastRejection: result.reason });
-      return;
-    }
-    accept(result.state);
-    requestOpponent();
-  };
-
-  /** Takes back the last move while the game goes on; against the computer, its reply too. */
-  const undo = (): void => {
-    if (store.canUndo() && store.ready()) {
-      stopOpponent();
-      takeBack(store, rules);
-    }
-  };
-
   return {
-    play,
-    undo,
     _accept: accept,
     _requestOpponent: requestOpponent,
     _stopOpponent: stopOpponent,

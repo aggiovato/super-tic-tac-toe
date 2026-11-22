@@ -1,75 +1,4 @@
-/*
- * The ticket: a Raven Deep card with notched sides at its tear line, over the real board dimmed by
- * the shade veil. Phones: it rises from the bottom; wide screens: centred.
- */
-:host {
-  /* Component tokens. */
-  --ticket-notch: 0.65rem;
-  /* Distance from the card's bottom to its tear line: the actions row and its padding. */
-  --ticket-tear: 4.8rem;
-  /* Side padding: tighter on phones, where the rules need the measure. */
-  --ticket-pad: 1.25rem;
-}
-
-.ticket {
-  width: min(26rem, 100vw - 2 * var(--spacing-gutter));
-  max-width: none;
-  max-height: calc(100dvh - 2 * var(--spacing-stack));
-  margin: auto auto var(--spacing-stack);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-fg);
-  overflow: visible;
-  /* The shadow sits on the dialog, the notches on the card: a mask would cut the shadow too. */
-  filter: drop-shadow(0 -0.375rem 1.5rem var(--color-shade));
-}
-
-.ticket::backdrop {
-  background: var(--color-shade);
-}
-
-.ticket[open] {
-  animation: rise var(--duration-zoom) var(--ease-zoom);
-}
-
-.ticket[open]::backdrop {
-  animation: dim var(--duration-zoom) var(--ease-out);
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  max-height: inherit;
-  overflow: hidden;
-  padding: 0 var(--ticket-pad) var(--spacing-stack);
-  border-radius: calc(var(--radius-panel) * 2);
-  background: var(--color-surface-panel);
-  /* Notches on both sides at the tear line; the mask only reads alpha. */
-  mask:
-    radial-gradient(
-        circle var(--ticket-notch) at 0 calc(100% - var(--ticket-tear)),
-        transparent 98%,
-        black
-      )
-      left / 51% 100% no-repeat,
-    radial-gradient(
-        circle var(--ticket-notch) at 100% calc(100% - var(--ticket-tear)),
-        transparent 98%,
-        black
-      )
-      right / 51% 100% no-repeat;
-}
-
-/* On short screens only the rules scroll: the tear line and its actions stay in view. */
-.body {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  margin-inline: calc(-1 * var(--ticket-pad));
-  padding: var(--spacing-stack-loose) var(--ticket-pad) 0;
-}
-
+/* Super 3T's rules inside the shared ticket (`Ticket` in @kit): type and the mini-board drawings. */
 /* Focus lands on the title when the ticket opens (read first, no ring on a button nobody chose). */
 h2:focus-visible {
   outline: none;
@@ -106,6 +35,7 @@ h2 {
 }
 
 .rule p {
+  text-wrap: pretty;
   justify-self: stretch;
   font-size: var(--text-body);
   line-height: var(--text-body--line-height);
@@ -210,47 +140,4 @@ h2 {
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-
-/* The perforated tear line above the actions. */
-.actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--spacing-stack);
-  margin-inline: calc(-1 * var(--ticket-pad));
-  padding: var(--spacing-stack) var(--ticket-pad) 0;
-  border-top: var(--border-line) dashed var(--color-surface-raised);
-}
-
-@media (min-width: 35rem) {
-  :host {
-    --ticket-pad: var(--spacing-stack-loose);
-  }
-
-  /* Centred on wide screens: the system's downward panel lift instead of the phone sheet's. */
-  .ticket {
-    margin: auto;
-    filter: drop-shadow(0 0.375rem 1.25rem var(--color-shade));
-  }
-}
-
-@keyframes rise {
-  from {
-    translate: 0 2rem;
-    opacity: 0;
-  }
-}
-
-@keyframes dim {
-  from {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .ticket[open],
-  :root:not([data-motion='full']) .ticket[open]::backdrop {
-    animation: none;
-  }
 }

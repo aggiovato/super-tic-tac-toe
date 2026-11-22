@@ -20,6 +20,8 @@ export { injectMediaQuery } from './dom/media-query';
 export { swipeToClose } from './dom/swipe-to-close';
 export { Icon, type IconName } from './icon/icon';
 export { SplitFlap } from './split-flap/split-flap';
+export { Ticket } from './ticket/ticket';
 export { clampSegment, gridStrike, overshoot } from './strike-line/segment-geometry';
 export type { Segment } from './strike-line/segment.model';
 export { StrikeLine } from './strike-line/strike-line';
+export { LevelBars } from './level-bars/level-bars';

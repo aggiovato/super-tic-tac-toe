@@ -3,6 +3,8 @@
 }
 
 .page {
+  /* The part that rises in on a page change (styles.css). */
+  view-transition-name: page;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-stack-loose);
@@ -10,6 +12,13 @@
   min-height: 100dvh;
   margin-inline: auto;
   padding: var(--spacing-stack) var(--spacing-gutter) var(--spacing-stack-loose);
+}
+
+/* As the game page: the block padding opens up on wide landscape screens. */
+@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
+  .page {
+    padding-block: var(--spacing-stack-loose);
+  }
 }
 
 .masthead {

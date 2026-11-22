@@ -16,3 +16,8 @@ export { LocalOpponent, OPPONENT_PACE_MS } from './local-opponent';
 export { MATCH_STORAGE, provideMatchStorage } from './match-storage';
 export { Opponent } from './opponent';
 export { withMatch } from './with-match';
+export {
+  type OpponentReplyMessage,
+  type OpponentRequestMessage,
+  WorkerOpponent,
+} from './worker-opponent';

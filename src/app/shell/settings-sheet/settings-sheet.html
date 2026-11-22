@@ -1,6 +1,6 @@
 <button app-button="quiet" size="small" popovertarget="settings-panel">
   <app-icon name="settings" />
-  {{ t().settings.open }}
+  <span class="max-[30rem]:sr-only">{{ t().settings.open }}</span>
 </button>
 
 <div #sheet id="settings-panel" class="sheet" popover aria-labelledby="settings-title">
@@ -46,15 +46,6 @@
       role="tabpanel"
       aria-labelledby="settings-tab-game"
     >
-      <app-choice-group
-        name="game"
-        layout="segmented"
-        [legend]="t().settings.game"
-        [options]="gameOptions()"
-        [selected]="game.id"
-        (chosen)="switchGame($event)"
-      />
-
       <!-- The game's own settings. -->
       <ng-content />
 
