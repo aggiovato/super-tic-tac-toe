@@ -704,6 +704,36 @@ test.describe('dots and boxes', () => {
     }
   }
 
+  test('a tap just outside the dots draws the edge line nearest to it', async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto('/dots');
+    const field = page.getByRole('group', { name: 'Dot board', exact: true });
+    const box = await field.boundingBox();
+    if (!box) {
+      throw new Error('The board is not on screen.');
+    }
+    // A finger aiming at an edge line lands a little outside the dots, in the platform's margin.
+    const step = box.width / 3;
+    const off = step / 6;
+    const touches: [number, number, string][] = [
+      [box.x + step / 2, box.y - off, 'Horizontal line, row 1, dots 1 and 2'],
+      [box.x - off, box.y + step * 1.5, 'Vertical line, column 1, dots 2 and 3'],
+      [box.x + step * 2.5, box.y + box.height + off, 'Horizontal line, row 4, dots 3 and 4'],
+      [box.x + box.width + off, box.y + step / 2, 'Vertical line, column 4, dots 1 and 2'],
+    ];
+    for (const [x, y, name] of touches) {
+      if (isMobile) {
+        await page.touchscreen.tap(x, y);
+      } else {
+        await page.mouse.click(x, y);
+      }
+      await expect(page.getByRole('button', { name: new RegExp(`^${name}, .*'s$`) })).toHaveCount(
+        1,
+      );
+    }
+  });
   test('closing a box keeps it and plays again; the game resumes after a reload', async ({
     page,
   }) => {
