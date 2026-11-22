@@ -519,6 +519,37 @@ async function openGame(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('dialog', { name: 'Games' })).toBeHidden();
 }
 
+/**
+ * The moves of the game in progress saved for `gameId`, read from the browser's IndexedDB: a way to
+ * wait for an asynchronous save before reloading, never to drive the game.
+ */
+function savedMoves(page: Page, gameId: string): Promise<number> {
+  return page.evaluate(
+    (id) =>
+      new Promise<number>((resolve) => {
+        const open = indexedDB.open('super-3t');
+        open.onerror = () => resolve(0);
+        open.onsuccess = () => {
+          const db = open.result;
+          if (!db.objectStoreNames.contains('games')) {
+            db.close();
+            resolve(0);
+            return;
+          }
+          const all = db.transaction('games').objectStore('games').getAll();
+          all.onsuccess = () => {
+            const games = all.result as { gameId: string; result: unknown; moves: unknown[] }[];
+            const open = games.filter((game) => game.gameId === id && game.result === null);
+            db.close();
+            resolve(Math.max(0, ...open.map((game) => game.moves.length)));
+          };
+          all.onerror = () => resolve(0);
+        };
+      }),
+    gameId,
+  );
+}
+
 test.describe('classic tic tac toe', () => {
   const classicCell = (page: Page, at: number) =>
     page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
@@ -595,14 +626,14 @@ test.describe('classic tic tac toe', () => {
       await page.getByRole('radio', { name: 'Against the opponent' }).check();
       await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
-      for (let round = 0; round < 2; round++) {
+      for (let round = 1; round <= 2; round++) {
         await page
           .getByRole('button', { name: /^Cell \d, empty$/ })
           .first()
           .click();
-        await expect(status(page)).toHaveText(/^X to move\.|^Game over/);
+        // Wait for the reply itself: "X to move" is also true before it, even before X's move.
+        await expect(page.getByRole('button', { name: /, O$/ })).toHaveCount(round);
       }
-      await expect(page.getByRole('button', { name: /, O$/ })).toHaveCount(2);
     });
   }
 });
@@ -626,8 +657,10 @@ test.describe('saving and resuming', () => {
   }) => {
     await againstOpponent(page);
     await play(page, 4, 2);
-    // Reload before the reply lands: the saved game stopped on the opponent's turn. "Saved" shows
-    // once the restored game is back (the empty game shown while it loads is never saved).
+    // Reload once X's move is written (saving is asynchronous, slower on CI) and, as a rule, before
+    // the reply lands: the saved game stopped on the opponent's turn. "Saved" shows once the
+    // restored game is back (the empty game shown while it loads is never saved).
+    await expect.poll(() => savedMoves(page, 'super-3t')).toBeGreaterThanOrEqual(1);
     await page.reload();
     await expect(page.getByText('Saved')).toBeVisible();
     await expect(status(page)).toHaveText(/^X to move/);

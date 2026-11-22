@@ -7,6 +7,11 @@ new version and date.
 
 ## [Unreleased]
 
+### Fixed
+
+- The end-to-end tests wait for a game to be saved and for the opponent's reply instead of racing
+  them, so a slower machine no longer fails the release pipeline.
+
 ## [0.3.0] - 2026-11-22
 
 ### Added
