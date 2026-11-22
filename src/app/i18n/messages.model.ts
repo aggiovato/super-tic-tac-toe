@@ -1,3 +1,4 @@
+import type { GameId } from '@catalog';
 import type { RejectionReason } from '@super3t/core';
 
 export type Lang = 'es' | 'en';
@@ -180,7 +181,7 @@ export interface Messages {
     };
   };
   /** Each game's name, in the game library. */
-  readonly games: { readonly 'super-3t': string; readonly classic: string; readonly dots: string };
+  readonly games: Readonly<Record<GameId, string>>;
   /** The library of games: the aside on wide screens, the games dialog elsewhere. */
   readonly library: {
     readonly open: string;
@@ -191,11 +192,8 @@ export interface Messages {
     readonly show: string;
     /** The badge on the game on screen. */
     readonly playing: string;
-    readonly blurbs: {
-      readonly 'super-3t': string;
-      readonly classic: string;
-      readonly dots: string;
-    };
+    /** One line per game; a game added to the catalog needs one in every language. */
+    readonly blurbs: Readonly<Record<GameId, string>>;
   };
   readonly settings: {
     readonly open: string;

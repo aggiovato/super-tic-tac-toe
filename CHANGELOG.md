@@ -7,6 +7,11 @@ new version and date.
 
 ## [Unreleased]
 
+### Fixed
+
+- The history of Dots and Boxes shows 3×3 games in a single table, whether they were played on the
+  default board or chose 3×3 in the settings.
+
 ## [0.4.0] - 2026-11-22
 
 ### Changed

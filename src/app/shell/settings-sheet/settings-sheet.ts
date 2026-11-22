@@ -10,13 +10,12 @@ import {
 } from '@angular/core';
 import { type Lang, MESSAGES, Translator } from '@i18n';
 import { Button, ChoiceGroup, type ChoiceOption, Icon, injectMediaQuery, swipeToClose } from '@kit';
+import { type ComputerLevel, COMPUTER_LEVELS } from '@catalog';
 import {
   type Design,
   DESIGNS,
   type MotionSetting,
   NAME_MAX_LENGTH,
-  type ComputerLevel,
-  COMPUTER_LEVELS,
   PLAY_MODES,
   type PlayMode,
   type PlaySetup,

@@ -1,6 +1,6 @@
 import type { Signal } from '@angular/core';
 import { patchState } from '@ngrx/signals';
-import type { Level, MatchGame, MatchRules, MatchState, Mode } from './match.model';
+import type { Level, MatchGame, GameRules, MatchState, Mode } from './match.model';
 import { type MatchTurnsStore, newId, other, takeBack } from './match-turns';
 
 /** What the player's commands read and call on the store. */
@@ -17,7 +17,7 @@ export interface MatchCommandsStore<S, M, R> extends MatchTurnsStore<S, M, R> {
  */
 export function matchCommands<S extends MatchGame<M>, M, R>(
   store: MatchCommandsStore<S, M, R> & { readonly ready: Signal<boolean> },
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
 ) {
   const start = (changes: Partial<MatchState<S, R>>): void => {
     if (store.ready()) {

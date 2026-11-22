@@ -1,11 +1,9 @@
+import type { ComputerLevel, GameId } from '@catalog';
+
 export type MotionSetting = 'system' | 'full' | 'reduced';
 export type Design = 'departures' | 'departures-contrast';
 /** Two people on one device, or a person against the computer. */
 export type PlayMode = 'humans' | 'opponent';
-/** ComputerPlayer levels every game offers, weakest first. */
-export type ComputerLevel = 'beginner' | 'intermediate' | 'advanced';
-/** The games of the app; each has its own route and its own way of playing. */
-export type GameId = 'super-3t' | 'classic' | 'dots';
 
 /** Who plays a game: two people, or a person against the computer at a level. */
 export interface PlaySetup {

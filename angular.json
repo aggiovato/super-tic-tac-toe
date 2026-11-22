@@ -69,6 +69,7 @@
           "options": {
             "exclude": [
               "app/games/tictac/**",
+              "app/games/catalog/**",
               "app/games/*/core/**",
               "app/games/*/ai/**",
               "app/games/*/challenge/**"

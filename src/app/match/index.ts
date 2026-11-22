@@ -5,7 +5,7 @@ export type {
   MatchApi,
   MatchGame,
   MatchResult,
-  MatchRules,
+  GameRules,
   MatchState,
   Mode,
   ComputerRequest,

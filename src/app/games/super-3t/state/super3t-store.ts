@@ -1,26 +1,18 @@
 import { computed } from '@angular/core';
 import { patchState, signalStore, withComputed, withLinkedState, withMethods } from '@ngrx/signals';
+import { SUPER3T_GAME } from '@catalog';
 import { withMatch } from '@match';
-import {
-  applyMove,
-  legalMoves,
-  replay,
-  type GameState,
-  type Move,
-  type RejectionReason,
-} from '@super3t/core';
+import { applyMove, type GameState, type Move, type RejectionReason } from '@super3t/core';
 import type { View } from './view.model';
 
 const GLOBAL: View = { kind: 'global' };
-
-const sameMove = (a: Move, b: Move): boolean => a.board === b.board && a.cell === b.cell;
 
 /**
  * Super 3T's store: a match (`withMatch`: series, symbols, undo, the opponent's turn) plus what only
  * this game has, the open board and the departure preview.
  */
 export const Super3tStore = signalStore(
-  withMatch<GameState, Move, RejectionReason>({ legalMoves, replay, sameMove, apply: applyMove }),
+  withMatch<GameState, Move, RejectionReason>(SUPER3T_GAME.rules),
   // Every new position (a move, a reply, an undo, a new game) starts on the whole board, with no
   // preview; the UI decides whether to open the next board.
   withLinkedState(({ game }) => ({

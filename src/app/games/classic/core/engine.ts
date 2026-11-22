@@ -59,3 +59,6 @@ export function applyMove(state: GameState, move: Move): MoveResult {
     },
   };
 }
+
+/** Whether two moves are the same move. */
+export const sameMove = (a: Move, b: Move): boolean => a.cell === b.cell;

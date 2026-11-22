@@ -1,4 +1,4 @@
-import type { GameId } from '@preferences';
+import type { GameId } from '@catalog';
 import type { GameRecord, SeriesRecord } from './records.model';
 
 /** The current series of a game and the game on screen. */

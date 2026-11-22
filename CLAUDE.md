@@ -118,40 +118,46 @@ The stored values `PlayMode` `'humans' | 'opponent'` keep their names until the 
 
 ## Layers and boundaries
 
-| Path                              | Responsibility                                     | May import                                       |
-| --------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3        | Local TypeScript only                            |
-| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.               | `tictac`                                         |
-| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                 | `core`                                           |
-| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging         | `core`, `ai`                                     |
-| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker     | `core`, `ai`, `challenge`, `storage`             |
-| `src/app/games/<game>/state/`     | Super3tStore (SignalStore) provided on the route   | `core`, `session`                                |
-| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                 | `state`, `core` types                            |
-| `src/app/match/`                  | `withMatch` (play and storage), sessions, computer | `tictac`, `preferences`, `storage`               |
-| `src/app/shell/`                  | Layout, game library, settings, history, updates   | `match`, `kit`, `preferences`, `i18n`, `storage` |
-| `src/app/storage/`                | Game and series records, IndexedDB and memory      | `preferences` types                              |
+| Path                              | Responsibility                                      | May import                                       |
+| --------------------------------- | --------------------------------------------------- | ------------------------------------------------ |
+| `src/app/games/tictac/`           | Shared by the family: players, lines, a 3×3         | Local TypeScript only                            |
+| `src/app/games/catalog/`          | The games as data and engines: ids, rules, variants | Each game's `core`, `@tictac`                    |
+| `src/app/games/<game>/core/`      | Types, rules, replay. Deterministic.                | `tictac`                                         |
+| `src/app/games/<game>/ai/`        | Evaluation, search, levels, Worker                  | `core`                                           |
+| `src/app/games/<game>/challenge/` | Tactical challenges: positions and judging          | `core`, `ai`                                     |
+| `src/app/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker      | `core`, `ai`, `challenge`, `storage`             |
+| `src/app/games/<game>/state/`     | Super3tStore (SignalStore) provided on the route    | `core`, `session`                                |
+| `src/app/games/<game>/ui/`        | Board, mini board, score, controls                  | `state`, `core` types                            |
+| `src/app/match/`                  | `withMatch` (play and storage), sessions, computer  | `tictac`, `preferences`, `storage`               |
+| `src/app/shell/`                  | Layout, game library, settings, history, updates    | `match`, `kit`, `preferences`, `i18n`, `storage` |
+| `src/app/storage/`                | Game and series records, IndexedDB and memory       | `preferences` types                              |
 
 Each functional block has an `index.ts` that re-exports its public API and a path alias that
 points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads it through
 `resolve.tsconfigPaths`):
 
-| Alias                                                    | Block                             |
-| -------------------------------------------------------- | --------------------------------- |
-| `@tictac`                                                | `src/app/games/tictac/`           |
-| `@super3t/core`, `@super3t/core/testing` (tests)         | `src/app/games/super-3t/core/`    |
-| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/app/games/super-3t/<layer>/` |
-| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/app/games/classic/<layer>/`  |
-| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/app/games/dots/<layer>/`     |
-| `@match`, `@shell`                                       | `src/app/<block>/`                |
-| `@storage`, `@i18n`                                      | `src/app/<block>/`                |
-| `@preferences` (player preferences)                      | `src/app/preferences/`            |
-| `@kit` (shared UI: flap, button…)                        | `src/app/kit/`                    |
+| Alias                                                    | Block                              |
+| -------------------------------------------------------- | ---------------------------------- |
+| `@tictac`                                                | `src/app/games/tictac/`            |
+| `@catalog` (games, rules, variants, levels)              | `src/app/games/catalog/`           |
+| `@super3t/ui/preview`, `@classic/…`, `@dots/…` (library) | `src/app/games/<game>/ui/preview/` |
+| `@super3t/core`, `@super3t/core/testing` (tests)         | `src/app/games/super-3t/core/`     |
+| `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui` | `src/app/games/super-3t/<layer>/`  |
+| `@classic/core`, `/ai`, `/session`, `/state`, `/ui`      | `src/app/games/classic/<layer>/`   |
+| `@dots/core`, `/ai`, `/session`, `/state`, `/ui`         | `src/app/games/dots/<layer>/`      |
+| `@match`, `@shell`                                       | `src/app/<block>/`                 |
+| `@storage`, `@i18n`                                      | `src/app/<block>/`                 |
+| `@preferences` (player preferences)                      | `src/app/preferences/`             |
+| `@kit` (shared UI: flap, button…)                        | `src/app/kit/`                     |
 
 Another block is imported only through its alias (`import { applyMove } from '@super3t/core'`), never
 with a relative path (`../core`) or into its files (`@super3t/core/engine`). Inside a block, files import
 each other with relative paths. A sub-folder with its own audience gets its own `index.ts` and
 alias too (`@super3t/core/testing`). A new block needs both an `index.ts` and an alias, and its name added to
-`SHARED` in `eslint.config.js`; a new game adds its alias and folder to `GAMES` there. A game
+`SHARED` in `eslint.config.js`. A new game: its definition in `@catalog` (`definitions.ts`, `GAMES`),
+its folder and aliases, its folder in `GAMES` in `eslint.config.js` (`scripts/check-games.mjs`, part
+of `npm run lint`, fails until they agree), its routes and preview in `src/app/game-ui.ts`, and its
+name and blurb in every language (typed by `GameId`). A game
 never imports another game: what they share goes to `@tictac` (logic) or `@kit` (UI).
 
 ESLint enforces it: no relative or deep imports across blocks; `@tictac` and each game's `core`,

@@ -1,19 +1,11 @@
 import { signalStore } from '@ngrx/signals';
-import {
-  applyMove,
-  legalMoves,
-  replay,
-  type GameState,
-  type Move,
-  type RejectionReason,
-} from '@classic/core';
+import { type GameState, type Move, type RejectionReason } from '@classic/core';
+import { CLASSIC_GAME } from '@catalog';
 import { withMatch } from '@match';
-
-const sameMove = (a: Move, b: Move): boolean => a.cell === b.cell;
 
 /** The classic game's store: a match and nothing else; the board has no views of its own. */
 export const ClassicStore = signalStore(
-  withMatch<GameState, Move, RejectionReason>({ legalMoves, replay, sameMove, apply: applyMove }),
+  withMatch<GameState, Move, RejectionReason>(CLASSIC_GAME.rules),
 );
 
 export type ClassicStore = InstanceType<typeof ClassicStore>;

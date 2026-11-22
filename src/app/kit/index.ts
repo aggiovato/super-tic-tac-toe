@@ -25,3 +25,4 @@ export { clampSegment, gridStrike, overshoot } from './strike-line/segment-geome
 export type { Segment } from './strike-line/segment.model';
 export { StrikeLine } from './strike-line/strike-line';
 export { LevelBars } from './level-bars/level-bars';
+export { crossPath } from './preview/cross-path';

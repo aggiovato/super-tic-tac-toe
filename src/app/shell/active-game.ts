@@ -1,6 +1,6 @@
 import { inject, InjectionToken, type Provider, type ProviderToken } from '@angular/core';
 import type { MatchApi } from '@match';
-import type { GameId } from '@preferences';
+import type { GameId } from '@catalog';
 
 /** The game on screen: which one, and its match for the app around it. */
 export interface ActiveGame {

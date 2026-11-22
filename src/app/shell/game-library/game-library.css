@@ -45,6 +45,7 @@
 }
 
 .preview {
+  display: block;
   /* Clipped, so a square scene never stretches the box past its aspect ratio. */
   overflow: hidden;
   aspect-ratio: 16 / 9;

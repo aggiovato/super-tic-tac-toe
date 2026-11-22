@@ -1,4 +1,5 @@
-import type { GameId, ComputerLevel, PlayMode } from '@preferences';
+import type { GameId, ComputerLevel } from '@catalog';
+import type { PlayMode } from '@preferences';
 
 /** Version of the stored records' shape; a change needs a migration in the repository. */
 export const SCHEMA_VERSION = 1;

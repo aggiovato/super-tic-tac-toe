@@ -9,7 +9,7 @@ import {
 } from '@ngrx/signals';
 import type { Player } from '@tictac';
 import { GameSession } from './game-session';
-import type { MatchGame, MatchRules, MatchState, Participant } from './match.model';
+import type { MatchGame, GameRules, MatchState, Participant } from './match.model';
 import { MATCH_STORAGE, matchStorage } from './match-storage';
 import { matchCommands } from './match-commands';
 import { matchTurns, newId, newSeed, other } from './match-turns';
@@ -20,7 +20,7 @@ import { ComputerPlayer } from './computer';
  * moves that is (a game with extra turns may need more than two). Zero when there is none.
  */
 function stepsToPerson<S extends MatchGame<M>, M>(
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
   { moves, rulesVersion }: S,
   xPlayer: Participant,
   variant: string,
@@ -57,7 +57,7 @@ const OPPONENT: Participant = 1;
  * rematch, undo, two people or the computer at a level, and the opponent's turn. The route provides
  * the game's `GameSession` and `ComputerPlayer`; `rules` gives the engine calls the match makes itself.
  */
-export function withMatch<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
+export function withMatch<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
   return signalStoreFeature(
     withMatchPlay<S, M, R>(rules),
     // Saving every change and restoring the saved match, where the route provides storage.
@@ -67,7 +67,7 @@ export function withMatch<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>)
 }
 
 /** The match without storage: position, series, symbols, undo and the opponent's turn. */
-function withMatchPlay<S extends MatchGame<M>, M, R>(rules: MatchRules<S, M>) {
+function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
   return signalStoreFeature(
     withProps(() => ({
       _session: inject(GameSession) as GameSession<S, M, R>,

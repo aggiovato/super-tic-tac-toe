@@ -2,7 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Translator } from '@i18n';
 import { Backdrop, Button, Icon } from '@kit';
-import { type GameId, COMPUTER_LEVELS, type ComputerLevel, Preferences } from '@preferences';
+import { COMPUTER_LEVELS, type ComputerLevel, gameById, type GameId } from '@catalog';
+import { Preferences } from '@preferences';
 import { type GameRecord, GameRepository } from '@storage';
 import { BrandTitle } from '../brand-title/brand-title';
 import { participantName } from '../participant-name';
@@ -51,6 +52,9 @@ export class HistoryPage {
   private readonly preferences = inject(Preferences);
   private readonly router = inject(Router);
   protected readonly gameId = inject(ActivatedRoute).snapshot.data['gameId'] as GameId;
+  /** The game's definition: its variants, in order, and how it reads a stored one. */
+  private readonly game = gameById(this.gameId);
+  private readonly variantOf = (record: GameRecord): string => this.game.variantOf(record.variant);
 
   /** Finished games, newest first; null while they load. */
   private readonly games = signal<readonly GameRecord[] | null>(null);
@@ -62,9 +66,13 @@ export class HistoryPage {
    */
   protected readonly sections = computed((): readonly HistorySection[] => {
     const games = this.games() ?? [];
-    const variants = [...new Set(games.map((game) => game.variant ?? ''))].sort();
-    return (variants.length > 0 ? variants : ['']).map((variant) => {
-      const played = games.filter((game) => (game.variant ?? '') === variant);
+    const { variants: order } = this.game;
+    // Each record's variant as the game reads it: an older save without one is the default board.
+    const variants = order.filter((variant) =>
+      games.some((game) => this.variantOf(game) === variant),
+    );
+    return (variants.length > 0 ? variants : [order[0] ?? '']).map((variant) => {
+      const played = games.filter((game) => this.variantOf(game) === variant);
       return {
         variant,
         label: variants.length > 1 && variant ? this.t().history.board(variant) : null,
@@ -84,7 +92,7 @@ export class HistoryPage {
       id: game.id,
       when: date.format(game.finishedAt ?? game.updatedAt),
       setup:
-        (game.variant ? `${t.history.board(game.variant)} · ` : '') +
+        (this.game.variants.length > 1 ? `${t.history.board(this.variantOf(game))} · ` : '') +
         (game.mode === 'opponent'
           ? `${t.opponents[game.level]} · ${t.settings.levels[game.level]}`
           : t.settings.modes.humans),

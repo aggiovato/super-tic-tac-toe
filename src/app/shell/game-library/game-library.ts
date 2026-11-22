@@ -1,22 +1,20 @@
+import { NgComponentOutlet } from '@angular/common';
 import { Component, computed, inject, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
-import { GAME_IDS, type GameId } from '@preferences';
+import { GAMES, type GameId } from '@catalog';
 import { ACTIVE_GAME } from '../active-game';
-import { GamePreview } from './game-preview';
-
-/** The main game, shown as the banner above the others. */
-const FEATURED: GameId = 'super-3t';
+import { GAME_PREVIEWS } from './game-previews';
 
 /**
- * The family of games: a banner for Super 3T, the main game, then a card for each other game, each
- * with a drawn preview. The game on screen is marked as playing (`aria-current`). Every game is
+ * The family of games from the catalog: a banner for the featured one (Super 3T, the main game), then
+ * a card for each other game, each with its own drawn preview (`GAME_PREVIEWS`). The game on screen is marked as playing (`aria-current`). Every game is
  * saved, so going to another loses nothing. Shown in the page's aside on wide screens and in the
  * games dialog on narrower ones.
  */
 @Component({
   selector: 'app-game-library',
-  imports: [RouterLink, GamePreview],
+  imports: [RouterLink, NgComponentOutlet],
   templateUrl: './game-library.html',
   styleUrl: './game-library.css',
 })
@@ -28,14 +26,20 @@ export class GameLibrary {
   /** A game was chosen (the dialog closes on it). */
   readonly chosen = output<GameId>();
 
+  private readonly previews = inject(GAME_PREVIEWS);
+  /** A preview framed tight on its board, for the smaller cards. */
+  protected readonly square = { square: true };
+
   protected readonly cards = computed(() =>
-    GAME_IDS.map((id) => ({
+    GAMES.map(({ id, featured }) => ({
       id,
+      featured,
       name: this.t().games[id],
       blurb: this.t().library.blurbs[id],
+      preview: this.previews[id],
       playing: id === this.current,
     })),
   );
-  protected readonly banner = computed(() => this.cards().find((card) => card.id === FEATURED)!);
-  protected readonly rest = computed(() => this.cards().filter((card) => card.id !== FEATURED));
+  protected readonly banner = computed(() => this.cards().find((card) => card.featured)!);
+  protected readonly rest = computed(() => this.cards().filter((card) => !card.featured));
 }

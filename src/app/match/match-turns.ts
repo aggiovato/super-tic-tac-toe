@@ -1,7 +1,7 @@
 import type { Signal } from '@angular/core';
 import { patchState, type WritableStateSource } from '@ngrx/signals';
 import type { GameSession } from './game-session';
-import type { Level, MatchGame, MatchRules, MatchState, Participant } from './match.model';
+import type { Level, MatchGame, GameRules, MatchState, Participant } from './match.model';
 import type { ComputerPlayer } from './computer';
 
 /** What the match's machinery reads and writes on the store. */
@@ -55,7 +55,7 @@ function acceptPosition<S extends MatchGame<M>, M, R>(
  */
 function applyComputerMove<S extends MatchGame<M>, M, R>(
   store: MatchTurnsStore<S, M, R>,
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
   move: M | null,
 ): void {
   patchState(store, { thinking: false });
@@ -74,7 +74,7 @@ function applyComputerMove<S extends MatchGame<M>, M, R>(
 /** Replays the game without its last `undoSteps` moves. */
 export function takeBack<S extends MatchGame<M>, M, R>(
   store: MatchTurnsStore<S, M, R>,
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
 ): void {
   const { moves, rulesVersion } = store.position();
   const result = rules.replay(
@@ -93,7 +93,7 @@ export function takeBack<S extends MatchGame<M>, M, R>(
  */
 export function matchTurns<S extends MatchGame<M>, M, R>(
   store: MatchTurnsStore<S, M, R>,
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
 ) {
   const accept = (game: S): void => acceptPosition(store, game);
 

@@ -8,6 +8,7 @@ export default defineConfig({
     environment: 'node',
     include: [
       'src/app/games/tictac/**/*.spec.ts',
+      'src/app/games/catalog/**/*.spec.ts',
       'src/app/games/*/core/**/*.spec.ts',
       'src/app/games/*/ai/**/*.spec.ts',
       'src/app/games/*/challenge/**/*.spec.ts',
@@ -17,6 +18,7 @@ export default defineConfig({
       // Engines, opponents and challenges are held to the same bar.
       include: [
         'src/app/games/tictac/**/*.ts',
+        'src/app/games/catalog/**/*.ts',
         'src/app/games/*/core/**/*.ts',
         'src/app/games/*/ai/**/*.ts',
         'src/app/games/*/challenge/**/*.ts',

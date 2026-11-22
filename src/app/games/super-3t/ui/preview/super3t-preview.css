@@ -1,6 +1,7 @@
-/* Each game drawn in the app's own strokes and inks; scales with its card. */
+/* The game drawn in the app's own strokes and inks for the game library; scales with its card. */
 :host {
   display: block;
+  height: 100%;
 }
 
 svg {
@@ -50,43 +51,4 @@ svg {
 .target {
   stroke: var(--color-target);
   stroke-width: 1.4;
-}
-
-.strike {
-  stroke: var(--color-win);
-  stroke-width: 2;
-}
-
-.box {
-  fill: color-mix(in srgb, var(--color-player-x) 20%, transparent);
-}
-
-.box.o {
-  fill: color-mix(in srgb, var(--color-player-o) 20%, transparent);
-}
-
-.guide {
-  stroke: var(--color-line);
-  stroke-width: 0.7;
-  stroke-dasharray: 0.1 2.4;
-}
-
-.ink {
-  stroke-width: 1.4;
-}
-
-.ink.line {
-  stroke-width: 2;
-}
-
-.ink.x {
-  stroke: var(--color-player-x);
-}
-
-.ink.o {
-  stroke: var(--color-player-o);
-}
-
-.dot {
-  fill: var(--color-line-strong);
 }

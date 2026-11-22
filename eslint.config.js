@@ -8,12 +8,13 @@ const prettier = require('eslint-config-prettier');
 /*
  * Functional blocks. Each has an index.ts and a tsconfig `paths` alias. Shared blocks live in
  * src/app/<block>/ (alias @<block>); each game's layers in src/app/games/<folder>/<layer>/ (alias
- * @<game>/<layer>). A new game adds its alias and folder to GAMES.
+ * @<game>/<layer>). A new game adds its alias and folder to GAMES (scripts/check-games.mjs checks they match
+ * the catalog).
  */
 const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots' };
 const GAME_ALIASES = Object.keys(GAMES).join('|');
 const LAYERS = 'core|ai|challenge|session|state|ui';
-const SHARED = 'tictac|match|shell|history|storage|i18n|preferences|kit';
+const SHARED = 'tictac|catalog|match|shell|history|storage|i18n|preferences|kit';
 const BLOCK_ALIASES = `(?:${GAME_ALIASES})/(?:${LAYERS})|${SHARED}`;
 
 const BLOCK_BOUNDARIES = [
@@ -22,7 +23,7 @@ const BLOCK_BOUNDARIES = [
     message: 'Import another block through its alias (e.g. "@super3t/core"), not a relative path.',
   },
   {
-    regex: `^@(?:${BLOCK_ALIASES})/(?!testing$)`,
+    regex: `^@(?:${BLOCK_ALIASES})/(?!testing$|preview$)`,
     message: 'Import the block alias (e.g. "@super3t/core"), not its internal files.',
   },
 ];
@@ -160,6 +161,26 @@ module.exports = defineConfig([
             PLAIN_TYPESCRIPT,
             NO_APP_LAYERS,
             { regex: `^@(?:${GAME_ALIASES})/`, message: '@tictac never imports a game.' },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The catalog: the games as plain data and their engines, for the app and, later, the server.
+    // Plain TypeScript that reads each game's engine only.
+    files: ['src/app/games/catalog/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            PLAIN_TYPESCRIPT,
+            NO_APP_LAYERS,
+            {
+              regex: `^@(?:${GAME_ALIASES})/(?:ai|challenge)(?:/|$)`,
+              message: "@catalog reads each game's core only.",
+            },
           ],
         },
       ],

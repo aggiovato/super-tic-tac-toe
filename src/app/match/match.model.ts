@@ -1,5 +1,7 @@
 import type { Signal } from '@angular/core';
-import type { ComputerLevel, PlayMode } from '@preferences';
+import type { GameRules } from '@catalog';
+import type { ComputerLevel } from '@catalog';
+import type { PlayMode } from '@preferences';
 import type { SaveFailure } from '@storage';
 import type { Player } from '@tictac';
 
@@ -41,18 +43,8 @@ export interface ComputerRequest<M> {
   readonly variant: string;
 }
 
-/** The engine calls a match makes besides the session's. */
-export interface MatchRules<S, M> {
-  legalMoves(state: S): readonly M[];
-  replay(
-    moves: readonly M[],
-    rulesVersion: number,
-    variant: string,
-  ): { readonly ok: boolean; readonly state?: S };
-  sameMove(a: M, b: M): boolean;
-  /** The engine's move, for walking a game forward once (undo steps). */
-  apply(state: S, move: M): { readonly ok: boolean; readonly state: S };
-}
+/** The engine a match plays, from the game's definition (`@catalog`). */
+export type { GameRules };
 
 /** A series between two participants, in any game of the family. */
 /** Where the match's last save stands: never asked, on its way, done, or why it failed. */

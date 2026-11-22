@@ -8,7 +8,8 @@ import {
   untracked,
 } from '@angular/core';
 import { patchState } from '@ngrx/signals';
-import { type GameId, type PlaySetup, Preferences } from '@preferences';
+import { type GameId } from '@catalog';
+import { type PlaySetup, Preferences } from '@preferences';
 import {
   type GameRecord,
   type GameResult,
@@ -20,7 +21,7 @@ import {
 } from '@storage';
 import type {
   MatchGame,
-  MatchRules,
+  GameRules,
   MatchState,
   Mode,
   Participant,
@@ -111,7 +112,7 @@ function recordOf<S extends MatchGame<M>, M, R>(
 }
 
 /** A record's position, or null when it cannot be read: unknown schema, refused or damaged moves. */
-function replayRecord<S, M>(rules: MatchRules<S, M>, game: GameRecord) {
+function replayRecord<S, M>(rules: GameRules<S, M>, game: GameRecord) {
   if (game.schemaVersion !== SCHEMA_VERSION) {
     return null;
   }
@@ -126,7 +127,7 @@ function replayRecord<S, M>(rules: MatchRules<S, M>, game: GameRecord) {
 /** Puts a stored match back on the board; false when its record cannot be read. */
 function restoreMatch<S extends MatchGame<M>, M, R>(
   store: MatchStorageStore<S, M, R>,
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
   { series, game }: StoredMatch,
   memory: StorageMemory,
 ): boolean {
@@ -170,7 +171,7 @@ function startSetup<S, M, R>(
  */
 export function matchStorage<S extends MatchGame<M>, M, R>(
   store: MatchStorageStore<S, M, R>,
-  rules: MatchRules<S, M>,
+  rules: GameRules<S, M>,
 ) {
   const config = inject(MATCH_STORAGE, { optional: true });
   const repository = config ? inject(GameRepository) : null;

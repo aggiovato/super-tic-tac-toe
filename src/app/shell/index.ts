@@ -4,6 +4,7 @@ export { BrandTitle } from './brand-title/brand-title';
 export { GameActions } from './game-actions/game-actions';
 export { GameLayout } from './game-layout/game-layout';
 export { GameLibrary } from './game-library/game-library';
+export { GAME_PREVIEWS } from './game-library/game-previews';
 export { GamesMenu } from './games-menu/games-menu';
 export { HistoryLink } from './history-link/history-link';
 export { HistoryPage } from './history-page/history-page';

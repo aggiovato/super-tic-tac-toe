@@ -1,25 +1,12 @@
 import { computed } from '@angular/core';
 import { signalStore, withComputed } from '@ngrx/signals';
-import {
-  applyMove,
-  type GameState,
-  legalMoves,
-  type Move,
-  type Player,
-  type RejectionReason,
-  replay,
-  sameMove,
-} from '@dots/core';
+import { type GameState, type Move, type Player, type RejectionReason, replay } from '@dots/core';
+import { DOTS_GAME } from '@catalog';
 import { withMatch } from '@match';
 
 /** Dots and Boxes' store: a match, plus the boxes each player holds in the current game. */
 export const DotsStore = signalStore(
-  withMatch<GameState, Move, RejectionReason>({
-    legalMoves,
-    replay,
-    sameMove,
-    apply: applyMove,
-  }),
+  withMatch<GameState, Move, RejectionReason>(DOTS_GAME.rules),
   withComputed(({ game, variant }) => ({
     /** Boxes closed by X and by O in the game on the board. */
     boxes: computed(() => game().score),

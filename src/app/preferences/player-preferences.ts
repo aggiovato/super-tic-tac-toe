@@ -1,9 +1,8 @@
 import { computed, DestroyRef, DOCUMENT, effect, inject, Injectable, signal } from '@angular/core';
+import { COMPUTER_LEVELS, type ComputerLevel, type GameId, isGameId } from '@catalog';
 import type {
   Design,
-  GameId,
   MotionSetting,
-  ComputerLevel,
   PlayMode,
   PlaySetup,
   PreferencesState,
@@ -12,8 +11,6 @@ import type {
 export const DESIGNS: readonly Design[] = ['departures', 'departures-contrast'];
 export const NAME_MAX_LENGTH = 16;
 export const PLAY_MODES: readonly PlayMode[] = ['humans', 'opponent'];
-export const COMPUTER_LEVELS: readonly ComputerLevel[] = ['beginner', 'intermediate', 'advanced'];
-export const GAME_IDS: readonly GameId[] = ['super-3t', 'classic', 'dots'];
 
 const STORAGE_KEY = 'super-ttt.preferences';
 
@@ -21,7 +18,6 @@ const isDesign = (value: unknown): value is Design => DESIGNS.some((design) => d
 const isMode = (value: unknown): value is PlayMode => PLAY_MODES.some((mode) => mode === value);
 const isLevel = (value: unknown): value is ComputerLevel =>
   COMPUTER_LEVELS.some((level) => level === value);
-const isGame = (value: unknown): value is GameId => GAME_IDS.some((game) => game === value);
 const TWO_PEOPLE: PlaySetup = { mode: 'humans', level: 'beginner' };
 
 /** A saved setup, or the default for what is missing or unknown. */
@@ -47,7 +43,7 @@ const readIds = (saved: unknown): string[] =>
 
 /** Games whose tutorial was seen; older versions kept one flag, Super 3T's. */
 function readTutorials(saved: Partial<PreferencesState> & LegacyPreferences): GameId[] {
-  const games = Array.isArray(saved.seenTutorials) ? saved.seenTutorials.filter(isGame) : [];
+  const games = Array.isArray(saved.seenTutorials) ? saved.seenTutorials.filter(isGameId) : [];
   return saved.tutorialSeen === true && !games.includes('super-3t')
     ? [...games, 'super-3t']
     : games;
@@ -205,7 +201,7 @@ export class Preferences {
           classic: readSetup(play?.classic),
           dots: readSetup(play?.dots),
         },
-        lastGame: isGame(saved.lastGame) ? saved.lastGame : DEFAULTS.lastGame,
+        lastGame: isGameId(saved.lastGame) ? saved.lastGame : DEFAULTS.lastGame,
         seenTutorials: readTutorials(saved),
         solvedChallenges: readIds(saved.solvedChallenges),
       };

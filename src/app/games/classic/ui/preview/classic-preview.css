@@ -1,0 +1,44 @@
+/* The game drawn in the app's own strokes and inks for the game library; scales with its card. */
+:host {
+  display: block;
+  height: 100%;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.grid {
+  stroke: var(--color-line);
+  stroke-width: 0.6;
+}
+
+.grid.wide {
+  stroke-width: 1.4;
+}
+
+.mark {
+  stroke-width: 1.1;
+}
+
+.mark.x {
+  stroke: var(--color-mark-x);
+}
+
+.mark.o {
+  stroke: var(--color-mark-o);
+}
+
+.mark.big {
+  stroke-width: 2.2;
+}
+
+.strike {
+  stroke: var(--color-win);
+  stroke-width: 2;
+}

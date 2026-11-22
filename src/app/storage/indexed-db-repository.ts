@@ -1,4 +1,4 @@
-import type { GameId } from '@preferences';
+import type { GameId } from '@catalog';
 import { GameRepository, type StoredMatch, type StoredSeries } from './game-repository';
 import { type GameRecord, SaveError, type SeriesRecord } from './records.model';
 

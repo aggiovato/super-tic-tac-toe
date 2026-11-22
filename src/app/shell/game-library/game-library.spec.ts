@@ -1,13 +1,24 @@
+import { Component, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ACTIVE_GAME } from '../active-game';
 import { GameLibrary } from './game-library';
+import { GAME_PREVIEWS } from './game-previews';
+
+@Component({ selector: 'app-fake-preview', template: '' })
+class FakePreview {
+  readonly square = input(false);
+}
 
 function render(current: 'super-3t' | 'classic' | 'dots' | null) {
   TestBed.configureTestingModule({
     imports: [GameLibrary],
     providers: [
       provideRouter([]),
+      {
+        provide: GAME_PREVIEWS,
+        useValue: { 'super-3t': FakePreview, classic: FakePreview, dots: FakePreview },
+      },
       ...(current ? [{ provide: ACTIVE_GAME, useValue: { id: current, match: {} } }] : []),
     ],
   });
