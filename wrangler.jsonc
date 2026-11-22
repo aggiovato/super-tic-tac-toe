@@ -8,9 +8,9 @@
     // The production build; CI downloads the build job's artifact to the same path.
     "directory": "./dist/super-tic-tac-toe/browser",
     // Every unknown navigation is served by the app shell (the Netlify `_redirects` rule before).
-    "not_found_handling": "single-page-application",
+    "not_found_handling": "single-page-application"
   },
   // The *.workers.dev address, and a preview URL per uploaded version (PR previews).
   "workers_dev": true,
-  "preview_urls": true,
+  "preview_urls": true
 }
