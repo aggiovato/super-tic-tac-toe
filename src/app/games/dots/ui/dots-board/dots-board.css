@@ -250,6 +250,8 @@
  */
 .platform.over {
   --platform-bg: var(--color-surface-done);
+  /* Nothing left to draw: the board no longer looks clickable. */
+  cursor: default;
 }
 
 .box.winning {
