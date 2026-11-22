@@ -26,6 +26,10 @@ new version and date.
 
 ### Fixed
 
+- Moving between a game and its history no longer stretches or shrinks the page while it fades: the
+  history no longer appears oversized for an instant. A game also comes back with its moves already
+  on the board, the games library stays still between games, and the first visit to another game no
+  longer waits for its code.
 - Leaving an online room now closes its connection, so the rival sees you go; coming back to it
   with the back button or the link asks first ("Back to the room") instead of reconnecting
   silently, and "Leave the room" no longer stays behind the back button.

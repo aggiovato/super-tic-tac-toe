@@ -14,6 +14,7 @@ export type {
 } from './match.model';
 export { LocalComputer, COMPUTER_PACE_MS } from './local-computer';
 export { MATCH_STORAGE, provideMatchStorage } from './match-storage';
+export { preloadMatch, SavedMatches } from './saved-matches';
 export { ComputerPlayer } from './computer';
 export { RemoteSeat, type RemoteGame } from './remote-seat';
 export { withMatch } from './with-match';

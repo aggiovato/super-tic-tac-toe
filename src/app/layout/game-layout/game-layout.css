@@ -1,5 +1,11 @@
 :host {
   display: block;
+  /*
+   * The page's content on a page change (styles.css): the host, as wide as the viewport on every
+   * page, so the two snapshots share their width and keep their proportions. Naming the inner
+   * column (80rem here, 40rem in the history) stretched one page's snapshot into the other's box.
+   */
+  view-transition-name: page;
 }
 
 /*
@@ -13,8 +19,6 @@
    * page scrolls instead of the board running under the score.
    */
   --arena-min: 18rem;
-  /* The part that rises in on a page change (styles.css). */
-  view-transition-name: page;
 
   display: grid;
   grid-template:
@@ -127,6 +131,8 @@
   }
 
   .library {
+    /* The same on every game page: it stays put while the page's content changes. */
+    view-transition-name: library;
     grid-area: library;
     display: flex;
     flex-direction: column;

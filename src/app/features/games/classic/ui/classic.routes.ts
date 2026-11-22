@@ -1,7 +1,7 @@
 import type { Routes } from '@angular/router';
 import { provideClassicMatch } from '@classic/session';
 import { ClassicStore } from '@classic/state';
-import { provideMatchStorage, provideActiveGame } from '@match';
+import { preloadMatch, provideMatchStorage, provideActiveGame } from '@match';
 import { openOnlineRoom, provideOnlineRoom } from '@online';
 import { HistoryPage } from '@history';
 
@@ -11,6 +11,8 @@ export const CLASSIC_ROUTES: Routes = [
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./classic-page/classic-page').then((m) => m.ClassicPage),
+    // The saved game is read before the page renders, so it fades in already in place.
+    resolve: { saved: preloadMatch('classic') },
     providers: [
       provideClassicMatch(),
       provideMatchStorage('classic'),

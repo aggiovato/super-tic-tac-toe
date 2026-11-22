@@ -1,7 +1,7 @@
 import type { Routes } from '@angular/router';
 import { provideDotsMatch } from '@dots/session';
 import { DotsStore } from '@dots/state';
-import { provideMatchStorage, provideActiveGame } from '@match';
+import { preloadMatch, provideMatchStorage, provideActiveGame } from '@match';
 import { openOnlineRoom, provideOnlineRoom } from '@online';
 import { HistoryPage } from '@history';
 
@@ -11,6 +11,8 @@ export const DOTS_ROUTES: Routes = [
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./dots-page/dots-page').then((m) => m.DotsPage),
+    // The saved game is read before the page renders, so it fades in already in place.
+    resolve: { saved: preloadMatch('dots') },
     providers: [
       provideDotsMatch(),
       provideMatchStorage('dots'),

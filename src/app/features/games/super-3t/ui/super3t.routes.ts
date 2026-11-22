@@ -1,5 +1,5 @@
 import type { Routes } from '@angular/router';
-import { provideMatchStorage, provideActiveGame } from '@match';
+import { preloadMatch, provideMatchStorage, provideActiveGame } from '@match';
 import { openOnlineRoom, provideOnlineRoom } from '@online';
 import { HistoryPage } from '@history';
 import { CHALLENGES } from '@super3t/challenge';
@@ -13,6 +13,8 @@ export const SUPER3T_ROUTES: Routes = [
     pathMatch: 'full',
     loadComponent: () => import('./super3t-page/super3t-page').then((m) => m.Super3tPage),
     // The store, its session and the opponent's Worker live and die with the game route.
+    // The saved game is read before the page renders, so it fades in already in place.
+    resolve: { saved: preloadMatch('super-3t') },
     providers: [
       provideSuper3tSession(),
       provideWorkerComputer(),

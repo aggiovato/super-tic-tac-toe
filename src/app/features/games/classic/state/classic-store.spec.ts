@@ -2,7 +2,13 @@ import { createEnvironmentInjector, EnvironmentInjector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { Move } from '@classic/core';
 import { ClassicSession } from '@classic/session';
-import { GameSession, ComputerPlayer, type ComputerRequest, provideMatchStorage } from '@match';
+import {
+  GameSession,
+  ComputerPlayer,
+  type ComputerRequest,
+  provideMatchStorage,
+  SavedMatches,
+} from '@match';
 import { Preferences } from '@preferences';
 import {
   type GameRecord,
@@ -92,6 +98,33 @@ async function open(repository: MemoryRepository, opponent = new FakeComputer())
 
 describe('saving and restoring a classic match', () => {
   beforeEach(() => localStorage.clear());
+
+  it('starts with the saved game on its first render when the route read it ahead', async () => {
+    const repository = new MemoryRepository(true);
+    const first = await open(repository);
+    first.store.play({ cell: 4 });
+    await settle();
+
+    const tab = createEnvironmentInjector(
+      [
+        { provide: GameSession, useClass: ClassicSession },
+        { provide: ComputerPlayer, useValue: new FakeComputer() },
+        { provide: GameRepository, useValue: repository },
+        SavedMatches,
+        provideMatchStorage('classic'),
+        ClassicStore,
+      ],
+      TestBed.inject(EnvironmentInjector),
+    );
+    // The route's resolver (`preloadMatch`), before the page and its store exist.
+    await tab.get(SavedMatches).preload('classic');
+    const store = tab.get(ClassicStore);
+    // No waiting: ready, with the saved move, as the store is created.
+    expect(store.ready()).toBe(true);
+    expect(store.game().moves).toEqual([{ cell: 4 }]);
+    // The read is used once: a later store reads storage as before.
+    expect(tab.get(SavedMatches).take('classic')).toBeUndefined();
+  });
 
   it('starts the saved setup when nothing is stored, then saves the game', async () => {
     const repository = new MemoryRepository(true);

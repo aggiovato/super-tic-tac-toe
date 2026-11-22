@@ -4,7 +4,13 @@ import {
   isDevMode,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter, withAutoCleanupInjectors, withViewTransitions } from '@angular/router';
+import {
+  PreloadAllModules,
+  provideRouter,
+  withAutoCleanupInjectors,
+  withPreloading,
+  withViewTransitions,
+} from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { Preferences } from '@preferences';
 import { GAME_PREVIEWS } from '@library';
@@ -23,6 +29,9 @@ export const appConfig: ApplicationConfig = {
       // A route's providers (a game's store and Worker, an online room and its socket) are destroyed
       // when the route is left, as their DestroyRef hooks expect; without it they would live on.
       withAutoCleanupInjectors(),
+      // The other games' code loads in the background once the app is up: the first visit to one
+      // starts its page change at once instead of waiting for its chunk.
+      withPreloading(PreloadAllModules),
       withViewTransitions({
         onViewTransitionCreated: ({ transition }) => {
           if (inject(Preferences).reducedMotion()) {
