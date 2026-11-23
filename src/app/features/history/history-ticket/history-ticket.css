@@ -1,0 +1,295 @@
+/*
+ * The history as departure tickets over the game: Raven Deep cards whose stub (title and totals on
+ * split-flaps) is torn off along a dashed perforation with a notch on each side (`--tear-top`, kept
+ * at the stub's height by `TicketTear`). Phones: one ticket rising from the bottom, with tabs.
+ * Wide screens: results and latest departures as two tickets side by side.
+ */
+:host {
+  --ticket-notch: 0.65rem;
+  --ticket-pad: 1.25rem;
+}
+
+.history {
+  width: min(30rem, 100vw - 2 * var(--spacing-gutter));
+  max-width: none;
+  max-height: calc(100dvh - 2 * var(--spacing-stack));
+  margin: auto auto calc(var(--spacing-stack) + env(safe-area-inset-bottom));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-fg);
+  overflow: visible;
+  filter: drop-shadow(0 -0.375rem 1.5rem var(--color-shade));
+}
+
+.history[open] {
+  display: flex;
+  gap: var(--spacing-stack-loose);
+  align-items: flex-start;
+}
+
+.history::backdrop {
+  background: var(--color-shade);
+}
+
+.history[open] .ticket {
+  animation: rise var(--duration-zoom) var(--ease-zoom) both;
+}
+
+.history[open] .second {
+  animation-delay: calc(var(--duration-step) * 2);
+}
+
+.history[open]::backdrop {
+  animation: dim var(--duration-zoom) var(--ease-out);
+}
+
+.ticket {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  max-height: inherit;
+  overflow: hidden;
+  border-radius: calc(var(--radius-panel) * 2);
+  background: var(--color-surface-panel);
+  mask:
+    radial-gradient(circle var(--ticket-notch) at 0 var(--tear-top, 8rem), transparent 98%, black)
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--ticket-notch) at 100% var(--tear-top, 8rem),
+        transparent 98%,
+        black
+      )
+      right / 51% 100% no-repeat;
+}
+
+.stub {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack);
+  padding: var(--spacing-stack) var(--ticket-pad) 0;
+  border-bottom: var(--border-line) dashed var(--color-surface-raised);
+}
+
+.second .stub {
+  padding-block: var(--spacing-stack-loose) var(--spacing-stack);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-stack);
+  margin-inline-end: calc(-1 * var(--spacing-stack-tight));
+}
+
+.title-row h2:focus {
+  outline: none;
+}
+
+/* The totals: three flap pairs, their names under them. */
+.totals {
+  display: flex;
+  gap: var(--spacing-stack-loose);
+  padding-bottom: var(--spacing-stack);
+}
+
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--spacing-stack-loose);
+}
+
+.tab {
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--border-emphasis) solid transparent;
+  background: none;
+  color: var(--color-fg);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover,
+.tab[aria-selected='true'] {
+  color: var(--color-fg-strong);
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--color-fg-strong);
+}
+
+.body,
+.body > [role='tabpanel'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-loose);
+}
+
+.body {
+  min-height: 0;
+  padding: var(--spacing-stack-loose) var(--ticket-pad);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--color-surface-raised) transparent;
+}
+
+.part {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+}
+
+/* A chart: a second layer of the ticket, below its own perforation. */
+.layer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+  margin-inline: calc(-1 * var(--ticket-pad));
+  padding: var(--spacing-stack) var(--ticket-pad) 0;
+  border-top: var(--border-line) dashed var(--color-surface-raised);
+}
+
+.legend {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--color-fg-strong);
+}
+
+.caption,
+.size {
+  font-size: var(--text-caption);
+}
+
+.size {
+  margin-top: var(--spacing-stack-tight);
+}
+
+.notice {
+  color: var(--color-fg-strong);
+}
+
+.levels {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.levels th,
+.levels td {
+  padding: var(--spacing-stack-tight) 0 var(--spacing-stack-tight) var(--spacing-stack);
+  border-bottom: var(--border-hairline) solid var(--color-line);
+  text-align: right;
+}
+
+.levels th:first-child {
+  padding-inline-start: 0;
+  text-align: left;
+}
+
+.levels thead th {
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.levels td {
+  color: var(--color-fg-strong);
+  font-weight: 600;
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-stack-tight);
+  font-weight: 600;
+}
+
+/* A level's share of wins, draws and losses, by shape as in the charts. */
+.share {
+  display: flex;
+  height: 0.375rem;
+  margin-top: 0.375rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  overflow: hidden;
+}
+
+.share .won {
+  background: var(--color-win);
+}
+
+.share .drawn {
+  background: repeating-linear-gradient(-45deg, var(--color-fg) 0 2px, transparent 2px 5px);
+}
+
+.share .lost {
+  box-shadow: inset 0 0 0 var(--border-hairline) var(--color-fg);
+}
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent li {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr;
+  column-gap: var(--spacing-stack);
+  padding: var(--spacing-stack-tight) 0;
+  border-bottom: var(--border-hairline) solid var(--color-line);
+}
+
+.recent .result {
+  grid-row: span 2;
+  color: var(--color-fg-strong);
+  font-weight: 600;
+}
+
+/* Wide screens: two tickets side by side, centred, with the panel lift. */
+@media (min-width: 35rem) {
+  :host {
+    --ticket-pad: var(--spacing-stack-loose);
+  }
+
+  .history {
+    margin: auto;
+    filter: drop-shadow(0 0.375rem 1.25rem var(--color-shade));
+  }
+}
+
+.history.pair {
+  width: min(56rem, 100vw - 2 * var(--spacing-gutter));
+}
+
+@keyframes rise {
+  from {
+    translate: 0 2rem;
+    opacity: 0;
+  }
+}
+
+@keyframes dim {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(:root:not([data-motion='full'])) .ticket,
+  :host-context(:root:not([data-motion='full'])) .history::backdrop {
+    animation: none;
+  }
+}

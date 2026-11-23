@@ -1,4 +1,5 @@
 import { Component, inject, input } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { Translator } from '@i18n';
 import { Backdrop, Button, Icon } from '@ui';
 import { Preferences } from '@preferences';
@@ -14,7 +15,7 @@ import { OnlinePanel } from '@online';
  */
 @Component({
   selector: 'app-game-layout',
-  imports: [Backdrop, Button, Icon, GameLibrary, OnlinePanel, UpdateNotice],
+  imports: [Backdrop, Button, Icon, GameLibrary, OnlinePanel, RouterOutlet, UpdateNotice],
   templateUrl: './game-layout.html',
   styleUrl: './game-layout.css',
 })

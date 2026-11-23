@@ -67,3 +67,29 @@ test('a game comes back from its history with its moves already on the first ren
   expect(seen.length).toBeGreaterThan(0);
   expect(seen.every((marks) => marks === 1)).toBe(true);
 });
+
+test('the history opens as a ticket over the game and Escape or Back return to it', async ({
+  page,
+}) => {
+  await page.goto('/classic');
+  const history = page.getByRole('button', { name: 'History' });
+  await history.click();
+  const ticket = page.getByRole('dialog', { name: 'Classic history' });
+  await expect(ticket).toBeVisible();
+  // Nothing finished yet: an invitation instead of a table of zeros.
+  await expect(ticket.getByText('You have not finished a game of Classic yet.')).toBeVisible();
+  await expect(ticket.getByRole('table')).toHaveCount(0);
+  // The game stays under it.
+  await expect(page.locator('app-classic-board')).toBeAttached();
+
+  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(/\/classic$/);
+  await expect(ticket).toBeHidden();
+  await expect(history).toBeFocused();
+
+  await history.click();
+  await expect(ticket).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/classic$/);
+  await expect(ticket).toBeHidden();
+});

@@ -128,6 +128,9 @@ export interface Messages {
     readonly open: string;
     readonly title: (game: string) => string;
     readonly back: string;
+    /** The two parts of the history, as tabs on phones. */
+    readonly sections: string;
+    readonly results: string;
     readonly byLevel: string;
     readonly level: string;
     readonly wins: string;
@@ -143,6 +146,25 @@ export interface Messages {
     readonly moves: (count: number) => string;
     /** A board size's name, from its variant ('3' → 3×3). */
     readonly board: (variant: string) => string;
+    /** Spoken form of the totals on the ticket's flaps. */
+    readonly totals: (wins: number, draws: number, losses: number) => string;
+    /** One letter each for the flaps: a win, a draw and a loss against the computer. */
+    readonly flapResult: { readonly won: string; readonly drawn: string; readonly lost: string };
+    readonly strip: (count: number) => string;
+    readonly playFirst: string;
+    readonly error: string;
+    readonly onlineNote: string;
+    readonly form: string;
+    readonly formHint: string;
+    readonly formRow: (name: string, wins: number, draws: number, losses: number) => string;
+    readonly length: string;
+    readonly lengthLabel: (count: number, least: number, most: number) => string;
+    readonly legend: {
+      readonly won: string;
+      readonly drawn: string;
+      readonly lost: string;
+      readonly people: string;
+    };
   };
   /** The Dots and Boxes screen. */
   readonly dots: {

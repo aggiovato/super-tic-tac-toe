@@ -1,0 +1,172 @@
+<!-- A click on the backdrop closes it; Escape is the dialog's own keyboard way out. -->
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+<dialog
+  #dialog
+  class="history"
+  aria-labelledby="history-title"
+  [class.pair]="pair() && state() === 'ready'"
+  (close)="leave()"
+  (click)="onDialogClick($event)"
+>
+  <article class="ticket" appTicketTear>
+    <header class="stub">
+      <div class="title-row">
+        <h2 id="history-title" tabindex="-1" class="text-title font-semibold text-fg-strong">
+          {{ t().history.title(t().games[gameId]) }}
+        </h2>
+        <button app-button="quiet" [attr.aria-label]="t().history.back" (click)="close()">
+          <app-icon name="close" />
+        </button>
+      </div>
+
+      @if (state() === 'loading' || state() === 'ready') {
+        <div class="totals" role="img" [attr.aria-label]="totalsLabel()">
+          @for (total of totals(); track total.key) {
+            <div class="total" [class]="total.key">
+              <app-departure-board class="text-score" [tiles]="total.tiles" label="" />
+              <span class="caption" aria-hidden="true">{{ total.caption }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      @if (state() === 'ready' && !pair()) {
+        <div class="tabs" role="tablist" [attr.aria-label]="t().history.sections">
+          @for (tab of parts; track tab) {
+            <button
+              type="button"
+              role="tab"
+              class="tab"
+              [id]="'history-tab-' + tab"
+              [attr.aria-controls]="'history-part-' + tab"
+              [attr.aria-selected]="part() === tab"
+              [tabIndex]="part() === tab ? 0 : -1"
+              (click)="part.set(tab)"
+              (keydown)="onTabKey($event)"
+            >
+              {{ tab === 'results' ? t().history.results : t().history.recent }}
+            </button>
+          }
+        </div>
+      }
+    </header>
+
+    <div class="body">
+      @switch (state()) {
+        @case ('error') {
+          <p class="notice" role="alert">{{ t().history.error }}</p>
+        }
+        @case ('empty') {
+          <p class="notice">{{ t().history.empty(t().games[gameId]) }}</p>
+          <button app-button="primary" class="w-full" (click)="close()">
+            {{ t().history.playFirst }}
+          </button>
+        }
+        @case ('ready') {
+          @if (pair()) {
+            <ng-container [ngTemplateOutlet]="results" />
+          } @else {
+            <div
+              [id]="'history-part-' + part()"
+              role="tabpanel"
+              [attr.aria-labelledby]="'history-tab-' + part()"
+            >
+              <ng-container [ngTemplateOutlet]="part() === 'results' ? results : latest" />
+            </div>
+          }
+        }
+      }
+    </div>
+  </article>
+
+  @if (pair() && state() === 'ready') {
+    <article class="ticket second" appTicketTear aria-labelledby="history-recent">
+      <header class="stub">
+        <h3 id="history-recent" class="text-title font-semibold text-fg-strong">
+          {{ t().history.recent }}
+        </h3>
+        <app-departure-board class="strip text-title" [tiles]="strip()" [label]="stripLabel()" />
+      </header>
+      <div class="body">
+        <ng-container [ngTemplateOutlet]="latest" [ngTemplateOutletContext]="{ stub: true }" />
+      </div>
+    </article>
+  }
+</dialog>
+
+<ng-template #results>
+  @for (section of sections(); track section.variant) {
+    <section class="part" [attr.aria-labelledby]="'history-level-' + $index">
+      <h3 [id]="'history-level-' + $index" class="legend">
+        {{ t().history.byLevel }}{{ section.label ? ' · ' + section.label : '' }}
+      </h3>
+      <table class="levels">
+        <thead>
+          <tr>
+            <th scope="col">{{ t().history.level }}</th>
+            <th scope="col">{{ t().history.wins }}</th>
+            <th scope="col">{{ t().history.draws }}</th>
+            <th scope="col">{{ t().history.losses }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of section.rows; track row.level) {
+            <tr>
+              <th scope="row">
+                <span class="name"><app-level-bars [value]="row.bars" />{{ row.name }}</span>
+                <span class="share" aria-hidden="true">
+                  <span class="won" [style.width.%]="row.share[0]"></span>
+                  <span class="drawn" [style.width.%]="row.share[1]"></span>
+                  <span class="lost" [style.width.%]="row.share[2]"></span>
+                </span>
+              </th>
+              <td>{{ row.wins }}</td>
+              <td>{{ row.draws }}</td>
+              <td>{{ row.losses }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <p class="caption">{{ section.people }}</p>
+    </section>
+  }
+
+  @if (charts()) {
+    <section class="layer" aria-labelledby="history-form">
+      <h3 id="history-form" class="legend">{{ t().history.form }}</h3>
+      <p class="caption">{{ t().history.formHint }}</p>
+      @for (section of sections(); track section.variant) {
+        @if (section.label) {
+          <h4 class="caption size">{{ section.label }}</h4>
+        }
+        <app-form-chart [rows]="section.form" />
+      }
+    </section>
+  }
+</ng-template>
+
+<ng-template #latest let-stub="stub">
+  @if (!stub) {
+    <app-departure-board class="strip text-title" [tiles]="strip()" [label]="stripLabel()" />
+  }
+  <!-- The lengths first: the list below can run past the fold, the chart sums it up. -->
+  @if (charts()) {
+    <section class="part" aria-labelledby="history-length">
+      <h3 id="history-length" class="legend">{{ t().history.length }}</h3>
+      <app-length-chart [games]="lengths()" [label]="lengthLabel()" [legend]="t().history.legend" />
+    </section>
+  }
+  <section class="part" aria-labelledby="history-list">
+    <h3 id="history-list" class="sr-only">{{ t().history.recent }}</h3>
+    <ol class="recent">
+      @for (game of recent(); track game.id) {
+        <li>
+          <span class="result">{{ game.result }}</span>
+          <span>{{ game.setup }}</span>
+          <span class="caption">{{ game.when }} · {{ game.moves }}</span>
+        </li>
+      }
+    </ol>
+  </section>
+  <p class="caption">{{ t().history.onlineNote }}</p>
+</ng-template>

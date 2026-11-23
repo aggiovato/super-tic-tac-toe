@@ -40,8 +40,10 @@ paths:
 - **One result per game**: the result is part of the record and `scored` comes back with it, so a
   reload, reopening the final screen or a rematch never counts a game twice; a rematch is a new id
   in the same series, a new series or mode a new series id.
-- **History** (`HistoryPage`, `/<game>/history`): results against the computer by level for the
-  person (participant 0), the number of games for two people and the ten latest finished games.
+- **History** (`HistoryTicket` in `@history`, `/<game>/history`, a child of the game's route so the
+  game stays under it): results against the computer by level for the person (participant 0) with
+  their form, the number of games for two people, the ten latest finished games and their lengths
+  (`historyStats`, plain and tested). Online games are not saved here, so they do not count.
 - Tests: `classic-store.spec.ts` (app, `MemoryRepository`, one injector per tab) and the
   "saving and resuming" e2e, which use the browser's real IndexedDB.
 - **Reading ahead**: each game's route resolves `preloadMatch(gameId)` (`SavedMatches` in `@match`), so

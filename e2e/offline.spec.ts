@@ -98,7 +98,7 @@ test('the app reopens offline and every game plays against the computer', async 
 
   // Super 3T at the advanced level, never opened before: its Worker comes from the cache.
   await page.goto('/super-3t');
-  await againstComputer(page, 'Express');
+  await againstComputer(page, 'Master');
   const open = page.getByRole('button', { name: 'Open board 5' });
   const center = page.getByRole('button', { name: /^Board 5, cell 5,/ });
   await expect(center.or(open).first()).toBeVisible();
@@ -106,25 +106,25 @@ test('the app reopens offline and every game plays against the computer', async 
     await open.click();
   }
   await center.click();
-  await expect(page.getByText(/^Express played cell \d/)).toBeVisible();
+  await expect(page.getByText(/^Master played cell \d/)).toBeVisible();
 
   // The classic game at the intermediate level.
   await page.goto('/classic');
-  await againstComputer(page, 'Regional');
+  await againstComputer(page, 'Veteran');
   await page
     .getByRole('button', { name: /^Cell \d, empty$/ })
     .first()
     .click();
-  await expect(page.getByText(/^Regional played cell \d/)).toBeVisible();
+  await expect(page.getByText(/^Veteran played cell \d/)).toBeVisible();
 
   // Dots and Boxes at the beginner level.
   await page.goto('/dots');
-  await againstComputer(page, 'Local');
+  await againstComputer(page, 'Rookie');
   await page
     .getByRole('button', { name: /, free$/ })
     .first()
     .click({ force: true });
-  await expect(page.getByText(/^Local drew a line/).first()).toBeVisible();
+  await expect(page.getByText(/^Rookie drew a line/).first()).toBeVisible();
 
   // And the history, by a deep link.
   await page.goto('/dots/history');

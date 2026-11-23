@@ -10,8 +10,8 @@ export interface PlaySide {
 }
 
 /**
- * A participant's own name: against the computer the opponent's, named after its level (a train,
- * slowest to fastest), online this device's typed name only, otherwise the custom name the player typed. Null when there is none, so each place picks its own fallback (symbol, "Player n").
+ * A participant's own name: against the computer the opponent's, named after its level (a rank,
+ * weakest to strongest), online this device's typed name only, otherwise the custom name the player typed. Null when there is none, so each place picks its own fallback (symbol, "Player n").
  */
 export function participantName(
   t: Messages,

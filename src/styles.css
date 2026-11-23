@@ -66,7 +66,7 @@
 
   /*
    * Page changes (router view transitions): the page's content (`view-transition-name: page`, on
-   * the game layout's and the history's full-width hosts) fades out and the new one fades in with a short rise; the
+   * the game layout's full-width host) fades out and the new one fades in with a short rise; the
    * rest, the torn-paper backdrop, is the same on both pages and only cross-fades, so it stays put.
    */
   ::view-transition-group(page) {
@@ -81,8 +81,9 @@
 
   /*
    * The library aside (`view-transition-name: library`) is its own layer: the same on every game
-   * page, its default cross-fade of two identical snapshots shows no change, so it stays put; on the
-   * history, which has none, it simply fades out.
+   * page, its default cross-fade of two identical snapshots shows no change, so it stays put. A
+   * ticket over the game (the history) is no page change: its navigation skips the transition
+   * (`app.config.ts`).
    */
 
   ::view-transition-old(page) {
