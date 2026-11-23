@@ -1,4 +1,9 @@
-<div class="platform" [class.closed]="store.isOver()">
+<div
+  class="platform"
+  [class.closed]="store.isOver()"
+  [class.won]="won()"
+  [class.celebrate]="celebrate()"
+>
   <div
     #grid
     class="cells"
@@ -19,6 +24,9 @@
     }
     @if (strike(); as line) {
       <app-strike-line [segment]="line" [animate]="true" />
+    }
+    @if (closing(); as mark) {
+      <app-closing-mark [mark]="mark" [animate]="fresh()" />
     }
   </div>
 </div>

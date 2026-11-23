@@ -146,29 +146,13 @@
 
 /*
  * After the closing spark of the winning move, if any, three strong flashes on each winning board,
- * in the accent: the game's one spectacle.
+ * in the accent: the game's one spectacle (`win-flash`, styles.css, shared by every game).
  */
 :host(.win-spark:not(.mini))::before {
   --spark-colour: var(--color-accent);
 
-  animation: spark-win calc(var(--spark-time) * 1.6) linear
+  animation: win-flash calc(var(--spark-time) * 1.6) linear
     calc(var(--spark-delay) + var(--spark-time) * 0.4) both;
-}
-
-@keyframes spark-win {
-  0%,
-  16%,
-  42%,
-  68%,
-  100% {
-    opacity: 0;
-  }
-
-  6%,
-  32%,
-  58% {
-    opacity: 1;
-  }
 }
 
 /* Uneven on and off, like an arc catching: bright strikes that fade out. */

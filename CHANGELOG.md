@@ -17,6 +17,11 @@ new version and date.
 - Settings have three tabs: Game (the game's own settings and a new series), Players (who you play
   against — the computer and its level, two people on this device, or an online room — and the
   names) and App. Choosing an online room offers its invitation; the room opens only from it.
+- A classic game ends as a Super 3T board closes: after the winning line, the winner's large mark
+  draws on in the win colour and the board flashes three times, as Super 3T's winning boards do; a
+  draw shows the large `=`. All three games now share one win flash.
+- In Dots and Boxes, closing a box replays the mover's score on the flaps from blank, in their own
+  ink.
 - The computer opponents are named by rank: Novato, Veterano and Maestro (Rookie, Veteran and
   Master in English).
 

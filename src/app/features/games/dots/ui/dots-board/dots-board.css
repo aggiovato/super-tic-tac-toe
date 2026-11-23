@@ -281,26 +281,6 @@
   animation: win-flash calc(var(--duration-draw) * 1.6) linear calc(var(--duration-draw) * 0.4) both;
 }
 
-@keyframes win-flash {
-  0%,
-  16%,
-  42%,
-  68%,
-  100% {
-    opacity: 0;
-  }
-
-  6%,
-  32%,
-  58% {
-    opacity: 1;
-  }
-}
-
-.line.winning .ink {
-  background: var(--color-win);
-}
-
 .platform.decided .box:not(.winning) {
   opacity: 0.4;
 }

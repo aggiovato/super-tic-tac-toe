@@ -48,7 +48,19 @@ svg {
  * finished stroke has no seam.
  */
 :host(.animate) .ink {
-  animation: draw-mark var(--duration-draw) var(--ease-out) backwards;
+  /* A board may hold the mark back (`--closing-delay`), e.g. until its strike line is drawn. */
+  animation: draw-mark var(--duration-draw) var(--ease-out) var(--closing-delay, 0ms) backwards;
+}
+
+/* Held back with the ink, the halo shows only as the mark starts drawing, never as a shadow before. */
+:host(.animate) .halo {
+  animation: halo-in var(--duration-quick) var(--ease-out) var(--closing-delay, 0ms) backwards;
+}
+
+@keyframes halo-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @keyframes draw-mark {
@@ -64,7 +76,8 @@ svg {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :host-context(:root:not([data-motion='full'])) .ink {
+  :host-context(:root:not([data-motion='full'])) .ink,
+  :host-context(:root:not([data-motion='full'])) .halo {
     animation: none;
   }
 }

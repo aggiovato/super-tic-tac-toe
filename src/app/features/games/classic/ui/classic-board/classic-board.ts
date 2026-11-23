@@ -1,7 +1,8 @@
 import { Component, computed, inject, linkedSignal } from '@angular/core';
 import { ClassicStore } from '@classic/state';
 import { Translator } from '@i18n';
-import { BoardCell, type CellView, clampSegment, gridStrike, StrikeLine } from '@ui';
+import { BoardCell, type CellView, clampSegment, ClosingMark, gridStrike, StrikeLine } from '@ui';
+import { Preferences } from '@preferences';
 import type { Mark } from '@tictac';
 
 const glyphOf = (mark: Mark): string => (mark === 'X' ? 'x' : mark === 'O' ? 'o' : ' ');
@@ -18,11 +19,13 @@ const STEPS: Readonly<Record<string, (cell: number) => number>> = {
 
 /**
  * The classic board: one 3×3 grid of the same cells, marks and strike line as Super 3T's boards.
- * One cell is in the tab order (roving focus); arrows move it, Enter and Space play.
+ * One cell is in the tab order (roving focus); arrows move it, Enter and Space play. It ends as a
+ * Super 3T board closes: the line, then the large mark (the winner's in the win colour, `=` on a
+ * draw) and, on a win, the same three flashes as Super 3T's winning boards.
  */
 @Component({
   selector: 'app-classic-board',
-  imports: [BoardCell, StrikeLine],
+  imports: [BoardCell, ClosingMark, StrikeLine],
   templateUrl: './classic-board.html',
   styleUrl: './classic-board.css',
 })
@@ -50,6 +53,33 @@ export class ClassicBoard {
     const status = this.store.game().status;
     return status.kind === 'won' ? clampSegment(gridStrike(status.line)) : null;
   });
+
+  /** The large mark over the finished board: the winner's, or `=` for a draw. */
+  protected readonly closing = computed((): 'X' | 'O' | '=' | null => {
+    const status = this.store.game().status;
+    return status.kind === 'won' ? status.winner : status.kind === 'drawn' ? '=' : null;
+  });
+
+  protected readonly won = computed(() => this.store.game().status.kind === 'won');
+
+  /** Whether this board saw the game under way: a game restored already over ends without a show. */
+  private readonly sawPlay = linkedSignal<boolean, boolean>({
+    source: () => this.store.isOver(),
+    computation: (over, previous) => !over || (previous?.value ?? false),
+  });
+
+  /**
+   * The game just ended here: the large mark draws on. `sawPlay` is read first, on every change,
+   * so it records the game under way before it ends.
+   */
+  protected readonly fresh = computed(() => this.sawPlay() && this.store.isOver());
+
+  /** A win just made, motion allowed: the board flashes three times. */
+  protected readonly celebrate = computed(
+    () => this.fresh() && this.won() && !this.reducedMotion(),
+  );
+
+  private readonly reducedMotion = inject(Preferences).reducedMotion;
 
   /** The cell in the tab order: the last one played, or the centre. */
   protected readonly roving = linkedSignal(() => this.store.lastMove()?.cell ?? 4);

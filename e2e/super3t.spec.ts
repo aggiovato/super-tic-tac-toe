@@ -212,7 +212,7 @@ test('the three boards that win the game flash', async ({ page }) => {
         .getAnimations()
         .filter(
           (animation) =>
-            animation instanceof CSSAnimation && animation.animationName.endsWith('spark-win'),
+            animation instanceof CSSAnimation && animation.animationName.endsWith('win-flash'),
         )
         .map((animation) => {
           const target =
