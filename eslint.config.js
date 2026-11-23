@@ -60,12 +60,14 @@ const NO_APP_LAYERS = {
   message: 'core, ai and challenge must not import app layers.',
 };
 
-// Lines that count are code: blank lines and comments are skipped.
+// Lines that count in a function are code: blank lines and comments are skipped.
 const EFFECTIVE = { skipBlankLines: true, skipComments: true };
 
 // Size and shape limits. A file past them is split into components or helpers, not raised.
 const SIZE_LIMITS = {
-  'max-lines': ['error', { max: 500, ...EFFECTIVE }],
+  // Every line of a file counts, comments too: no .ts or .html file (specs and e2e included) is
+  // longer than 500 lines.
+  'max-lines': ['error', { max: 500 }],
   'max-lines-per-function': ['error', { max: 80, ...EFFECTIVE }],
   complexity: ['error', 15],
   'max-depth': ['error', 4],
@@ -213,10 +215,10 @@ module.exports = defineConfig([
   },
   ...OTHER_GAMES,
   {
-    // Specs read as one long `describe` of scenarios: longer files and callbacks, nested suites.
+    // Specs read as one long `describe` of scenarios: longer callbacks and nested suites, but the
+    // same 500 lines per file (split by topic past them).
     files: ['**/*.spec.ts', 'e2e/**/*.ts'],
     rules: {
-      'max-lines': ['error', { max: 1000, ...EFFECTIVE }],
       'max-lines-per-function': 'off',
       'max-nested-callbacks': ['error', 5],
     },

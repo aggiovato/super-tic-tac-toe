@@ -14,8 +14,8 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type { BoardStatus, Move } from '@super3t/core';
-import { type Messages, Translator } from '@i18n';
+import type { Move } from '@super3t/core';
+import { Translator } from '@i18n';
 import {
   fadeIn,
   fadeOut,
@@ -30,26 +30,11 @@ import { Preferences } from '@preferences';
 import { Super3tStore } from '@super3t/state';
 import { type CellPointer, BoardPlatform } from '../board-platform/board-platform';
 import { BoardThumbnail } from '../board-thumbnail/board-thumbnail';
-import {
-  clampSegment,
-  GAME_OVERSHOOT,
-  globalIndex,
-  glyphOf,
-  gridStrike,
-  INDICES,
-  moveAt,
-  overshoot,
-} from './board-geometry';
+import { ARROWS, globalIndex, INDICES, moveAt, nextValid } from './board-geometry';
+import { measureWinLine, slotElement, slotsExcept, zoomMotion } from './board-dom';
+import { platformViews } from './platform-views';
+import type { BoardMode as Mode } from './board.model';
 import type { PlatformView } from '../board-platform/platform-view.model';
-
-/** How the board is played right now. */
-type Mode =
-  /** Wide layout: every cell is a button. */
-  | 'direct'
-  /** Narrow layout, global view: pick a board to open. */
-  | 'pick'
-  /** Narrow layout, one board open with a thumbnail of the whole game. */
-  | 'zoom';
 
 /** Below this width a cell would be under 44 px: boards are picked, then played open. */
 const COMPACT_QUERY = '(max-width: 34.99rem)';
@@ -57,42 +42,6 @@ const COMPACT_QUERY = '(max-width: 34.99rem)';
 const PAUSE_BEFORE_OPEN_MS = 480;
 /** Hover intent: a preview appears or clears only once the pointer settles. */
 const PREVIEW_DELAY_MS = 140;
-const ARROWS: Readonly<Record<string, readonly [number, number]>> = {
-  ArrowUp: [-1, 0],
-  ArrowDown: [1, 0],
-  ArrowLeft: [0, -1],
-  ArrowRight: [0, 1],
-};
-
-/** The large mark over a board: its winner, `=` for a draw, nothing while it is open. */
-const closingOf = (status: BoardStatus | undefined): PlatformView['closing'] => {
-  switch (status?.kind) {
-    case 'won':
-      return status.winner;
-    case 'drawn':
-      return '=';
-    default:
-      return null;
-  }
-};
-
-/** A board's accessible name, which says how it closed. */
-const boardLabel = (t: Messages, board: number, status: BoardStatus | undefined): string => {
-  switch (status?.kind) {
-    case 'won':
-      return t.closedWon(board + 1, status.winner);
-    case 'drawn':
-      return t.closedDrawn(board + 1);
-    default:
-      return t.board(board + 1);
-  }
-};
-
-const easingOf = (value: string | undefined): string => {
-  const easing = value?.trim() ?? '';
-  return easing.length > 0 ? easing : 'ease-in-out';
-};
-
 /**
  * The nine numbered platforms. One keyboard entry point: Tab lands on a single roving item and
  * the arrow keys jump to the next legal option in that direction; Escape leaves an open board.
@@ -163,50 +112,16 @@ export class Super3tBoard {
   /** Every platform's view, derived once per change of the game, mode, preview or language. */
   protected readonly platforms = computed((): readonly PlatformView[] => {
     const game = this.store.game();
-    const t = this.t();
-    const mode = this.mode();
-    const legal = this.legalKeys();
-    const last = this.store.lastMove();
-    const playable = this.store.playableBoards();
-    const previewTarget = this.store.previewTarget();
-    const { status, target } = game;
-    const freshBoard = game.revision === this.seenAt() ? null : (last?.board ?? null);
-    const motion = !this.preferences.reducedMotion();
-    return INDICES.map((board) => {
-      const boardStatus = game.boards[board];
-      const forced = target.kind === 'forced' && target.board === board;
-      const closing = closingOf(boardStatus);
-      const fresh = closing !== null && freshBoard === board;
-      const win = status.kind === 'won' && status.line.includes(board);
-      return {
-        board,
-        number: String(board + 1),
-        label: boardLabel(t, board, boardStatus),
-        forced,
-        freePick: target.kind === 'free' && playable.has(board),
-        playable: playable.has(board),
-        closed: boardStatus?.kind !== 'open',
-        preview: previewTarget === board,
-        win,
-        winSpark: motion && win,
-        spin: forced ? game.revision : 0,
-        closing,
-        fresh,
-        spark: motion && fresh,
-        strike: boardStatus?.kind === 'won' ? gridStrike(boardStatus.line) : null,
-        cells: INDICES.map((cell) => {
-          const mark = game.cells[board]?.[cell] ?? null;
-          return {
-            cell,
-            mark,
-            glyph: glyphOf(mark),
-            legal: legal.has(board * 9 + cell),
-            last: last?.board === board && last.cell === cell,
-            label: t.cell(board + 1, cell + 1, mark),
-            roving: mode === 'zoom' ? cell : globalIndex(board, cell),
-          };
-        }),
-      };
+    return platformViews({
+      game,
+      t: this.t(),
+      mode: this.mode(),
+      legal: this.legalKeys(),
+      last: this.store.lastMove(),
+      playable: this.store.playableBoards(),
+      previewTarget: this.store.previewTarget(),
+      freshBoard: game.revision === this.seenAt() ? null : (this.store.lastMove()?.board ?? null),
+      motion: !this.preferences.reducedMotion(),
     });
   });
 
@@ -474,27 +389,13 @@ export class Super3tBoard {
   /** The win line in percent of the board, from the rendered grids; null when there is none. */
   private measureWinLine(): Segment | null {
     const status = this.store.game().status;
-    const board = this.host.nativeElement.querySelector<HTMLElement>('.board');
-    if (status.kind !== 'won' || this.mode() === 'zoom' || !board) {
-      return null;
-    }
-    const frame = board.getBoundingClientRect();
-    const centre = (index: number) => {
-      const grid = board.querySelector(`[data-cells="${index}"]`)?.getBoundingClientRect();
-      return grid
-        ? {
-            x: ((grid.left + grid.width / 2 - frame.left) / frame.width) * 100,
-            y: ((grid.top + grid.height / 2 - frame.top) / frame.height) * 100,
-          }
-        : null;
-    };
-    const a = centre(status.line[0]);
-    const b = centre(status.line[2]);
-    return a && b ? clampSegment(overshoot(a, b, GAME_OVERSHOOT)) : null;
+    return status.kind === 'won' && this.mode() !== 'zoom'
+      ? measureWinLine(this.host.nativeElement, status.line[0], status.line[2])
+      : null;
   }
 
   /** Next legal option in the arrow's direction, or the current one when there is none. */
-  private nextOption(index: number, [dRow, dCol]: readonly [number, number]): number {
+  private nextOption(index: number, step: readonly [number, number]): number {
     const mode = this.mode();
     const size = mode === 'direct' ? 9 : 3;
     const valid = (i: number): boolean => {
@@ -507,16 +408,7 @@ export class Super3tBoard {
       }
       return this.store.playableBoards().has(i);
     };
-    let row = Math.floor(index / size) + dRow;
-    let col = (index % size) + dCol;
-    while (row >= 0 && row < size && col >= 0 && col < size) {
-      if (valid(row * size + col)) {
-        return row * size + col;
-      }
-      row += dRow;
-      col += dCol;
-    }
-    return index;
+    return nextValid(index, step, size, valid);
   }
 
   /**
@@ -541,14 +433,11 @@ export class Super3tBoard {
   }
 
   private slotsExcept(board: number): Element[] {
-    const slot = this.slotElement(board);
-    return [...this.host.nativeElement.querySelectorAll('[data-board]')].filter(
-      (element) => element !== slot,
-    );
+    return slotsExcept(this.host.nativeElement, board);
   }
 
   private slotElement(board: number): HTMLElement | null {
-    return this.host.nativeElement.querySelector<HTMLElement>(`[data-board="${board}"]`);
+    return slotElement(this.host.nativeElement, board);
   }
 
   private zoomElement(): HTMLElement | null {
@@ -560,11 +449,7 @@ export class Super3tBoard {
     if (this.preferences.reducedMotion()) {
       return null;
     }
-    const style = this.document.defaultView?.getComputedStyle(this.host.nativeElement);
-    return {
-      duration: Number.parseFloat(style?.getPropertyValue('--duration-zoom') ?? '') || 520,
-      easing: easingOf(style?.getPropertyValue('--ease-zoom')),
-    };
+    return zoomMotion(this.document.defaultView?.getComputedStyle(this.host.nativeElement));
   }
 
   private focusRoving(): void {
