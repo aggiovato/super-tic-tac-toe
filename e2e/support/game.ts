@@ -65,6 +65,7 @@ export async function asReturningVisitor({ page }: { page: Page }): Promise<void
 /** Switches to playing against the computer from the settings panel. */
 export async function againstComputer(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('tab', { name: 'Players' }).click();
   await page.getByRole('radio', { name: 'Against the opponent' }).check();
   await page.getByRole('button', { name: 'Close settings' }).click();
 }

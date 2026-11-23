@@ -30,8 +30,8 @@
             class="tab"
             [id]="'settings-tab-' + tab.id"
             [attr.aria-controls]="'settings-section-' + tab.id"
-            [attr.aria-selected]="tab.id === section()"
-            [tabIndex]="tab.id === section() ? 0 : -1"
+            [attr.aria-selected]="tab.id === shownSection()"
+            [tabIndex]="tab.id === shownSection() ? 0 : -1"
             (click)="section.set(tab.id)"
             (keydown)="onTabKey($event)"
           >
@@ -41,27 +41,43 @@
       </div>
     </header>
 
-    @if (section() === 'game') {
+    @if (shownSection() === 'game') {
       <div
         id="settings-section-game"
         class="section"
         role="tabpanel"
         aria-labelledby="settings-tab-game"
       >
-        @if (!online()) {
-          <!-- The game's own settings. -->
-          <ng-content />
+        <!-- The game's own settings. -->
+        <ng-content />
 
+        <button
+          [app-button]="reset.pending() ? 'primary' : 'secondary'"
+          class="w-full"
+          (click)="newSeries()"
+        >
+          {{ reset.pending() ? t().settings.confirmNewSeries : t().settings.newSeries }}
+        </button>
+      </div>
+    } @else if (shownSection() === 'players') {
+      <div
+        id="settings-section-players"
+        class="section"
+        role="tabpanel"
+        aria-labelledby="settings-tab-players"
+      >
+        @if (!online()) {
+          <!-- Who this device plays against; a room is only created from its invitation. -->
           <app-choice-group
             name="mode"
             layout="segmented"
             [legend]="t().settings.mode"
-            [options]="modeOptions()"
-            [selected]="shownMode()"
-            (chosen)="setMode($event)"
+            [options]="whoOptions()"
+            [selected]="shownWho()"
+            (chosen)="setWho($event)"
           />
 
-          @if (shownMode() === 'computer') {
+          @if (shownWho() === 'computer') {
             <app-choice-group
               name="level"
               layout="segmented"
@@ -77,12 +93,6 @@
               {{ t().settings.confirmModeChange }}
             </button>
           }
-
-          <app-online-start
-            [gameId]="game.id"
-            [variant]="game.match.variant()"
-            (opened)="close()"
-          />
         }
 
         <fieldset>
@@ -102,14 +112,12 @@
           }
         </fieldset>
 
-        @if (!online()) {
-          <button
-            [app-button]="reset.pending() ? 'primary' : 'secondary'"
-            class="w-full"
-            (click)="newSeries()"
-          >
-            {{ reset.pending() ? t().settings.confirmNewSeries : t().settings.newSeries }}
-          </button>
+        @if (shownWho() === 'online' && !online()) {
+          <app-online-start
+            [gameId]="game.id"
+            [variant]="game.match.variant()"
+            (opened)="close()"
+          />
         }
       </div>
     } @else {

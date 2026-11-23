@@ -115,6 +115,7 @@ test('settings switch language, rename players and need a second press to reset'
   page,
 }) => {
   await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('tab', { name: 'Players' }).click();
   // A real click in the field, then typing: a window listener once cancelled every press.
   await page.getByLabel('Player 1 name').click();
   await page.keyboard.type('Ana');
@@ -127,6 +128,8 @@ test('settings switch language, rename players and need a second press to reset'
 
   // Arrow keys move between the tabs.
   await page.getByRole('tab', { name: 'Aplicación' }).press('ArrowLeft');
+  await expect(page.getByRole('tab', { name: 'Jugadores' })).toBeFocused();
+  await page.getByRole('tab', { name: 'Jugadores' }).press('ArrowLeft');
   await expect(page.getByRole('tab', { name: 'Partida' })).toBeFocused();
   await expect(page.getByRole('tabpanel', { name: 'Partida' })).toBeVisible();
   await page.getByRole('button', { name: 'Nueva serie' }).click();
@@ -277,6 +280,7 @@ test.describe('against the opponent', () => {
     await play(page, 4, 2);
     await expect(status(page)).toHaveText('O to move. Must play on board 3.');
     await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('tab', { name: 'Players' }).click();
     await page.getByRole('radio', { name: 'Against the opponent' }).check();
     const confirm = page.getByRole('button', { name: 'Switch and clear the score' });
     await expect(confirm).toBeVisible();
@@ -288,7 +292,7 @@ test.describe('against the opponent', () => {
     await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
   });
 
-  // Each level is a train: its name in the level choice, the score and the status.
+  // Each level is a rank: its name in the level choice, the score and the status.
   for (const [level, train] of [
     ['Intermediate', 'Veteran'],
     ['Advanced', 'Master'],
@@ -296,6 +300,7 @@ test.describe('against the opponent', () => {
     test(`the ${level.toLowerCase()} level answers too, and is remembered`, async ({ page }) => {
       await againstComputer(page);
       await page.getByRole('button', { name: 'Settings' }).click();
+      await page.getByRole('tab', { name: 'Players' }).click();
       await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
       for (let round = 0; round < 2; round++) {
@@ -305,6 +310,7 @@ test.describe('against the opponent', () => {
       }
       await page.reload();
       await page.getByRole('button', { name: 'Settings' }).click();
+      await page.getByRole('tab', { name: 'Players' }).click();
       await expect(page.getByRole('radio', { name: train })).toBeChecked();
     });
   }
@@ -314,6 +320,7 @@ test.describe('against the opponent', () => {
     await page.reload();
     await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
     await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('tab', { name: 'Players' }).click();
     await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'Rookie' })).toBeChecked();
     await expect(page.getByLabel('Player 2 name')).toHaveCount(0);

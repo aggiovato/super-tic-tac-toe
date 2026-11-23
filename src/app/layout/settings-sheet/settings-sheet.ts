@@ -24,7 +24,6 @@ import {
   DESIGNS,
   type MotionSetting,
   NAME_MAX_LENGTH,
-  PLAY_MODES,
   type PlayMode,
   type PlaySetup,
   Preferences,
@@ -34,12 +33,17 @@ import { OnlineStart } from '@online';
 import { CONFIRM_WINDOW_MS, TwoPress } from '../two-press';
 
 const MOTIONS: readonly MotionSetting[] = ['system', 'full', 'reduced'];
-const SECTIONS = ['game', 'app'] as const;
+const SECTIONS = ['game', 'players', 'app'] as const;
 type Section = (typeof SECTIONS)[number];
+/** Who this device plays against: a play mode, or a room online (created from its invitation). */
+type Who = PlayMode | 'online';
+const WHO: readonly Who[] = ['computer', 'local', 'online'];
 
 /**
- * Settings in two tabs. Game: which game, the game's own settings (projected content), who plays
- * (mode and level), names and a new series. App: language, motion and design.
+ * Settings in three tabs. Game: the game's own settings (projected content) and a new series.
+ * Players: who plays (the computer and its level, two people here, or an online room) and the
+ * names. App: language, motion and design. Inside an online room the game is the room's, so only
+ * Players (the names) and App are offered.
  */
 @Component({
   selector: 'app-settings-sheet',
@@ -56,11 +60,22 @@ export class SettingsSheet {
 
   protected readonly nameMaxLength = NAME_MAX_LENGTH;
 
-  /** The open tab: this game's settings, or the app's. */
+  /** The tab last chosen. */
   protected readonly section = signal<Section>('game');
 
+  /** The tabs offered: the game's own is the room's while playing online. */
+  private readonly sections = computed((): readonly Section[] =>
+    this.online() ? SECTIONS.filter((id) => id !== 'game') : SECTIONS,
+  );
+
+  /** The open tab: the one chosen, or the first offered when it is not. */
+  protected readonly shownSection = computed((): Section => {
+    const sections = this.sections();
+    return sections.includes(this.section()) ? this.section() : (sections[0] ?? 'app');
+  });
+
   protected readonly tabs = computed(() =>
-    SECTIONS.map((id) => ({ id, label: this.t().settings.sectionNames[id] })),
+    this.sections().map((id) => ({ id, label: this.t().settings.sectionNames[id] })),
   );
 
   /** Each language is offered in its own name and language. */
@@ -82,9 +97,13 @@ export class SettingsSheet {
     return MOTIONS.map((motion) => ({ value: motion, label: labels[motion] }));
   });
 
-  protected readonly modeOptions = computed((): readonly ChoiceOption<PlayMode>[] =>
-    PLAY_MODES.map((mode) => ({ value: mode, label: this.t().settings.modes[mode] })),
-  );
+  protected readonly whoOptions = computed((): readonly ChoiceOption<Who>[] => {
+    const s = this.t().settings;
+    return WHO.map((who) => ({
+      value: who,
+      label: who === 'online' ? s.onlineMode : s.modes[who],
+    }));
+  });
 
   protected readonly levelOptions = computed((): readonly ChoiceOption<ComputerLevel>[] =>
     COMPUTER_LEVELS.map((level, i) => ({
@@ -106,7 +125,7 @@ export class SettingsSheet {
 
   /** Name fields: against the computer or online only this device's player has one. */
   protected readonly nameFields = computed((): readonly (0 | 1)[] =>
-    this.online() || this.setup().mode === 'computer' ? [0] : [0, 1],
+    this.online() || this.shownWho() !== 'local' ? [0] : [0, 1],
   );
 
   /** "New series" asks once more before clearing the score. */
@@ -121,6 +140,12 @@ export class SettingsSheet {
 
   protected readonly shownMode = computed(() => (this.pendingSetup() ?? this.setup()).mode);
   protected readonly shownLevel = computed(() => (this.pendingSetup() ?? this.setup()).level);
+
+  /** "Online room" chosen: its invitation shows; the mode changes only once a room opens. */
+  private readonly inviting = signal(false);
+  protected readonly shownWho = computed((): Who =>
+    this.inviting() ? 'online' : this.shownMode(),
+  );
 
   private readonly sheet = viewChild.required<ElementRef<HTMLElement>>('sheet');
   private readonly handle = viewChild.required<ElementRef<HTMLElement>>('handle');
@@ -152,8 +177,14 @@ export class SettingsSheet {
     this.sheet().nativeElement.hidePopover();
   }
 
-  protected setMode(mode: PlayMode): void {
-    this.requestSetup({ mode, level: this.shownLevel() });
+  protected setWho(who: Who): void {
+    if (who === 'online') {
+      this.clearPending();
+      this.inviting.set(true);
+      return;
+    }
+    this.inviting.set(false);
+    this.requestSetup({ mode: who, level: this.shownLevel() });
   }
 
   protected setLevel(level: ComputerLevel): void {
@@ -201,8 +232,9 @@ export class SettingsSheet {
 
   /** Arrow keys, Home and End move between the tabs, which follow focus (ARIA tabs pattern). */
   protected onTabKey(event: KeyboardEvent): void {
-    const current = SECTIONS.indexOf(this.section());
-    const last = SECTIONS.length - 1;
+    const sections = this.sections();
+    const current = sections.indexOf(this.shownSection());
+    const last = sections.length - 1;
     const next: Record<string, number> = {
       ArrowRight: current === last ? 0 : current + 1,
       ArrowLeft: current === 0 ? last : current - 1,
@@ -210,12 +242,13 @@ export class SettingsSheet {
       End: last,
     };
     const index = next[event.key];
-    if (index === undefined) {
+    const section = index === undefined ? undefined : sections[index];
+    if (section === undefined) {
       return;
     }
     event.preventDefault();
-    this.section.set(SECTIONS[index]);
-    this.host.nativeElement.querySelector<HTMLElement>(`#settings-tab-${SECTIONS[index]}`)?.focus();
+    this.section.set(section);
+    this.host.nativeElement.querySelector<HTMLElement>(`#settings-tab-${section}`)?.focus();
   }
 
   protected newSeries(): void {
