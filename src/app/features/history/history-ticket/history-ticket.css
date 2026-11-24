@@ -28,20 +28,66 @@
   align-items: flex-start;
 }
 
-.history::backdrop {
-  background: var(--color-shade);
+/*
+ * In and out with the veil, as the how-to-play ticket: the tickets rise into place (the second a
+ * beat later) and closing lowers them and fades them quicker. `allow-discrete` keeps the dialog
+ * drawn until its exit has run; only then does the game's route come back (`HistoryTicket.leave`).
+ */
+.history {
+  --ticket-shift: 2rem;
+
+  transition:
+    display var(--duration-frame) allow-discrete,
+    overlay var(--duration-frame) allow-discrete;
+}
+
+.history[open] {
+  transition-duration: 0s, 0s;
+}
+
+.history .ticket {
+  translate: 0 var(--ticket-shift);
+  opacity: 0;
+  transition:
+    translate var(--duration-frame) var(--ease-zoom),
+    opacity var(--duration-frame) var(--ease-out);
 }
 
 .history[open] .ticket {
-  animation: rise var(--duration-zoom) var(--ease-zoom) both;
+  translate: 0 0;
+  opacity: 1;
+  transition-duration: var(--duration-zoom);
 }
 
 .history[open] .second {
-  animation-delay: calc(var(--duration-step) * 2);
+  transition-delay: calc(var(--duration-step) * 2);
+}
+
+@starting-style {
+  .history[open] .ticket {
+    translate: 0 var(--ticket-shift);
+    opacity: 0;
+  }
+}
+
+.history::backdrop {
+  background: var(--color-shade);
+  opacity: 0;
+  transition:
+    opacity var(--duration-frame) var(--ease-out),
+    display var(--duration-frame) allow-discrete,
+    overlay var(--duration-frame) allow-discrete;
 }
 
 .history[open]::backdrop {
-  animation: dim var(--duration-zoom) var(--ease-out);
+  opacity: 1;
+  transition-duration: var(--duration-zoom), 0s, 0s;
+}
+
+@starting-style {
+  .history[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 .ticket {
@@ -274,22 +320,8 @@
   width: min(56rem, 100vw - 2 * var(--spacing-gutter));
 }
 
-@keyframes rise {
-  from {
-    translate: 0 2rem;
-    opacity: 0;
-  }
-}
-
-@keyframes dim {
-  from {
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  :host-context(:root:not([data-motion='full'])) .ticket,
-  :host-context(:root:not([data-motion='full'])) .history::backdrop {
-    animation: none;
+  :host-context(:root:not([data-motion='full'])) .history {
+    --ticket-shift: 0;
   }
 }

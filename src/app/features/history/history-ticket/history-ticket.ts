@@ -183,10 +183,22 @@ export class HistoryTicket {
   }
 
   /**
-   * However the dialog closed, the game is where it goes back to: a step back when the game opened
-   * it (so closing leaves no extra entry behind), the game's route in its place after a link.
+   * However the dialog closed, the game is where it goes back to, once the tickets have finished
+   * leaving (the route change would cut their exit short): a step back when the game opened it (so
+   * closing leaves no extra entry behind), the game's route in its place after a link.
    */
   protected leave(): void {
+    void this.exited().then(() => this.backToGame());
+  }
+
+  /** Settles when the closing transitions have run; at once without motion. */
+  private exited(): Promise<void> {
+    // Reading the animations flushes styles, so the exit transitions have started by now.
+    const running = this.dialog().nativeElement.getAnimations({ subtree: true });
+    return Promise.allSettled(running.map((animation) => animation.finished)).then(() => undefined);
+  }
+
+  private backToGame(): void {
     if (this.openedFromGame) {
       this.location.back();
       return;

@@ -29,6 +29,9 @@ new version and date.
 
 - The English copy no longer calls the opponent "ComputerPlayer".
 - A link to a game's history no longer opens the first-visit how-to-play over it.
+- On wide screens the games aside folds and unfolds smoothly instead of jumping, and the
+  how-to-play and history tickets close by lowering and fading with their veil instead of
+  vanishing.
 
 ## [0.5.0] - 2026-11-23
 

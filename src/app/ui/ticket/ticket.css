@@ -25,16 +25,54 @@
   filter: drop-shadow(0 -0.375rem 1.5rem var(--color-shade));
 }
 
-.ticket::backdrop {
-  background: var(--color-shade);
+/*
+ * In and out with the veil: it rises into place, and closing lowers it and fades it a little
+ * quicker, as every exit in the app. `allow-discrete` keeps the dialog drawn (and in the top layer)
+ * until its exit has run.
+ */
+.ticket {
+  --ticket-shift: 2rem;
+
+  translate: 0 var(--ticket-shift);
+  opacity: 0;
+  transition:
+    translate var(--duration-frame) var(--ease-zoom),
+    opacity var(--duration-frame) var(--ease-out),
+    display var(--duration-frame) allow-discrete,
+    overlay var(--duration-frame) allow-discrete;
 }
 
 .ticket[open] {
-  animation: rise var(--duration-zoom) var(--ease-zoom);
+  translate: 0 0;
+  opacity: 1;
+  transition-duration: var(--duration-zoom), var(--duration-zoom), 0s, 0s;
+}
+
+@starting-style {
+  .ticket[open] {
+    translate: 0 var(--ticket-shift);
+    opacity: 0;
+  }
+}
+
+.ticket::backdrop {
+  background: var(--color-shade);
+  opacity: 0;
+  transition:
+    opacity var(--duration-frame) var(--ease-out),
+    display var(--duration-frame) allow-discrete,
+    overlay var(--duration-frame) allow-discrete;
 }
 
 .ticket[open]::backdrop {
-  animation: dim var(--duration-zoom) var(--ease-out);
+  opacity: 1;
+  transition-duration: var(--duration-zoom), 0s, 0s;
+}
+
+@starting-style {
+  .ticket[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 .card {
@@ -93,22 +131,9 @@
   }
 }
 
-@keyframes rise {
-  from {
-    translate: 0 2rem;
-    opacity: 0;
-  }
-}
-
-@keyframes dim {
-  from {
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .ticket[open],
-  :root:not([data-motion='full']) .ticket[open]::backdrop {
-    animation: none;
+  /* No travel, only the fade (the global `data-motion='reduced'` rule drops even that). */
+  :host-context(:root:not([data-motion='full'])) .ticket {
+    --ticket-shift: 0;
   }
 }
