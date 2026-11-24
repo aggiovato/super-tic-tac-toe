@@ -38,10 +38,11 @@ paths:
   `scripts/check-architecture.mjs` (the blocks' dependencies against `DEPENDS`, no cycles, and a
   consistent structure: aliases, index files, `SHARED` and `GAMES` in ESLint, the catalog's games).
   `scripts/*.spec.mjs` (in `test:core`) prove both checks and ESLint's boundary rules still bite.
-- Size limits (`SIZE_LIMITS` in `eslint.config.js`, effective lines: no blanks or comments):
-  500 lines per `.ts` or `.html` file, 80 per function, complexity 15, depth 4, 4 parameters,
-  3 nested callbacks. Specs and e2e: 1000 lines, no function limit, 5 nested callbacks. Past a
-  limit, split into components or helpers; do not raise it.
+- Size limits (`SIZE_LIMITS` in `eslint.config.js`): **500 lines per `.ts` or `.html` file, every
+  line counted** (comments and blank lines too), specs and e2e included; 80 effective lines per
+  function (no blanks or comments), complexity 15, depth 4, 4 parameters, 3 nested callbacks.
+  Specs and e2e: no function limit and 5 nested callbacks. Past a limit, split into components or
+  helpers (specs by topic, their shared helpers in `e2e/support/`); do not raise it.
 - Pre-commit hook (husky + lint-staged, `lint-staged.config.mjs`): ESLint `--fix` and Prettier on
   staged files, plus the token check. Installed by `npm ci` (`prepare`). It never replaces
   `task check`.
