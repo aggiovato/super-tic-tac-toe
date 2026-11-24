@@ -272,7 +272,7 @@ A native popover. On wide screens a full-height sheet on the right (up to 24rem)
 
 ### Opponent Levels
 
-The computer opponent is named after its level, a train from slowest to fastest: Cercanías, Regional, Expreso (Local, Regional, Express). The name replaces "Rival" wherever the opponent is named: the score, the status sentences, the line and cell labels and the history. Beside its name in the score and in the settings' level choice, `LevelBars` (`@ui`) shows the level as three rising bars, filled up to it (one, two or all three), in the text's own colour: shape, not colour, so it never competes with the player inks or Apricot. Screen readers hear the level in words after the name ("Expreso, Avanzado").
+The computer opponent is named after its level, a rank that says how strong it plays: Novato, Veterano, Maestro (Rookie, Veteran, Master). The name replaces "Rival" wherever the opponent is named: the score, the status sentences, the line and cell labels and the history. Beside its name in the score and in the settings' level choice, `LevelBars` (`@ui`) shows the level as three rising bars, filled up to it (one, two or all three), in the text's own colour: shape, not colour, so it never competes with the player inks or Apricot. Screen readers hear the level in words after the name ("Maestro, Avanzado").
 
 ### Update Notice
 

@@ -127,7 +127,7 @@ test('an invitation to a room that does not exist says so and offers local play'
   await expect(page).toHaveURL(/\/classic$/);
 });
 
-test('coming back to a room left by navigating asks first; leaving it skips it in the history', async ({
+test('the history opens over a room; coming back to a room left asks first, leaving skips it', async ({
   browser,
 }) => {
   const host = await device(browser);
@@ -140,8 +140,17 @@ test('coming back to a room left by navigating asks first; leaving it skips it i
   await guest.page.goto(link);
   await expect(online(guest.page)).toContainText('connected');
 
-  // The host goes to the history and back: the room waits for them, and so does their rival.
+  // The history opens over the room: the host never leaves it.
   await host.page.getByRole('button', { name: 'History' }).click();
+  await expect(host.page.getByRole('dialog', { name: 'Classic history' })).toBeVisible();
+  await host.page.keyboard.press('Escape');
+  await expect(host.page).toHaveURL(/\/classic\/online\/[^/]+$/);
+  await expect(online(host.page)).toContainText('connected');
+
+  // The host goes to another game and back: the room waits for them, and so does their rival.
+  await host.page.getByRole('button', { name: 'Games' }).click();
+  await host.page.getByRole('link', { name: /^Boxes/ }).click();
+  await expect(host.page).toHaveURL(/\/dots$/);
   await expect(online(guest.page).getByText('offline')).toBeVisible();
   await host.page.goBack();
   await expect(online(host.page)).toContainText('You left this room.');

@@ -5,6 +5,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import {
+  type ActivatedRouteSnapshot,
   PreloadAllModules,
   provideRouter,
   withAutoCleanupInjectors,
@@ -18,6 +19,15 @@ import { provideAppUpdates } from '@pwa';
 import { GAME_PREVIEW_COMPONENTS } from './game-ui';
 import { provideGameRepository } from '@storage';
 import { routes } from './app.routes';
+
+/** Whether the deepest route of a navigation opens over its page (`data.overlay`). */
+function isOverlay(snapshot: ActivatedRouteSnapshot): boolean {
+  let route = snapshot;
+  while (route.firstChild) {
+    route = route.firstChild;
+  }
+  return route.data['overlay'] === true;
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,8 +43,9 @@ export const appConfig: ApplicationConfig = {
       // starts its page change at once instead of waiting for its chunk.
       withPreloading(PreloadAllModules),
       withViewTransitions({
-        onViewTransitionCreated: ({ transition }) => {
-          if (inject(Preferences).reducedMotion()) {
+        onViewTransitionCreated: ({ transition, from, to }) => {
+          // A ticket opening or closing over the game (the history) is not a page change.
+          if (inject(Preferences).reducedMotion() || isOverlay(from) || isOverlay(to)) {
             transition.skipTransition();
           }
         },

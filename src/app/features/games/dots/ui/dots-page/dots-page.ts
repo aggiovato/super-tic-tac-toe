@@ -1,3 +1,4 @@
+import { ActivatedRoute } from '@angular/router';
 import { afterNextRender, Component, inject, viewChild } from '@angular/core';
 import { Translator } from '@i18n';
 import { Preferences } from '@preferences';
@@ -43,9 +44,11 @@ export class DotsPage {
     // The store restores the saved match (or starts the saved setup); the app opens here next time.
     const preferences = inject(Preferences);
     preferences.setLastGame('dots');
-    // First visit: the how-to-play ticket, once; Settings reopens it.
+    // First visit: the how-to-play ticket, once; Settings reopens it. Not over a ticket of its own
+    // route (the history, opened by a link): that one was asked for.
+    const route = inject(ActivatedRoute);
     afterNextRender(() => {
-      if (!preferences.seenTutorials().has('dots')) {
+      if (!preferences.seenTutorials().has('dots') && !route.snapshot.firstChild?.data['overlay']) {
         this.howToPlay().open();
       }
     });

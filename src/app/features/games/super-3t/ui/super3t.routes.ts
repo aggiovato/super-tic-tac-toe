@@ -1,7 +1,7 @@
 import type { Routes } from '@angular/router';
 import { preloadMatch, provideMatchStorage, provideActiveGame } from '@match';
 import { openOnlineRoom, provideOnlineRoom } from '@online';
-import { HistoryPage } from '@history';
+import { historyRoute } from '@history';
 import { CHALLENGES } from '@super3t/challenge';
 import { provideChallenge, provideSuper3tSession, provideWorkerComputer } from '@super3t/session';
 import { Super3tStore } from '@super3t/state';
@@ -10,7 +10,6 @@ import { Super3tStore } from '@super3t/state';
 export const SUPER3T_ROUTES: Routes = [
   {
     path: '',
-    pathMatch: 'full',
     loadComponent: () => import('./super3t-page/super3t-page').then((m) => m.Super3tPage),
     // The store, its session and the opponent's Worker live and die with the game route.
     // The saved game is read before the page renders, so it fades in already in place.
@@ -22,6 +21,8 @@ export const SUPER3T_ROUTES: Routes = [
       Super3tStore,
       provideActiveGame('super-3t', Super3tStore),
     ],
+    // The history opens as a ticket over the game, which stays as it is.
+    children: [{ path: '', children: [] }, historyRoute('super-3t')],
   },
   {
     path: 'challenge/:id',
@@ -41,7 +42,8 @@ export const SUPER3T_ROUTES: Routes = [
       Super3tStore,
       provideActiveGame('super-3t', Super3tStore),
     ],
+    // The history opens as a ticket over the game, which stays as it is.
+    children: [{ path: '', children: [] }, historyRoute('super-3t')],
   },
-  { path: 'history', component: HistoryPage, data: { gameId: 'super-3t' } },
   { path: 'challenge', pathMatch: 'full', redirectTo: `challenge/${CHALLENGES[0]?.id ?? ''}` },
 ];

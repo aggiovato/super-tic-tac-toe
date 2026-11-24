@@ -7,6 +7,21 @@ new version and date.
 
 ## [Unreleased]
 
+### Changed
+
+- A game's history opens as a departure ticket over the game, which stays as it was: the totals
+  against the computer turn on split-flaps, each level shows its share of wins, draws and losses
+  and its latest form, and the latest games come with their results on flaps and a chart of how
+  long they lasted. Wide screens show results and latest games as two tickets side by side; phones,
+  one ticket with two tabs. Opened from an online room, the history no longer leaves the room.
+- The computer opponents are named by rank: Novato, Veterano and Maestro (Rookie, Veteran and
+  Master in English).
+
+### Fixed
+
+- The English copy no longer calls the opponent "ComputerPlayer".
+- A link to a game's history no longer opens the first-visit how-to-play over it.
+
 ## [0.5.0] - 2026-11-23
 
 ### Added

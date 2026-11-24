@@ -46,7 +46,7 @@ export const es: Messages = {
   showAll: 'Ver todos',
   defaultName: (index) => `Jugador ${index}`,
   opponent: 'Rival',
-  opponents: { beginner: 'Cercanías', intermediate: 'Regional', advanced: 'Expreso' },
+  opponents: { beginner: 'Novato', intermediate: 'Veterano', advanced: 'Maestro' },
   draws: 'Tablas',
   score: 'Marcador de la serie',
   rematch: 'Revancha',
@@ -125,6 +125,8 @@ export const es: Messages = {
     open: 'Historial',
     title: (game) => `Historial de ${game}`,
     back: 'Volver a la partida',
+    sections: 'Partes del historial',
+    results: 'Resultados',
     byLevel: 'Contra el rival',
     level: 'Nivel',
     wins: 'Victorias',
@@ -132,7 +134,7 @@ export const es: Messages = {
     losses: 'Derrotas',
     humans: (count) =>
       count === 1 ? '1 partida a dos personas.' : `${count} partidas a dos personas.`,
-    recent: 'Últimas partidas',
+    recent: 'Últimas salidas',
     empty: (game) => `Aún no has terminado ninguna partida de ${game}.`,
     won: 'Ganaste',
     lost: 'Perdiste',
@@ -140,6 +142,24 @@ export const es: Messages = {
     winner: (name) => `Gana ${name}`,
     moves: (count) => `${count} jugadas`,
     board: (variant) => `${variant}×${variant}`,
+    totals: (wins, draws, losses) =>
+      `Contra el rival: ${wins} victorias, ${draws} tablas y ${losses} derrotas.`,
+    flapResult: { won: 'V', drawn: 'T', lost: 'D' },
+    strip: (count) =>
+      count === 1
+        ? 'El resultado de la última partida'
+        : `Resultados de las ${count} últimas partidas`,
+    playFirst: 'Jugar la primera',
+    error: 'No se pudo leer el historial de este dispositivo.',
+    onlineNote: 'Las partidas online no se guardan en este dispositivo y no cuentan aquí.',
+    form: 'Forma por nivel',
+    formHint: 'Las últimas partidas contra cada nivel, de la más antigua a la más reciente.',
+    formRow: (name, wins, draws, losses) =>
+      `${name}: ${wins} victorias, ${draws} tablas y ${losses} derrotas en las últimas partidas.`,
+    length: 'Jugadas por partida',
+    lengthLabel: (count, least, most) =>
+      `Las ${count} últimas partidas duraron entre ${least} y ${most} jugadas.`,
+    legend: { won: 'Ganada', drawn: 'Tablas', lost: 'Perdida', people: 'A dos personas' },
   },
   dots: {
     flapTurn: 'JUEGA',

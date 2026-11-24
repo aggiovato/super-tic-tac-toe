@@ -1,10 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Translator } from '@i18n';
 import { Button, Icon } from '@ui';
-import { ACTIVE_GAME } from '@match';
 
-/** The masthead's way to the game's history. */
+/** The masthead's way to the game's history, opened over the game. */
 @Component({
   selector: 'app-history-link',
   imports: [Button, Icon],
@@ -18,10 +17,11 @@ import { ACTIVE_GAME } from '@match';
 })
 export class HistoryLink {
   protected readonly t = inject(Translator).t;
-  private readonly game = inject(ACTIVE_GAME);
   private readonly router = inject(Router);
+  /** The game's route: the history opens as its child, over the game (or the online room). */
+  private readonly route = inject(ActivatedRoute);
 
   protected open(): void {
-    void this.router.navigate(['/', this.game.id, 'history']);
+    void this.router.navigate(['history'], { relativeTo: this.route });
   }
 }
