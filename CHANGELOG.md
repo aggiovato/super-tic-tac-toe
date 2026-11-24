@@ -7,6 +7,8 @@ new version and date.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-24
+
 ### Added
 
 - Ship Sink, a fourth game: sink the rival fleet (10×10, ships of 5, 4, 3, 3 and 2 cells that never
@@ -236,7 +238,8 @@ First production release: Ultimate Tic Tac Toe for two people on one device.
 - Continuous integration with deploys to Netlify: a preview for every pull request and production
   for every version tag.
 
-[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.1...v0.4.0
