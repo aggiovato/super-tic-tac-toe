@@ -82,13 +82,6 @@
   }
 }
 
-/* Registered so the library column's width animates when it folds and unfolds. */
-@property --library-width {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 27rem;
-}
-
 /*
  * Wide landscape screens: the library of games joins as a column on the left, folding to a rail.
  * It sits outside the 80rem the game had on its own, so the board never grows past that size.
@@ -123,11 +116,19 @@
     max-width: none;
     /* The page's edge as wide as its top. */
     padding-inline: var(--spacing-stack-loose);
-    transition: --library-width var(--duration-frame) var(--ease-out);
+    /*
+     * The column's width moves with the grid's own tracks (only the first one changes, so they
+     * interpolate). A registered `--library-width` would read better but never got registered from
+     * here or from styles.css, so the width jumped. Unfolding takes its time; folding is quicker
+     * (set below), as every exit in the app.
+     */
+    transition: grid-template-columns var(--duration-zoom) var(--ease-out);
   }
 
   .game:has(.library.folded) {
     --library-width: 2.75rem;
+
+    transition-duration: var(--duration-frame);
   }
 
   .library {
@@ -147,14 +148,16 @@
   }
 
   /*
-   * The games keep their open width while the column narrows, so they slide out of view clipped
-   * instead of squeezing; they start right under the heading.
+   * The games keep their open width while the column narrows, so they are clipped by its edge
+   * instead of squeezing; they start right under the heading. Unfolding, they come in once the
+   * column has opened a little, from slightly to the left, as if the column had uncovered them.
    */
   .library app-game-library {
     flex: none;
     width: calc(var(--library-open) - var(--spacing-stack-loose));
     transition:
-      opacity var(--duration-quick) var(--ease-out),
+      opacity var(--duration-frame) var(--ease-out) var(--duration-quick),
+      translate var(--duration-zoom) var(--ease-out),
       visibility 0s linear;
   }
 
@@ -164,12 +167,15 @@
     overflow: hidden;
   }
 
+  /* Folding: they fade and drift left at once, quicker than they came, then leave the tab order. */
   .library.folded app-game-library {
     opacity: 0;
     visibility: hidden;
+    translate: -1.5rem 0;
     transition:
       opacity var(--duration-quick) var(--ease-out),
-      visibility 0s linear var(--duration-quick);
+      translate var(--duration-frame) var(--ease-out),
+      visibility 0s linear var(--duration-frame);
   }
 }
 
@@ -182,22 +188,28 @@
 }
 
 .library-title {
+  min-width: 0;
+  overflow: hidden;
   color: var(--color-fg-strong);
   font-size: var(--text-body);
   font-weight: 600;
   line-height: var(--text-body--line-height);
   white-space: nowrap;
-  transition: opacity var(--duration-quick) var(--ease-out);
+  transition: opacity var(--duration-frame) var(--ease-out) var(--duration-quick);
 }
 
-/* Folded: only the button that unfolds it is left, at the top of the rail. */
+.library-head > button {
+  flex: none;
+}
+
+/*
+ * Folded: only the button that unfolds it is left, at the top of the rail. The heading stays in
+ * the flow (still the aside's name for screen readers) and fades while the column's edge covers it,
+ * so the button travels with that edge instead of jumping.
+ */
 .folded .library-title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
   opacity: 0;
+  transition: opacity var(--duration-quick) var(--ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {
