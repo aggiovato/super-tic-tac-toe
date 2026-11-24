@@ -64,9 +64,23 @@ Its types live in `@protocol` (`packages/game-core/src/protocol/`), shared with 
   of the moves (`redact`): its own fleet, the rival's placement as a fact, every shot with its
   outcome, a sunk ship's placement; the whole fleets once the game is over. `revision` still counts
   every move. Tests prove no message to a seat carries the rival's fleet before the end.
+- **Chat**: `{type: 'say', clientId, text}`. The text loses control characters and the invisible
+  format ones that hide or reorder text (direction overrides, zero widths; the zero-width joiner
+  and emoji tags stay), line and paragraph separators become line breaks (two at most in a row),
+  and it is trimmed. Empty, or past `CHAT_MAX` (280) characters, it comes back as
+  `{type: 'unsaid', clientId, reason: 'invalid'}`. Stored once per seat and `clientId` (each seat
+  has its own ids) in the room's `chat` table, keeping the last `CHAT_KEPT` (200); a fresh message
+  goes to every socket as `{type: 'said', message}` (its writer's too: that is its
+  acknowledgement), a retry back to its writer only and without spending the chat budget. A
+  connecting socket gets `{type: 'chat', messages}` (the whole kept conversation). Saying keeps the
+  room alive; a room already gone keeps nothing. A socket's chat budget (`ChatBudget`: 5 in a burst,
+  then one every 2 s) refuses the excess as `unsaid` with `too-fast` and keeps the socket. A retry of
+  a message older than the kept conversation would be stored again (a client never falls that far
+  behind). Plain text: never moderated, never rendered as HTML.
 - **Rematch**: `{type: 'rematch', game}` starts the next game once `game` is over, symbols swapped;
   a second request for the same game is ignored. **Sync**: `{type: 'sync'}` sends the state again.
-- **TTL**: any join, move or rematch pushes an alarm a week ahead; a room left alone deletes itself.
+- **TTL**: any join, move, rematch or chat message pushes an alarm a week ahead; a room left alone
+  deletes itself.
 
 ## Limits and heartbeat
 

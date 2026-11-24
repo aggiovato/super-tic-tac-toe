@@ -110,7 +110,45 @@ export interface SyncMessage {
   readonly type: 'sync';
 }
 
-export type ClientMessage = MoveMessage | RematchMessage | SyncMessage;
+/** The longest chat message, in characters (Unicode code points). */
+export const CHAT_MAX = 280;
+
+/** Chat messages a room keeps (the oldest go first); a reconnection receives them all. */
+export const CHAT_KEPT = 200;
+
+/**
+ * A chat message to the other player, sent once per attempt: a retry keeps its `clientId`, so the
+ * room stores it once. The text is the player's own, shown as plain text.
+ */
+export interface SayMessage {
+  readonly type: 'say';
+  readonly clientId: string;
+  readonly text: string;
+}
+
+export type ClientMessage = MoveMessage | RematchMessage | SyncMessage | SayMessage;
+
+/** A chat message as the room keeps it: its order (`id`), who wrote it and when (ms). */
+export interface ChatMessage {
+  readonly id: number;
+  readonly clientId: string;
+  readonly seat: Seat;
+  readonly text: string;
+  readonly at: number;
+}
+
+/** Why the room did not keep a chat message: too many too fast, or nothing (or too much) to say. */
+export type ChatRefusal = 'too-fast' | 'invalid';
+
+/**
+ * The room's chat: the whole kept conversation when a socket connects (`chat`), each new message to
+ * every player as it is said (`said`, its writer's included: its `clientId` tells them it arrived),
+ * and to its writer alone a message the room did not keep (`unsaid`, by its `clientId`).
+ */
+export type ChatServerMessage =
+  | { readonly type: 'chat'; readonly messages: readonly ChatMessage[] }
+  | { readonly type: 'said'; readonly message: ChatMessage }
+  | { readonly type: 'unsaid'; readonly clientId: string; readonly reason: ChatRefusal };
 
 /** The server's answer to the sender of a move: accepted at a revision, or refused and why. */
 export type MoveReply =
@@ -118,4 +156,7 @@ export type MoveReply =
   | { readonly type: 'refused'; readonly commandId: string; readonly reason: MoveRefusal };
 
 export type ServerMessage =
-  GameRoomState | MoveReply | { readonly type: 'error'; readonly reason: string };
+  | GameRoomState
+  | MoveReply
+  | ChatServerMessage
+  | { readonly type: 'error'; readonly reason: string };

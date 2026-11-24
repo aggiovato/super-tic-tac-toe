@@ -1,8 +1,11 @@
 import { judgeMove, nextGame, gameRoomView } from '../domain/game-room-rules';
+import { CHAT_KEPT } from '@protocol';
 import type {
+  ChatMessage,
   JoinOutcome,
   MoveMessage,
   MoveReply,
+  SayMessage,
   GameRoomSetup,
   GameRoomState,
   Seat,
@@ -15,7 +18,7 @@ export const GAME_ROOM_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * A room's use cases: create it, take the guest's seat, recognise a seat by its token, play a move,
- * start the next game, show the room to a seat, expire it. What a move may do is the domain's
+ * start the next game, show the room to a seat, keep its chat, expire it. What a move may do is the domain's
  * (`room-rules.ts`); where the room is kept is the repository's; how players are reached (sockets)
  * is the Durable Object's. The clock is passed in, so tests own time.
  */
@@ -88,6 +91,38 @@ export class GameRoomService {
     }
     this.repository.touch(now);
     return { type: 'ack', commandId, revision: moves.length + 1 };
+  }
+
+  /** The message `seat` already stored under its own `clientId`: a retry, if it is one. */
+  said(seat: Seat, clientId: string): ChatMessage | null {
+    return this.exists() ? this.repository.chatBy(seat, clientId) : null;
+  }
+
+  /**
+   * A chat message from `seat`, stored once: a retry of the same `clientId` (that seat's own) gets
+   * the message stored the first time (`fresh` false, so it is not sent to everyone again). Keeps
+   * the room alive. Null in a room that no longer exists (expired while a socket was closing).
+   *
+   * A retry of a message so old that it left the kept conversation is stored again: a client only
+   * retries what it has not seen arrive, which is never that far behind.
+   */
+  say(seat: Seat, { clientId, text }: SayMessage): { message: ChatMessage; fresh: boolean } | null {
+    if (!this.exists()) {
+      return null;
+    }
+    const stored = this.repository.chatBy(seat, clientId);
+    if (stored) {
+      return { message: stored, fresh: false };
+    }
+    const now = this.now();
+    const message = this.repository.addChat({ clientId, seat, text }, now, CHAT_KEPT);
+    this.repository.touch(now);
+    return { message, fresh: true };
+  }
+
+  /** The room's kept chat, oldest first. */
+  chat(): ChatMessage[] {
+    return this.repository.chat();
   }
 
   /** Starts the next game once `game` is over, symbols swapped; false when it is not the time. */

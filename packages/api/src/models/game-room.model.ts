@@ -29,3 +29,10 @@ export interface MoveRow {
 export type JoinOutcome =
   | { readonly ok: true; readonly seat: Seat; readonly token: string }
   | { readonly ok: false; readonly reason: JoinRefusal };
+
+/** A chat message before the room stores it (the room gives it its order and time). */
+export interface NewChatMessage {
+  readonly clientId: string;
+  readonly seat: Seat;
+  readonly text: string;
+}

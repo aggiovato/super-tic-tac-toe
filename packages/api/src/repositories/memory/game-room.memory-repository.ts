@@ -1,5 +1,7 @@
 import type {
+  ChatMessage,
   GameRow,
+  NewChatMessage,
   MoveRow,
   GameRoomResult,
   GameRoomScore,
@@ -20,6 +22,8 @@ export class MemoryGameRoomRepository implements GameRoomRepository {
   private room: (GameRoomSetup & { updatedAt: number }) | null = null;
   private readonly seats = new Map<Seat, string>();
   private games: StoredGame[] = [];
+  private messages: ChatMessage[] = [];
+  private lastChatId = 0;
 
   setup(): GameRoomSetup | null {
     if (!this.room) return null;
@@ -93,6 +97,26 @@ export class MemoryGameRoomRepository implements GameRoomRepository {
     row.moves.push(move);
   }
 
+  chat(): ChatMessage[] {
+    return [...this.messages];
+  }
+
+  chatBy(seat: Seat, clientId: string): ChatMessage | null {
+    return (
+      this.messages.find((message) => message.seat === seat && message.clientId === clientId) ??
+      null
+    );
+  }
+
+  addChat(message: NewChatMessage, now: number, kept: number): ChatMessage {
+    if (this.chatBy(message.seat, message.clientId)) {
+      throw new Error('That seat stored a chat message with that id');
+    }
+    const stored = { id: ++this.lastChatId, ...message, at: now };
+    this.messages = [...this.messages, stored].slice(-kept);
+    return stored;
+  }
+
   touch(now: number): void {
     if (this.room) this.room.updatedAt = now;
   }
@@ -105,5 +129,7 @@ export class MemoryGameRoomRepository implements GameRoomRepository {
     this.room = null;
     this.seats.clear();
     this.games = [];
+    this.messages = [];
+    this.lastChatId = 0;
   }
 }
