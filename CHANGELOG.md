@@ -7,6 +7,8 @@ new version and date.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-24
+
 ### Changed
 
 - A game's history opens as a departure ticket over the game, which stays as it was: the totals
@@ -209,7 +211,8 @@ First production release: Ultimate Tic Tac Toe for two people on one device.
 - Continuous integration with deploys to Netlify: a preview for every pull request and production
   for every version tag.
 
-[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.3.0...v0.3.1
