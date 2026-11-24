@@ -55,6 +55,22 @@ plain text only. One PR each, each branched from `main` once the previous one is
   phones and a tall one on desktop; copy, DESIGN.md, an impeccable pass, a two-browser e2e. Then
   the release (v0.8.0).
 
+Improvements recorded for later (from the review of the chat's responsibilities, PR #41):
+
+- The retry policy is split: `GameRoom.say` looks a message up (`said`) to spare the chat budget,
+  then `GameRoomService.say` looks it up again (its `!fresh` branch is nearly dead). Let the service
+  decide in one step, taking the budget as a permission (`say(seat, message, spend)`).
+- One chat text rule for both ends: a pure `cleanChatText` in `@protocol` used by `parse.ts` and
+  `RoomChat` (today the client only trims, so a text of invisible characters comes back `unsaid`).
+- `RoomCredentialsStore` also keeps `readChat`, which is no credential: rename it (`RoomMemory`) or
+  keep what was read apart.
+- `OnlineChat` decides what is a new message; an arrivals signal in `RoomChat` would leave the
+  component only the glimpse's timer.
+- `GameLayout` reserves the chat button's `3.25rem` by hand (the chat's `--fab`): share it as a token.
+- The narrow/wide breakpoint is repeated in CSS (layout, Ship Sink) and TS (`NARROW` in
+  `OnlineRoomButton`): one source (a custom media or a token) for both.
+- The layers table below lacks `@online` among what `@layout` may import (`DEPENDS` allows it).
+
 Accounts (phase 9) add Neon Postgres (Hyperdrive, Drizzle) for verified history across devices.
 
 | Phase         | Accepted when…                                                                        |

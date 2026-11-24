@@ -66,6 +66,8 @@ export interface MatchState<S, R> {
   readonly scored: boolean;
   /** Online, the participant playing on this device; null when both play here or the computer does. */
   readonly seat: Participant | null;
+  /** Online, the room waits for the other player: nobody may move yet. */
+  readonly awaitingRival: boolean;
 }
 
 /** What the app around a game (score, actions, settings) may read and do with its match. */
@@ -78,6 +80,8 @@ export interface MatchApi {
   readonly variant: Signal<string>;
   /** Online, the participant playing on this device; null otherwise. */
   readonly seat: Signal<Participant | null>;
+  /** Online, the room waits for the other player to join: nobody may move yet. */
+  readonly awaitingRival: Signal<boolean>;
   /** The computer's level (kept while two people play, for when it comes back). */
   readonly level: Signal<Level>;
   readonly toMove: Signal<Participant>;

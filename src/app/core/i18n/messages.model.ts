@@ -265,6 +265,8 @@ export interface Messages {
     readonly shuffle: string;
     readonly rotate: string;
     readonly confirmFleet: string;
+    /** Online, before the other player joins: the fleet can be arranged, not confirmed. */
+    readonly awaitingRival: string;
     readonly selected: (ship: string) => string;
     readonly howToPlay: {
       readonly title: string;

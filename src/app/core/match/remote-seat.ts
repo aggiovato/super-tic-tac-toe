@@ -21,6 +21,8 @@ export interface RemoteGame {
   readonly scored: boolean;
   /** The participant playing on this device. */
   readonly you: Participant;
+  /** The other seat is taken: until then nobody may move (the room refuses it). */
+  readonly rivalIn: boolean;
 }
 
 /**

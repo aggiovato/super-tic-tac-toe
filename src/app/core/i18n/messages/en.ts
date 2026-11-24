@@ -286,6 +286,7 @@ export const en: Messages = {
     shuffle: 'Shuffle',
     rotate: 'Turn',
     confirmFleet: 'Confirm fleet',
+    awaitingRival: 'Arrange your fleet: you can confirm it once your rival is in.',
     selected: (ship) => `${ship[0]?.toUpperCase() ?? ''}${ship.slice(1)} selected`,
     howToPlay: {
       title: 'How to play',

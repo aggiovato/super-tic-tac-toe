@@ -76,6 +76,8 @@ test('two browsers play online, lose the connection, retry and converge on one r
   await host.page.getByRole('button', { name: 'Invite someone online' }).click();
   await expect(host.page).toHaveURL(/\/classic\/online\/[0-9a-f]{64}$/);
   await expect(online(host.page)).toContainText(/Rival\s*not in yet/);
+  // Nobody plays before the rival is in: the board takes no move meanwhile.
+  await expect(cell(host.page, 0)).toBeDisabled();
   const link = await online(host.page).getByRole('textbox', { name: 'Room link' }).inputValue();
   expect(link).toBe(host.page.url());
 
@@ -207,6 +209,8 @@ test('two browsers play ship sink online: both place at once and neither sees th
   await host.page.getByRole('radio', { name: 'Online room' }).check();
   await host.page.getByRole('button', { name: 'Invite someone online' }).click();
   await expect(host.page).toHaveURL(/\/fleet\/online\/[0-9a-f]{64}$/);
+  // The fleet can be arranged while the rival is on the way, but not confirmed.
+  await expect(host.page.getByRole('button', { name: 'Confirm fleet' })).toBeDisabled();
   const link = await online(host.page).getByRole('textbox', { name: 'Room link' }).inputValue();
   await guest.page.goto(link);
   for (const { page } of [host, guest]) {

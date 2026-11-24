@@ -141,6 +141,7 @@ export class OnlineRoom extends RemoteSeat {
       draws: state.score.draws,
       scored: state.result !== null,
       you: state.you,
+      rivalIn: state.seats[state.you === 0 ? 1 : 0].taken,
     };
   });
 

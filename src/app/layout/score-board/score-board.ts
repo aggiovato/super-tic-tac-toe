@@ -34,10 +34,10 @@ export class ScoreBoard {
   /**
    * Who may move now, by participant: the player to move, or whoever the game's own rules say
    * (Ship Sink's placements: each player until their fleet is placed). Nobody is tagged while both
-   * may move at once, or once the game is over.
+   * may move at once, while an online room waits for the other player, or once the game is over.
    */
   private readonly mayMove = computed((): readonly [boolean, boolean] => {
-    if (this.store.isOver()) return [false, false];
+    if (this.store.isOver() || this.store.awaitingRival()) return [false, false];
     const { rules } = gameById(this.game.id);
     const position = this.store.game();
     const may = (participant: Participant): boolean =>

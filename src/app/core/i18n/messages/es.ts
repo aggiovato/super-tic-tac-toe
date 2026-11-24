@@ -291,6 +291,7 @@ export const es: Messages = {
     shuffle: 'Al azar',
     rotate: 'Girar',
     confirmFleet: 'Confirmar flota',
+    awaitingRival: 'Ordena tu flota: podrás confirmarla cuando entre el rival.',
     selected: (ship) => `${ship[0]?.toUpperCase() ?? ''}${ship.slice(1)} seleccionado`,
     howToPlay: {
       title: 'Cómo se juega',

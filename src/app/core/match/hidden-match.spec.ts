@@ -85,6 +85,7 @@ class FakeRemote extends RemoteSeat {
       draws: 0,
       scored: false,
       you,
+      rivalIn: true,
     });
   }
 

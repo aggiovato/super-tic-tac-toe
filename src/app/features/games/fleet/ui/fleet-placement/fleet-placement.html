@@ -13,6 +13,8 @@
 <p class="note" [class.problem]="problem()" aria-live="polite">
   @if (problem(); as why) {
     {{ t().fleet.problem(why) }}
+  } @else if (store.awaitingRival()) {
+    {{ t().fleet.awaitingRival }}
   } @else if (selected(); as ship) {
     @if (!placed()) {
       {{ t().fleet.selected(t().fleet.ships[ship]) }}
@@ -26,7 +28,12 @@
       {{ t().fleet.rotate }}
     </button>
     <button app-button="secondary" (click)="shuffle()">{{ t().fleet.shuffle }}</button>
-    <button app-button="primary" class="confirm" (click)="confirm()">
+    <button
+      app-button="primary"
+      class="confirm"
+      [disabled]="store.awaitingRival()"
+      (click)="confirm()"
+    >
       {{ t().fleet.confirmFleet }}
     </button>
   </div>
