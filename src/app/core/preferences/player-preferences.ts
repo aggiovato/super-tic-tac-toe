@@ -1,5 +1,12 @@
 import { computed, DestroyRef, DOCUMENT, effect, inject, Injectable, signal } from '@angular/core';
-import { COMPUTER_LEVELS, type ComputerLevel, type GameId, isGameId } from '@catalog';
+import {
+  COMPUTER_LEVELS,
+  type ComputerLevel,
+  GAME_IDS,
+  type GameId,
+  gameById,
+  isGameId,
+} from '@catalog';
 import type {
   Design,
   MotionSetting,
@@ -22,12 +29,22 @@ const TWO_PEOPLE: PlaySetup = { mode: 'local', level: 'beginner' };
 /** Modes as stored before schema 2, read as today's. */
 const LEGACY_MODES: Readonly<Record<string, PlayMode>> = { humans: 'local', opponent: 'computer' };
 
-/** A saved setup, or the default for what is missing or unknown. */
-function readSetup(saved: Partial<PlaySetup> | undefined): PlaySetup {
+/** The modes `game` may be played in on one device, its default first. */
+const modesOf = (game: GameId): readonly PlayMode[] => gameById(game).modes;
+
+/** A new player's setup of `game`: its default mode, at the weakest level. */
+const defaultSetup = (game: GameId): PlaySetup => ({
+  mode: modesOf(game)[0] ?? TWO_PEOPLE.mode,
+  level: TWO_PEOPLE.level,
+});
+
+/** A saved setup of `game`, or its default for what is missing, unknown or not offered. */
+function readSetup(game: GameId, saved: Partial<PlaySetup> | undefined): PlaySetup {
   const mode: unknown = saved?.mode;
   const read = typeof mode === 'string' ? (LEGACY_MODES[mode] ?? mode) : mode;
+  const offered = isMode(read) && modesOf(game).includes(read);
   return {
-    mode: isMode(read) ? read : TWO_PEOPLE.mode,
+    mode: offered ? read : defaultSetup(game).mode,
     level: isLevel(saved?.level) ? saved.level : TWO_PEOPLE.level,
     ...(typeof saved?.variant === 'string' ? { variant: saved.variant } : {}),
   };
@@ -66,7 +83,10 @@ const DEFAULTS: PreferencesState = {
   hints: true,
   libraryShown: true,
   design: 'departures',
-  play: { 'super-3t': TWO_PEOPLE, classic: TWO_PEOPLE, dots: TWO_PEOPLE },
+  play: Object.fromEntries(GAME_IDS.map((game) => [game, defaultSetup(game)])) as Record<
+    GameId,
+    PlaySetup
+  >,
   lastGame: 'super-3t',
   seenTutorials: [],
   solvedChallenges: [],
@@ -147,8 +167,11 @@ export class Preferences {
     this.update({ design });
   }
 
-  /** Who plays `game` from now on. */
+  /** Who plays `game` from now on; a mode the game does not offer is ignored. */
   setPlay(game: GameId, setup: PlaySetup): void {
+    if (!modesOf(game).includes(setup.mode)) {
+      return;
+    }
     // A setup without a variant keeps the one already chosen.
     const merged = { ...this.state().play[game], ...setup };
     this.update({ play: { ...this.state().play, [game]: merged } });
@@ -199,12 +222,16 @@ export class Preferences {
         libraryShown:
           typeof saved.libraryShown === 'boolean' ? saved.libraryShown : DEFAULTS.libraryShown,
         design: isDesign(saved.design) ? saved.design : DEFAULTS.design,
-        play: {
-          // Before several games, `mode` and `level` were Super 3T's: they move into its setup.
-          'super-3t': readSetup(play?.['super-3t'] ?? (saved as Partial<PlaySetup>)),
-          classic: readSetup(play?.classic),
-          dots: readSetup(play?.dots),
-        },
+        play: Object.fromEntries(
+          GAME_IDS.map((game) => [
+            game,
+            // Before several games, `mode` and `level` were Super 3T's: they move into its setup.
+            readSetup(
+              game,
+              play?.[game] ?? (game === 'super-3t' ? (saved as Partial<PlaySetup>) : undefined),
+            ),
+          ]),
+        ) as Record<GameId, PlaySetup>,
         lastGame: isGameId(saved.lastGame) ? saved.lastGame : DEFAULTS.lastGame,
         seenTutorials: readTutorials(saved),
         solvedChallenges: readIds(saved.solvedChallenges),

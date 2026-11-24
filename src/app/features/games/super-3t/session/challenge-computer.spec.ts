@@ -41,7 +41,7 @@ describe('the challenge session and its defender', () => {
   it('defends after the key move, at the pace of the Worker', async () => {
     let reply: Move | null | undefined;
     void opponent
-      .reply({ moves: movesAfter(KEY), level: 'beginner', seed: 1, variant: '' })
+      .reply({ moves: movesAfter(KEY), level: 'beginner', player: 'O', seed: 1, variant: '' })
       .then((move) => {
         reply = move;
       });
@@ -55,6 +55,7 @@ describe('the challenge session and its defender', () => {
     const answer = opponent.reply({
       moves: movesAfter(WRONG),
       level: 'beginner',
+      player: 'O',
       seed: 1,
       variant: '',
     });
@@ -66,6 +67,7 @@ describe('the challenge session and its defender', () => {
     const answer = opponent.reply({
       moves: movesAfter(KEY),
       level: 'beginner',
+      player: 'O',
       seed: 1,
       variant: '',
     });

@@ -4,6 +4,9 @@ import * as super3t from '@super3t/core';
 import type { GameDefinition } from './game-definition.model';
 import { COMPUTER_LEVELS } from './levels';
 
+/** Two people on one device by default, or the computer player. */
+const BOTH_MODES = ['local', 'computer'] as const;
+
 /** A game played in one shape: every value reads as the only variant. */
 const ONE_SHAPE: Pick<GameDefinition, 'variants' | 'variantOf'> = {
   variants: [''],
@@ -14,6 +17,7 @@ export const SUPER3T_GAME = {
   id: 'super-3t',
   rulesVersion: super3t.RULES_VERSION,
   ...ONE_SHAPE,
+  modes: BOTH_MODES,
   levels: COMPUTER_LEVELS,
   featured: true,
   rules: {
@@ -28,6 +32,7 @@ export const CLASSIC_GAME = {
   id: 'classic',
   rulesVersion: classic.RULES_VERSION,
   ...ONE_SHAPE,
+  modes: BOTH_MODES,
   levels: COMPUTER_LEVELS,
   featured: false,
   rules: {
@@ -44,6 +49,7 @@ export const DOTS_GAME = {
   // Board sizes; an empty or unknown size (older saves) is the default board.
   variants: dots.SIZES.map(dots.variantOf),
   variantOf: (raw: string | undefined) => dots.variantOf(dots.sizeOfVariant(raw ?? '')),
+  modes: BOTH_MODES,
   levels: COMPUTER_LEVELS,
   featured: false,
   rules: {

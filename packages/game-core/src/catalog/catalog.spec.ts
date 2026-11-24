@@ -45,4 +45,13 @@ describe('the catalog', () => {
       expect(rules.apply(start.state, move).ok).toBe(true);
     }
   });
+
+  it('offers each game in at least one mode, and never a hidden one to two people on a device', () => {
+    for (const game of GAMES) {
+      const { modes, rules } = gameById(game.id);
+      expect(modes.length, game.id).toBeGreaterThan(0);
+      expect(new Set(modes).size, game.id).toBe(modes.length);
+      if (rules.hidden) expect(modes, game.id).not.toContain('local');
+    }
+  });
 });

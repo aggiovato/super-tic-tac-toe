@@ -1,4 +1,4 @@
-import { type Cell, cellIndex, type FleetView, type Move, randomFleet } from '@fleet/core';
+import { type Cell, cellIndex, type GameState, type Move, randomFleet } from '@fleet/core';
 import { createRandom, pickWeighted, type Random, turnSeed } from '@tictac';
 import { Knowledge, neighbours } from './knowledge';
 
@@ -102,11 +102,14 @@ const SHOOTERS: Readonly<Record<Level, (known: Knowledge, random: Random) => Cel
  * never the rival's fleet, which the view does not hold until the game ends. Seeded by the game and
  * the revision, so the same game replays the same choices; its fleet comes from the seed alone.
  */
-export function chooseMove(view: FleetView, options: ComputerOptions): Move | null {
+export function chooseMove(view: GameState, options: ComputerOptions): Move | null {
   if (!LEVELS.includes(options.level)) {
     throw new Error(`Unknown level: ${String(options.level)}`);
   }
   const me = view.viewer;
+  if (me === null) {
+    throw new Error('The computer plays from its own view, never the whole game');
+  }
   if (view.phase === 'placing') {
     return view.placed[me]
       ? null
@@ -116,6 +119,6 @@ export function chooseMove(view: FleetView, options: ComputerOptions): Move | nu
     return null;
   }
   const random = createRandom(turnSeed(options.seed, view.revision));
-  const { row, col } = SHOOTERS[options.level](new Knowledge(view), random);
+  const { row, col } = SHOOTERS[options.level](new Knowledge({ ...view, viewer: me }), random);
   return { kind: 'shot', row, col };
 }

@@ -122,6 +122,8 @@ export function matchTurns<S extends MatchGame<M>, M, R>(
     store._computer
       .reply({
         moves: store.position().moves,
+        // The computer is participant 1: it plays X when the series gives it X.
+        player: store.xPlayer() === 1 ? 'X' : 'O',
         level: store.level(),
         seed: store.seed(),
         variant: store.variant(),

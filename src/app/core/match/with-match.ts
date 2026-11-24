@@ -52,6 +52,7 @@ function stepsToPerson<S extends MatchGame<M>, M>(
 }
 
 /** Against the computer, participant 0 is the person and participant 1 the opponent. */
+const PERSON: Participant = 0;
 const COMPUTER: Participant = 1;
 
 /**
@@ -111,36 +112,41 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
     withState<MatchState<S, R>>(() => initialMatch<S, M, R>()),
     // NgRx widens a generic state slice to its constraint: `position` reads the game back as S.
     withComputed(({ game }) => ({ position: computed(() => game() as S) })),
-    withComputed(({ game, xPlayer, mode, seat }) => {
+    withComputed(({ game, position, xPlayer, mode, seat }) => {
       const toMove = computed((): Participant =>
         game().turn === 'X' ? xPlayer() : other(xPlayer()),
       );
       const isOver = computed(() => game().status.kind !== 'in-progress');
-      /** The computer moves now: the person cannot play. */
-      const computerTurn = computed(
-        () => mode() === 'computer' && !isOver() && toMove() === COMPUTER,
-      );
-      /** Online, the other player's turn: this device cannot play. */
-      const remoteTurn = computed(() => mode() === 'online' && !isOver() && toMove() !== seat());
-      return { toMove, isOver, computerTurn, remoteTurn };
+      /**
+       * Whether a participant may move now: the one to move, unless the game says more (both
+       * place their fleets at once in Ship Sink).
+       */
+      const mayMove = (participant: Participant): boolean => {
+        if (isOver()) return false;
+        if (!rules.mayMove) return toMove() === participant;
+        const symbol: Player = participant === xPlayer() ? 'X' : 'O';
+        return rules.mayMove(position(), symbol);
+      };
+      /** The computer moves now (the person may too, where both move at once). */
+      const computerTurn = computed(() => mode() === 'computer' && mayMove(COMPUTER));
+      /** Online, this device cannot play: the other player's turn, or a move awaited. */
+      const remoteTurn = computed(() => {
+        const own = seat();
+        return mode() === 'online' && !isOver() && (own === null || !mayMove(own));
+      });
+      /** The person (or, between two people, whoever is to move) may play now. */
+      const personTurn = computed(() => {
+        if (mode() === 'computer') return mayMove(PERSON);
+        if (mode() === 'online') return !remoteTurn() && !isOver();
+        return !isOver();
+      });
+      return { toMove, isOver, computerTurn, remoteTurn, personTurn };
     }),
     withComputed(
-      ({
-        game,
-        position,
-        computerTurn,
-        remoteTurn,
-        isOver,
-        mode,
-        wins,
-        draws,
-        ready,
-        xPlayer,
-        variant,
-      }) => {
+      ({ game, position, personTurn, isOver, mode, wins, draws, ready, xPlayer, variant }) => {
         // The person has no legal move while the opponent plays or the saved match loads.
         const legal = computed((): readonly M[] =>
-          computerTurn() || remoteTurn() || !ready() ? [] : rules.legalMoves(position()),
+          personTurn() && ready() ? rules.legalMoves(position()) : [],
         );
         // Moves one undo takes back: one between two people, back to the person's turn otherwise.
         const undoSteps = computed(() =>
@@ -152,8 +158,11 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
           legal,
           lastMove: computed((): M | null => game().moves.at(-1) ?? null),
           undoSteps,
-          // Online, a move sent is the other player's to see: it is not taken back.
-          canUndo: computed(() => mode() !== 'online' && !isOver() && undoSteps() > 0),
+          // Online, a move sent is the other player's to see: it is not taken back. Hidden
+          // information has no undo either: taking back a miss would peek at the rival's waters.
+          canUndo: computed(
+            () => mode() !== 'online' && !rules.hidden && !isOver() && undoSteps() > 0,
+          ),
           /** Something a mode change would throw away: a score or a game under way. */
           seriesStarted: computed(
             () => game().moves.length > 0 || wins()[0] + wins()[1] + draws() > 0,

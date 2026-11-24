@@ -38,17 +38,30 @@ export type Fleet = readonly ShipPlacement[];
 /**
  * A move: a player places their whole fleet (once, before any shot; both may place in any order,
  * so the move names its player), or the player to move fires at a cell of the rival's waters.
+ *
+ * In a player's view (see `GameState.viewer`) a placement may come without its fleet (the rival's,
+ * hidden) and a shot with the outcome the server gave it; a shot of the viewer's own that has no
+ * outcome yet is pending. The full game ignores those extra fields and stores bare moves.
  */
 export type Move =
-  | { readonly kind: 'place'; readonly player: Player; readonly fleet: Fleet }
-  | { readonly kind: 'shot'; readonly row: number; readonly col: number };
+  | { readonly kind: 'place'; readonly player: Player; readonly fleet?: Fleet }
+  | {
+      readonly kind: 'shot';
+      readonly row: number;
+      readonly col: number;
+      readonly outcome?: Outcome;
+      readonly sunk?: ShipPlacement;
+    };
 
 /** What a shot did: nothing, a hit, or the last cell of a ship. */
 export type Outcome = 'water' | 'hit' | 'sunk';
 
-/** A shot fired and what it did; a sinking shot names the ship it sank and where it lay. */
+/**
+ * A shot fired and what it did; a sinking shot names the ship it sank and where it lay. In a
+ * player's view their own last shot may be `pending` until the server answers.
+ */
 export interface Shot extends Cell {
-  readonly outcome: Outcome;
+  readonly outcome: Outcome | 'pending';
   readonly sunk?: ShipPlacement;
 }
 
@@ -65,11 +78,19 @@ export interface PerPlayer<T> {
   readonly O: T;
 }
 
+/**
+ * A game, as a whole (`viewer` null: both fleets known, as the computer's match and the server hold
+ * it) or as one player sees it (`viewer` set: the rival's fleet null until the game is over).
+ */
 export interface GameState {
   readonly rulesVersion: RulesVersion;
+  /** Null for the whole game; the player whose view this is otherwise. */
+  readonly viewer: Player | null;
   readonly phase: Phase;
-  /** Each player's fleet, null until placed. */
+  /** Each player's fleet: null until placed, and the rival's in a view until the end. */
   readonly fleets: PerPlayer<Fleet | null>;
+  /** Whether each player has placed their fleet. */
+  readonly placed: PerPlayer<boolean>;
   /** The shots each player fired at the rival's waters, in order. */
   readonly shots: PerPlayer<readonly Shot[]>;
   /** The player who fires next (X fires first); a hit or a sinking shot fires again. */
@@ -90,6 +111,8 @@ export type RejectionReason =
   | 'invalid-fleet'
   /* a shot while a fleet is still to be placed */
   | 'placing'
+  /* in a view, a shot while the viewer's last one waits for its outcome */
+  | 'pending'
   | 'invalid-coordinates'
   | 'already-shot';
 

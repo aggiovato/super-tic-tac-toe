@@ -13,6 +13,7 @@ export interface MatchCommandsStore<S, M, R> extends MatchTurnsStore<S, M, R> {
   readonly _remote: RemoteSeat | null;
   readonly _playRemote: (move: M) => void;
   readonly remoteTurn: Signal<boolean>;
+  readonly personTurn: Signal<boolean>;
 }
 
 /**
@@ -33,7 +34,7 @@ export function matchCommands<S extends MatchGame<M>, M, R>(
   return {
     /** Refused moves are recorded; accepted ones may hand the turn over. */
     play(move: M): void {
-      if (store.computerTurn() || store.remoteTurn() || !store.ready()) {
+      if (!store.personTurn() || !store.ready()) {
         return;
       }
       const result = store._session.play(store.position(), move);

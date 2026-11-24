@@ -18,7 +18,7 @@ import {
   swipeToClose,
   trackTear,
 } from '@ui';
-import { type ComputerLevel, COMPUTER_LEVELS } from '@catalog';
+import { type ComputerLevel, COMPUTER_LEVELS, gameById } from '@catalog';
 import {
   type Design,
   DESIGNS,
@@ -99,7 +99,9 @@ export class SettingsSheet {
 
   protected readonly whoOptions = computed((): readonly ChoiceOption<Who>[] => {
     const s = this.t().settings;
-    return WHO.map((who) => ({
+    // A game of hidden information is not offered to two people on one device.
+    const modes = gameById(this.game.id).modes;
+    return WHO.filter((who) => who === 'online' || modes.includes(who)).map((who) => ({
       value: who,
       label: who === 'online' ? s.onlineMode : s.modes[who],
     }));

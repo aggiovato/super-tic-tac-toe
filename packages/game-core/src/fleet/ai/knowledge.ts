@@ -3,7 +3,7 @@ import {
   BOARD_SIZE,
   type Cell,
   cellIndex,
-  type FleetView,
+  type GameState,
   SHIP_IDS,
   SHIP_LENGTHS,
   type ShipId,
@@ -41,7 +41,8 @@ export class Knowledge {
   /** Ships of the rival still afloat, largest first. */
   readonly afloat: ShipId[];
 
-  constructor(view: FleetView) {
+  /** `view` is a player's view (`viewer` set): the computer never reads a whole game. */
+  constructor(view: GameState & { readonly viewer: NonNullable<GameState['viewer']> }) {
     const shots = view.shots[view.viewer];
     const sunk = shots.flatMap((shot) => (shot.sunk ? [shot.sunk] : []));
     for (const ship of sunk) {

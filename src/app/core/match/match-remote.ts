@@ -42,11 +42,12 @@ export function matchRemote<S extends MatchGame<M>, M, R>(
     if (!remote) {
       return;
     }
-    const replayed = rules.replay(
-      remote.moves as readonly M[],
-      remote.rulesVersion,
-      remote.variant,
-    );
+    const moves = remote.moves as readonly M[];
+    // A game of hidden information arrives as this player's view: rebuilt as their view.
+    const viewer = remote.you === remote.xPlayer ? 'X' : 'O';
+    const replayed = rules.hidden
+      ? rules.hidden.replayView(moves, remote.rulesVersion, remote.variant, viewer)
+      : rules.replay(moves, remote.rulesVersion, remote.variant);
     if (!replayed.ok || !replayed.state) {
       console.error('The room sent a game this engine cannot replay.', remote);
       return;
