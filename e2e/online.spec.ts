@@ -54,6 +54,8 @@ test('two browsers play online, lose the connection, retry and converge on one r
   // The host creates a room from the settings and gets its link.
   await host.page.goto('/classic');
   await host.page.getByRole('button', { name: 'Settings' }).click();
+  await host.page.getByRole('tab', { name: 'Players' }).click();
+  await host.page.getByRole('radio', { name: 'Online room' }).check();
   await host.page.getByRole('button', { name: 'Invite someone online' }).click();
   await expect(host.page).toHaveURL(/\/classic\/online\/[0-9a-f]{64}$/);
   await expect(online(host.page)).toContainText(/Rival\s*not in yet/);
@@ -134,6 +136,8 @@ test('the history opens over a room; coming back to a room left asks first, leav
   const guest = await device(browser);
   await host.page.goto('/classic');
   await host.page.getByRole('button', { name: 'Settings' }).click();
+  await host.page.getByRole('tab', { name: 'Players' }).click();
+  await host.page.getByRole('radio', { name: 'Online room' }).check();
   await host.page.getByRole('button', { name: 'Invite someone online' }).click();
   await expect(host.page).toHaveURL(/\/classic\/online\//);
   const link = host.page.url();

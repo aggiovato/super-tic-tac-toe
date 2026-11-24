@@ -129,3 +129,30 @@ test.describe('tactical challenges', () => {
     await expect(status(page)).toHaveText('O to move. Must play on board 3.');
   });
 });
+
+test('Players groups who plays and their names; a room opens only from its invitation', async ({
+  page,
+}) => {
+  await page.goto('/classic');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  // Game holds the game's own settings and a new series, nothing about who plays.
+  await expect(page.getByRole('tabpanel', { name: 'Game' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'Two players' })).toHaveCount(0);
+
+  await page.getByRole('tab', { name: 'Players' }).click();
+  const panel = page.getByRole('tabpanel', { name: 'Players' });
+  await expect(panel.getByRole('radio', { name: 'Two players' })).toBeChecked();
+  await expect(panel.getByRole('textbox')).toHaveCount(2);
+
+  await panel.getByRole('radio', { name: 'Against the opponent' }).check();
+  await expect(panel.getByRole('radio', { name: 'Rookie' })).toBeChecked();
+  await expect(panel.getByRole('textbox')).toHaveCount(1);
+
+  // Choosing a room only offers the invitation: the game and its mode stay as they are.
+  await panel.getByRole('radio', { name: 'Online room' }).check();
+  await expect(panel.getByRole('button', { name: 'Invite someone online' })).toBeVisible();
+  await expect(panel.getByRole('radio', { name: 'Rookie' })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/classic$/);
+  await page.getByRole('button', { name: 'Close settings' }).click();
+  await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
+});

@@ -14,6 +14,9 @@ new version and date.
   and its latest form, and the latest games come with their results on flaps and a chart of how
   long they lasted. Wide screens show results and latest games as two tickets side by side; phones,
   one ticket with two tabs. Opened from an online room, the history no longer leaves the room.
+- Settings have three tabs: Game (the game's own settings and a new series), Players (who you play
+  against — the computer and its level, two people on this device, or an online room — and the
+  names) and App. Choosing an online room offers its invitation; the room opens only from it.
 - The computer opponents are named by rank: Novato, Veterano and Maestro (Rookie, Veteran and
   Master in English).
 

@@ -255,14 +255,18 @@ export interface Messages {
     readonly open: string;
     readonly title: string;
     readonly close: string;
+    /** Who this device plays against: the computer, a second person here, or someone online. */
     readonly mode: string;
     readonly modes: Readonly<Record<PlayMode, string>>;
+    /** The third answer to `mode`: a private room, created only from its invitation button. */
+    readonly onlineMode: string;
     readonly level: string;
     readonly levels: {
       readonly beginner: string;
       readonly intermediate: string;
       readonly advanced: string;
     };
+    /** The players' names. */
     readonly players: string;
     readonly playerName: (index: number) => string;
     readonly language: string;
@@ -285,6 +289,10 @@ export interface Messages {
     readonly challenges: string;
     /** The tab list's accessible name. */
     readonly sections: string;
-    readonly sectionNames: { readonly game: string; readonly app: string };
+    readonly sectionNames: {
+      readonly game: string;
+      readonly players: string;
+      readonly app: string;
+    };
   };
 }
