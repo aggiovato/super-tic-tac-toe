@@ -12,6 +12,7 @@ import { FleetStore } from '@fleet/state';
 import { Translator } from '@i18n';
 import { createRandom } from '@tictac';
 import { Button } from '@ui';
+import { placeCovering } from '../fleet-placing';
 import { overlay, waterCells } from '../fleet-views';
 import { FleetWaters } from '../fleet-waters/fleet-waters';
 
@@ -19,10 +20,11 @@ import { FleetWaters } from '../fleet-waters/fleet-waters';
 const PERSON_SALT = 0x5bd1e995;
 
 /**
- * The quick placement: the fleet arrives placed at random. A tap on a ship picks it, a tap on the
- * water moves its bow there, Turn rotates it, Shuffle deals a new fleet, Confirm places it. By
- * keyboard: arrows move over the board, Enter picks or moves, R turns. A move that breaks a rule is
- * not made, and the sentence under the board says why.
+ * The quick placement: the fleet arrives placed at random. A tap on a ship picks it; a tap on the
+ * water moves it there, its bow on the cell or slid back from the edge so it ends there
+ * (`placeCovering`). Turn rotates it, Shuffle deals a new fleet, Confirm places it. By keyboard:
+ * arrows move over the board, Enter picks or moves, R turns. A move that breaks a rule is not made,
+ * and the sentence under the board says why.
  */
 @Component({
   selector: 'app-fleet-placement',
@@ -68,7 +70,11 @@ export class FleetPlacement {
       return;
     }
     const chosen = this.selected();
-    if (chosen) this.change((p) => (p.ship === chosen ? { ...p, ...cell } : p));
+    if (!chosen) return;
+    // The ship goes where the player taps, sliding back from the edge if it would not fit.
+    const landing = placeCovering(this.draft(), chosen, cell);
+    this.problem.set(landing.ok ? null : landing.problem);
+    if (landing.ok) this.draft.set(landing.fleet);
   }
 
   protected rotate(): void {

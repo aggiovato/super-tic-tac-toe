@@ -67,7 +67,8 @@ not even corner to corner. One shape for now (`variant` `''`).
 - `@fleet/ui`: `/fleet` and `/fleet/online/:roomId` (the room sends this seat its view; the
   match replays it with `replayView`, a shot of its own pending until the room answers). `FleetPage` swaps the arena: `FleetPlacement`
   while placing (a random draft from the seed, salted so it is not the computer's; tap a ship, tap
-  water to move its bow, Turn/R, Shuffle, Confirm; a refused change says why) and `FleetBattle`
+  water to move it there (its bow on the cell, or slid back from the edge so it ends there:
+  `placeCovering`), Turn/R, Shuffle, Confirm; a refused change says why) and `FleetBattle`
   (rival trains, the enemy `FleetWaters` with aim and fire, the quay: own trains, a compact
   `FleetWaters` and Fire). `FleetWaters` is the 10×10 grid (native buttons, roving tab stop,
   arrows report focus so focus aims); `FleetTrains` the fleet as coaches. `FleetStatus` announces
