@@ -44,6 +44,7 @@ import { FleetStatus } from '../fleet-status/fleet-status';
   ],
   templateUrl: './fleet-page.html',
   styleUrl: './fleet-page.css',
+  host: { '[class.placing]': 'placing()' },
 })
 export class FleetPage {
   protected readonly t = inject(Translator).t;

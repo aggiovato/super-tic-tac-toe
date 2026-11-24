@@ -30,6 +30,8 @@ import { ClassicStatus } from '../classic-status/classic-status';
     SettingsSheet,
   ],
   templateUrl: './classic-page.html',
+  // On an upright phone the arena keeps room for the board at full width (square).
+  styles: ':host { --game-arena-min: calc(100vw - 2 * var(--spacing-gutter)); }',
 })
 export class ClassicPage {
   protected readonly t = inject(Translator).t;

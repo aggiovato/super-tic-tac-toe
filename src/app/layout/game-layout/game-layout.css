@@ -39,6 +39,31 @@
   }
 }
 
+/*
+ * Phones held upright: the arena keeps at least the height the game's board needs to take the
+ * whole width (each page says how much, as --game-arena-min). On a short phone the page then
+ * scrolls a little, the masthead, departure row and board leading the first view, instead of the
+ * board shrinking to the height left over and leaving the width unused.
+ */
+@media (max-width: 47.99rem) and (orientation: portrait) {
+  .game {
+    --arena-min: var(--game-arena-min, 18rem);
+  }
+}
+
+/*
+ * Upright phones up to the common tall ones: what surrounds the board tightens (half the gaps and
+ * the page's block padding, departure tiles a step smaller), so the board at full width still fits
+ * the screen on most phones, and on short ones the page scrolls less.
+ */
+@media (max-width: 47.99rem) and (orientation: portrait) and (max-height: 53.75rem) {
+  .game {
+    --text-flap: clamp(1.75rem, 9vw, 2.25rem);
+    gap: var(--spacing-stack-tight);
+    padding-block: var(--spacing-stack-tight);
+  }
+}
+
 .masthead {
   grid-area: masthead;
   display: flex;

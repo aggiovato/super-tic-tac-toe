@@ -5,6 +5,8 @@
  */
 :host {
   --mini: 4.75rem;
+  /* Its own width decides how the quay's row breaks (narrow phones below). */
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-stack);
@@ -28,25 +30,46 @@ h2 {
   font-size: var(--text-caption);
   font-weight: 600;
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .afloat {
   font-size: var(--text-caption);
   font-weight: 700;
   color: var(--color-fg-strong);
+  white-space: nowrap;
 }
 
-/* Phones, below the board: the thumbnail, this player's row, Fire in the thumb zone. */
+/*
+ * Phones, below the board, the same at every width: the thumbnail spans two rows; beside it this
+ * player's fleet (read like the rival's above the board: name, ships afloat, trains on one line)
+ * and under that the one primary action, at the right, in the thumb zone.
+ */
 .quay {
   display: grid;
-  grid-template-columns: var(--mini) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--spacing-stack);
+  grid-template-columns: var(--mini) minmax(0, 1fr);
+  grid-template-areas:
+    'waters fleet'
+    'waters action';
+  align-items: start;
+  column-gap: var(--spacing-stack);
+  row-gap: var(--spacing-stack-tight);
+  /* The lens badge overhangs the thumbnail's corner: room for it, so the score below keeps clear. */
+  padding-bottom: 0.75rem;
 }
 
-.quay app-fleet-trains {
-  --coach-w: 0.55rem;
-  --coach-h: 0.8rem;
+.quay > :nth-child(1) {
+  grid-area: waters;
+}
+
+.quay > :nth-child(2) {
+  grid-area: fleet;
+}
+
+.quay > :nth-child(3) {
+  grid-area: action;
+  justify-self: end;
+  align-self: end;
 }
 
 /* The magnifier: the thumbnail as a button, a small lens badge just past its corner. */
@@ -101,23 +124,40 @@ h2 {
   font-size: var(--text-caption);
 }
 
-/* The side column: the two rows close together, then the waters, set apart. */
+/*
+ * The side column: the two fleet rows one under the other, your waters beside them on the right
+ * (its caption above the thumbnail), so the column stays short enough for a 720px-tall screen.
+ */
 :host([data-part='both']) {
-  --mini: 8.5rem;
-  gap: var(--spacing-stack);
+  --mini: 7.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--mini);
+  grid-template-areas:
+    'rival waters'
+    'own waters';
+  align-content: start;
+  column-gap: var(--spacing-stack);
+  row-gap: var(--spacing-stack);
+}
+
+:host([data-part='both']) > section:nth-of-type(1) {
+  grid-area: rival;
+}
+
+:host([data-part='both']) > section:nth-of-type(2) {
+  grid-area: own;
 }
 
 :host([data-part='both']) app-fleet-trains {
-  --coach-w: 0.7rem;
-  --coach-h: 0.95rem;
+  --coach-max: 0.7rem;
 }
 
-/* The waters titled like the fleet rows: caption above, the thumbnail under it. */
 .waters {
+  grid-area: waters;
   display: flex;
   flex-direction: column;
   gap: calc(var(--spacing) * 1.5);
-  margin: var(--spacing-stack-tight) 0 0;
+  margin: 0;
 }
 
 figcaption {
