@@ -34,6 +34,7 @@
       "@classic/ui/preview": ["./src/app/features/games/classic/ui/preview/index.ts"],
       "@fleet/core": ["./packages/game-core/src/fleet/core/index.ts"],
       "@fleet/core/testing": ["./packages/game-core/src/fleet/core/testing/index.ts"],
+      "@fleet/ai": ["./packages/game-core/src/fleet/ai/index.ts"],
       "@dots/core": ["./packages/game-core/src/dots/core/index.ts"],
       "@dots/ai": ["./packages/game-core/src/dots/ai/index.ts"],
       "@dots/session": ["./src/app/features/games/dots/session/index.ts"],
