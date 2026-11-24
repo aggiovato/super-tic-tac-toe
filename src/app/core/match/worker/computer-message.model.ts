@@ -1,10 +1,16 @@
 import type { ComputerLevel } from '@catalog';
+import type { Player } from '@tictac';
 
 /** What the computer player is asked: the game so far, from which it rebuilds the position. */
 export interface ComputerRequest<M> {
   /** Accepted moves in order; the computer player rebuilds the position from them. */
   readonly moves: readonly M[];
   readonly level: ComputerLevel;
+  /**
+   * The symbol the computer plays. A game of hidden information shows the computer only that
+   * player's view of the moves.
+   */
+  readonly player: Player;
   /** Integer seed kept for the whole game. */
   readonly seed: number;
   /** The game's variant (a board size), '' for games that have one shape. */

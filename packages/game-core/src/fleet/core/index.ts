@@ -24,11 +24,4 @@ export {
 } from './fleet';
 export * from './models';
 export { replay } from './replay';
-export {
-  redactMoves,
-  replayView,
-  viewOf,
-  type FleetView,
-  type ViewMove,
-  type ViewReplayResult,
-} from './view';
+export { redactMoves, replayView, viewOf } from './view';

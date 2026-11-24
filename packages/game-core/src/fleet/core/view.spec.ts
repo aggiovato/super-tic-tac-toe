@@ -1,11 +1,11 @@
 import { createRandom, type Player } from '@tictac';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { applyMove, initialState, legalMoves, other } from './engine';
+import { applyMove, initialState, legalMoves, mayMove, other } from './engine';
 import { cellIndex, randomFleet, shipCells } from './fleet';
 import type { GameState, Move } from './models';
 import { FLEET_A, FLEET_B, play, SINK_B } from './testing';
-import { redactMoves, replayView, viewOf, type ViewMove } from './view';
+import { redactMoves, replayView, viewOf } from './view';
 
 const FLEETS = { X: FLEET_A, O: FLEET_B };
 
@@ -45,10 +45,9 @@ function drive(seed: number, picks: readonly number[]): GameState {
 
 /** Cells of `viewer`'s rival's ships that still float. */
 function floatingRivalCells(state: GameState, viewer: Player): Set<number> {
-  const rival = other(viewer);
   const sunk = state.shots[viewer].flatMap((shot) => (shot.sunk ? [shot.sunk.ship] : []));
   return new Set(
-    (state.fleets[rival] ?? [])
+    (state.fleets[other(viewer)] ?? [])
       .filter((ship) => !sunk.includes(ship.ship))
       .flatMap(shipCells)
       .map(cellIndex),
@@ -60,13 +59,12 @@ const game = fc.tuple(fc.nat(), fc.array(fc.integer({ min: -3, max: 200 }), { ma
 describe('what each player sees', () => {
   it('shows the viewer their own fleet and hides the rival one', () => {
     const view = viewOf(play(FLEETS, 'J1 B1'), 'O');
+    expect(view.viewer).toBe('O');
     expect(view.fleets).toEqual({ X: null, O: FLEET_B });
     expect(view.placed).toEqual({ X: true, O: true });
-    expect(view.moves.slice(0, 2)).toEqual([
+    expect(view.moves).toEqual([
       { kind: 'place', player: 'X' },
       { kind: 'place', player: 'O', fleet: FLEET_B },
-    ]);
-    expect(view.moves.slice(2)).toEqual([
       { kind: 'shot', row: 9, col: 0, outcome: 'hit' },
       { kind: 'shot', row: 1, col: 0, outcome: 'water' },
     ]);
@@ -78,16 +76,32 @@ describe('what each player sees', () => {
     expect(sunk.fleets.O).toBeNull();
     const over = viewOf(play(FLEETS, SINK_B), 'O');
     expect(over.fleets).toEqual(FLEETS);
-    expect(over.moves[0]).toEqual({ kind: 'place', player: 'X', fleet: FLEET_A });
+    expect(over.status).toEqual({ kind: 'won', winner: 'X' });
+    expect(redactMoves(play(FLEETS, SINK_B), 'O')[0]).toEqual({
+      kind: 'place',
+      player: 'X',
+      fleet: FLEET_A,
+    });
   });
 
-  it('rebuilds from the moves it was sent exactly the view of the full game', () => {
+  it('agrees with the whole game on everything but the hidden fleet', () => {
     fc.assert(
       fc.property(game, ([seed, picks]) => {
         const state = drive(seed, picks);
         for (const viewer of ['X', 'O'] as const) {
           const view = viewOf(state, viewer);
-          expect(replayView(view.moves, 1, viewer)).toEqual({ ok: true, view });
+          const fleets =
+            state.phase === 'over' ? state.fleets : { ...state.fleets, [other(viewer)]: null };
+          expect(view).toMatchObject({
+            phase: state.phase,
+            turn: state.turn,
+            status: state.status,
+            placed: state.placed,
+            shots: state.shots,
+            fleets,
+            revision: state.revision,
+          });
+          expect(replayView(view.moves, 1, viewer)).toEqual({ ok: true, state: view });
         }
       }),
       { numRuns: 100 },
@@ -101,13 +115,13 @@ describe('what each player sees', () => {
         if (state.phase === 'over') return;
         for (const viewer of ['X', 'O'] as const) {
           const floating = floatingRivalCells(state, viewer);
-          const view = viewOf(state, viewer);
+          const sent = redactMoves(state, viewer);
           const shown = [
-            ...(view.fleets[other(viewer)] ?? []),
-            ...view.moves.flatMap((move) =>
-              move.kind === 'place' ? (move.player === viewer ? [] : (move.fleet ?? [])) : [],
+            ...sent.flatMap((move) =>
+              move.kind === 'place' && move.player !== viewer ? (move.fleet ?? []) : [],
             ),
-            ...view.moves.flatMap((move) => (move.kind === 'shot' && move.sunk ? [move.sunk] : [])),
+            ...sent.flatMap((move) => (move.kind === 'shot' && move.sunk ? [move.sunk] : [])),
+            ...(viewOf(state, viewer).fleets[other(viewer)] ?? []),
           ].flatMap(shipCells);
           expect(shown.filter((cell) => floating.has(cellIndex(cell)))).toEqual([]);
         }
@@ -115,23 +129,72 @@ describe('what each player sees', () => {
       { numRuns: 100 },
     );
   });
+});
 
-  it('refuses moves no game could produce', () => {
-    const place = (player: Player): ViewMove => ({ kind: 'place', player });
-    const water: ViewMove = { kind: 'shot', row: 0, col: 0, outcome: 'water' };
-    expect(replayView([], 2, 'X')).toEqual({ ok: false, reason: 'unsupported-rules-version' });
-    expect(replayView([place('X'), water], 1, 'X')).toEqual({ ok: false, reason: 'inconsistent' });
-    expect(replayView([place('X'), place('X')], 1, 'X')).toEqual({
+describe('a view on its way', () => {
+  it('holds a shot of its own as pending until the outcome comes', () => {
+    const view = viewOf(play(FLEETS), 'X');
+    const sent = applyMove(view, { kind: 'shot', row: 9, col: 0 });
+    if (!sent.ok) throw new Error(sent.reason);
+    expect(sent.state.shots.X).toEqual([{ row: 9, col: 0, outcome: 'pending' }]);
+    expect(sent.state.moves.at(-1)).toEqual({ kind: 'shot', row: 9, col: 0 });
+    expect(sent.state.turn).toBe('X');
+    expect(mayMove(sent.state, 'X')).toBe(false);
+    expect(legalMoves(sent.state)).toEqual([]);
+    expect(applyMove(sent.state, { kind: 'shot', row: 0, col: 0 })).toMatchObject({
       ok: false,
-      reason: 'inconsistent',
+      reason: 'pending',
     });
-    const over = viewOf(play(FLEETS, SINK_B), 'X');
-    expect(replayView([...over.moves, water], 1, 'X').ok).toBe(false);
-    expect(replayView([...over.moves, place('O')], 1, 'X').ok).toBe(false);
+    // The server's answer replaces the pending shot: the view is rebuilt from its moves.
+    expect(replayView(viewOf(play(FLEETS, 'J1'), 'X').moves, 1, 'X')).toMatchObject({
+      ok: true,
+      state: { shots: { X: [{ row: 9, col: 0, outcome: 'hit' }] }, turn: 'X' },
+    });
   });
 
-  it('refuses to redact a state its moves cannot produce', () => {
+  it("works out the rival's shot at its own fleet when it comes without an outcome", () => {
+    // X missed at B1; O fires at A1, a cell of X's own carrier.
+    const view = viewOf(play(FLEETS, 'B1'), 'X');
+    const shot = applyMove(view, { kind: 'shot', row: 0, col: 0 });
+    expect(shot.ok && shot.state.shots.O).toEqual([{ row: 0, col: 0, outcome: 'hit' }]);
+  });
+
+  it('takes its own placement and the rival one without a fleet, in either order', () => {
+    const rivalFirst = replayView(
+      [
+        { kind: 'place', player: 'O' },
+        { kind: 'place', player: 'X', fleet: FLEET_A },
+      ],
+      1,
+      'X',
+    );
+    expect(rivalFirst).toMatchObject({ ok: true, state: { phase: 'firing', fleets: { O: null } } });
+    expect(mayMove(initialState('X'), 'O')).toBe(true);
+  });
+
+  it('refuses moves no game could produce', () => {
+    const refusal = (moves: Move[]) => {
+      const result = replayView(moves, 1, 'X');
+      return result.ok ? null : result.reason;
+    };
+    const water: Move = { kind: 'shot', row: 0, col: 0, outcome: 'water' };
+    expect(refusal([])).toBeNull();
+    expect(replayView([], 2, 'X')).toEqual({ ok: false, reason: 'unsupported-rules-version' });
+    expect(refusal([{ kind: 'place', player: 'X' }])).toBe('invalid-fleet');
+    expect(refusal([{ kind: 'place', player: 'O' }, water])).toBe('placing');
+    expect(
+      refusal([
+        { kind: 'place', player: 'O' },
+        { kind: 'place', player: 'O' },
+      ]),
+    ).toBe('already-placed');
+    const over = viewOf(play(FLEETS, SINK_B), 'X');
+    expect(refusal([...over.moves, water])).toBe('game-over');
+  });
+
+  it('refuses to redact a view or a state its moves cannot produce', () => {
     const state = play(FLEETS);
+    expect(() => redactMoves(viewOf(state, 'X'), 'X')).toThrow(/nothing more to hide/);
     const broken = { ...state, moves: [...state.moves, state.moves[0]] };
     expect(() => redactMoves(broken, 'X')).toThrow(/illegal/);
   });

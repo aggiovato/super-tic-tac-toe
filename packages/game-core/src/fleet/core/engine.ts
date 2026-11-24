@@ -8,7 +8,6 @@ import {
   type GameState,
   type Move,
   type MoveResult,
-  type Phase,
   RULES_VERSION,
   SHIP_IDS,
   type Shot,
@@ -16,12 +15,17 @@ import {
 
 export const other = (player: Player): Player => (player === 'X' ? 'O' : 'X');
 
-/** Both waters empty and both fleets still to place; X will fire first. */
-export function initialState(): GameState {
+/**
+ * Both waters empty and both fleets still to place; X will fire first. A whole game by default, or
+ * the view of `viewer` (see `GameState.viewer`).
+ */
+export function initialState(viewer: Player | null = null): GameState {
   return {
     rulesVersion: RULES_VERSION,
+    viewer,
     phase: 'placing',
     fleets: { X: null, O: null },
+    placed: { X: false, O: false },
     shots: { X: [], O: [] },
     turn: 'X',
     status: { kind: 'in-progress' },
@@ -33,7 +37,7 @@ export function initialState(): GameState {
 /** Whether two moves are the same: the same fleet for the same player, or a shot at the same cell. */
 export function sameMove(a: Move, b: Move): boolean {
   if (a.kind === 'place' && b.kind === 'place') {
-    return a.player === b.player && sameFleet(a.fleet, b.fleet);
+    return a.player === b.player && sameFleet(a.fleet ?? [], b.fleet ?? []);
   }
   return a.kind === 'shot' && b.kind === 'shot' && a.row === b.row && a.col === b.col;
 }
@@ -42,12 +46,16 @@ export function sameMove(a: Move, b: Move): boolean {
 export const fired = (state: GameState, player: Player, cell: Cell): boolean =>
   state.shots[player].some((shot) => shot.row === cell.row && shot.col === cell.col);
 
+/** Whether `player`'s last shot waits for its outcome (only in a view). */
+const waiting = (state: GameState, player: Player): boolean =>
+  state.shots[player].at(-1)?.outcome === 'pending';
+
 /**
  * Every shot the player to move may fire while the game is firing, row by row. Placing a fleet has
  * too many forms to list: a player places with `applyMove` and `fleetProblem` says what is wrong.
  */
 export function legalMoves(state: GameState): Move[] {
-  if (state.phase !== 'firing') {
+  if (state.phase !== 'firing' || waiting(state, state.turn)) {
     return [];
   }
   const moves: Move[] = [];
@@ -59,18 +67,25 @@ export function legalMoves(state: GameState): Move[] {
   return moves;
 }
 
-/** Whether `player` may move now: either may place their own fleet; then only the one to fire. */
+/**
+ * Whether `player` may move now: either may place their fleet while it is not placed; then only the
+ * one to fire, and not while their last shot waits for its outcome.
+ */
 export function mayMove(state: GameState, player: Player): boolean {
-  if (state.phase === 'placing') return state.fleets[player] === null;
-  return state.phase === 'firing' && state.turn === player;
+  if (state.phase === 'placing') return !state.placed[player];
+  return state.phase === 'firing' && state.turn === player && !waiting(state, player);
 }
 
 /**
- * Plays a move. A placement: refused once the game is over, when that player placed already, or
- * when the fleet breaks a rule (`fleetProblem`); the firing starts once both fleets are placed. A
- * shot by the player to move: refused once the game is over, while a fleet is still to place, off
- * the board, or on a cell that player fired at. A hit or a sinking shot fires again; water passes
- * the turn; sinking the last ship wins.
+ * Plays a move. A placement: refused once the game is over, when that player placed already (or
+ * the firing began), or when the fleet breaks a rule (`fleetProblem`); the firing starts once both
+ * fleets are placed. A shot by the player to move: refused once the game is over, while a fleet is
+ * still to place, off the board, on a cell that player fired at, or (in a view) while the last shot
+ * waits for its outcome. A hit or a sinking shot fires again; water passes the turn; sinking the last
+ * ship wins.
+ *
+ * In a view, the rival's placement comes without its fleet, and a shot at the hidden fleet takes the
+ * outcome it came with, or is pending without one.
  */
 export function applyMove(state: GameState, move: Move): MoveResult {
   if (state.status.kind !== 'in-progress') {
@@ -79,43 +94,57 @@ export function applyMove(state: GameState, move: Move): MoveResult {
   return move.kind === 'place' ? place(state, move.player, move.fleet) : shoot(state, move);
 }
 
-function place(state: GameState, player: Player, fleet: Fleet): MoveResult {
-  if (state.phase !== 'placing' || state.fleets[player] !== null) {
+function place(state: GameState, player: Player, fleet: Fleet | undefined): MoveResult {
+  if (state.phase !== 'placing' || state.placed[player]) {
     return { ok: false, reason: 'already-placed', state };
   }
-  if (fleetProblem(fleet) !== null) {
+  // Only a view may take a placement without its fleet, and only the rival's.
+  const hidden = fleet === undefined && state.viewer !== null && state.viewer !== player;
+  if (!hidden && (fleet === undefined || fleetProblem(fleet) !== null)) {
     return { ok: false, reason: 'invalid-fleet', state };
   }
-  const placed = normalizeFleet(fleet);
-  const fleets = { ...state.fleets, [player]: placed };
-  const phase: Phase = fleets.X && fleets.O ? 'firing' : 'placing';
+  const shown = fleet === undefined ? null : normalizeFleet(fleet);
+  const placed = { ...state.placed, [player]: true };
   return {
     ok: true,
     state: {
       ...state,
-      fleets,
-      phase,
-      moves: [...state.moves, { kind: 'place', player, fleet: placed }],
+      fleets: { ...state.fleets, [player]: shown },
+      placed,
+      phase: placed.X && placed.O ? 'firing' : 'placing',
+      moves: [
+        ...state.moves,
+        shown ? { kind: 'place', player, fleet: shown } : { kind: 'place', player },
+      ],
       revision: state.revision + 1,
     },
   };
 }
 
-function shoot(state: GameState, cell: Cell): MoveResult {
-  const target = state.fleets[other(state.turn)];
-  if (state.phase !== 'firing' || !target) {
+function shoot(state: GameState, move: Move & { kind: 'shot' }): MoveResult {
+  if (state.phase !== 'firing') {
     return { ok: false, reason: 'placing', state };
   }
-  if (cellIndex(cell) < 0) {
+  if (cellIndex(move) < 0) {
     return { ok: false, reason: 'invalid-coordinates', state };
   }
   const mover = state.turn;
-  if (fired(state, mover, cell)) {
+  if (waiting(state, mover)) {
+    return { ok: false, reason: 'pending', state };
+  }
+  if (fired(state, mover, move)) {
     return { ok: false, reason: 'already-shot', state };
   }
-  const shot = resolveShot(target, state.shots[mover], cell);
+  const shot = outcomeOf(state, move);
   const shots = { ...state.shots, [mover]: [...state.shots[mover], shot] };
   const status = statusOf(shots[mover], mover);
+  const { row, col } = move;
+  // The whole game stores bare shots (the engine knows what they did); a view keeps the outcome
+  // it was given, since it could not work it out again.
+  const stored: Move =
+    state.viewer === null || shot.outcome === 'pending'
+      ? { kind: 'shot', row, col }
+      : { kind: 'shot', ...shot, outcome: shot.outcome };
   return {
     ok: true,
     shot,
@@ -125,9 +154,31 @@ function shoot(state: GameState, cell: Cell): MoveResult {
       status,
       phase: status.kind === 'won' ? 'over' : 'firing',
       turn: shot.outcome === 'water' ? other(mover) : mover,
-      moves: [...state.moves, { kind: 'shot', row: cell.row, col: cell.col }],
+      moves: [...state.moves, stored],
       revision: state.revision + 1,
     },
+  };
+}
+
+/**
+ * What a shot did: worked out against the target fleet when it is known, as the whole game always
+ * knows it; in a view, the outcome the shot came with, or pending.
+ */
+function outcomeOf(state: GameState, move: Move & { kind: 'shot' }): Shot {
+  const target = state.fleets[other(state.turn)];
+  const { row, col } = move;
+  if (state.viewer === null || (target && move.outcome === undefined)) {
+    // The whole game always knows both fleets once firing.
+    return resolveShot(target ?? [], state.shots[state.turn], move);
+  }
+  if (move.outcome === undefined) return { row, col, outcome: 'pending' };
+  if (!move.sunk) return { row, col, outcome: move.outcome };
+  const { ship, orientation } = move.sunk;
+  return {
+    row,
+    col,
+    outcome: move.outcome,
+    sunk: { ship, row: move.sunk.row, col: move.sunk.col, orientation },
   };
 }
 

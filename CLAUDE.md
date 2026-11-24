@@ -45,12 +45,14 @@ played against the computer or online, never by two people on one device. One PR
 
 - 7a (`phase/7a-fleet-core`, PR #32): the engine `@fleet/core`: rules, fleets, replay, and what each player
   sees (`viewOf`, `redactMoves`, `replayView`). Outside the catalog until 7d (`ENGINE_ONLY`).
-- 7b (`phase/7b-fleet-ai`): the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
+- 7b (`phase/7b-fleet-ai`, PR #33): the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
   follow-up; hunt and target on parity; a density map of every placement still possible), with a
   property that the hidden fleet never changes its shot, and a benchmark of shots per game.
-- 7c: the platform: play modes per game (Ship Sink: computer and online only), undo per game (none
-  here: undoing a miss would peek), `mayMove` for simultaneous placement, a per-seat redaction in
-  the catalog for the API, the view replay for the client; the other games unchanged.
+- 7c (`phase/7c-fleet-platform`): the platform. `GameDefinition.modes` (`PlayMode` moves to
+  `@catalog`; preferences and Settings offer only a game's modes), `GameRules.mayMove` (both may
+  move at once) and `GameRules.hidden` (`redact`, `replayView`): no undo, the computer told its
+  symbol (`ComputerRequest.player`), and online the match mirrors this seat's view. Ship Sink's
+  engine plays views as states (`viewer`, `placed`, pending shots). The other games unchanged.
 - 7d: the app: catalog entry, routes, placement and the game screen (direction contract in
   `.impeccable/surfaces/`, the fleet quay), preview, copy, history, e2e against the computer.
 - 7e: online: the API redacts per seat, placements accepted in either order without a revision
@@ -150,20 +152,20 @@ CD → Run workflow): a CI run's id and the hosts redeploy that tested build to 
 One word per idea, in code, tests and docs (user-facing copy keeps its own words: "Rival", the
 train names).
 
-| Term            | Meaning                                                                                           |
-| --------------- | ------------------------------------------------------------------------------------------------- |
-| game            | One game from the opening to its result (`GameRecord`, `id`).                                     |
-| series          | Games between the same sides, with their score; a rematch is a new game in the same series.       |
-| match           | The running pair of a series and its current game in a store (`@match`, `withMatch`).             |
-| participant     | Side 0 or 1 of a series; the X and O symbols swap between them on each rematch.                   |
-| computer player | The machine on side 1 (`ComputerPlayer`, `WorkerComputer`, `LocalComputer`, `ai/computer.ts`).    |
-| level           | How strong the computer plays (`ComputerLevel`: beginner, intermediate, advanced).                |
-| move / revision | One accepted action of the engine / the count of them, which orders saves and, later, the server. |
-| variant         | A game's shape that is not a rule change, e.g. the Dots board size (`'3'`, `'5'`).                |
-| fleet / ship    | Ship Sink: a player's five ships (`Fleet`), placed once; each `ShipPlacement` is a bow and a way. |
-| shot / outcome  | A Ship Sink move at a cell of the rival's waters / what it did: `water`, `hit` or `sunk`.         |
-| view            | What one player of a hidden-information game knows (`FleetView`); the server sends no more.       |
-| preferences     | What a person chose on this device (`@preferences`); the Settings sheet edits them.               |
+| Term            | Meaning                                                                                            |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| game            | One game from the opening to its result (`GameRecord`, `id`).                                      |
+| series          | Games between the same sides, with their score; a rematch is a new game in the same series.        |
+| match           | The running pair of a series and its current game in a store (`@match`, `withMatch`).              |
+| participant     | Side 0 or 1 of a series; the X and O symbols swap between them on each rematch.                    |
+| computer player | The machine on side 1 (`ComputerPlayer`, `WorkerComputer`, `LocalComputer`, `ai/computer.ts`).     |
+| level           | How strong the computer plays (`ComputerLevel`: beginner, intermediate, advanced).                 |
+| move / revision | One accepted action of the engine / the count of them, which orders saves and, later, the server.  |
+| variant         | A game's shape that is not a rule change, e.g. the Dots board size (`'3'`, `'5'`).                 |
+| fleet / ship    | Ship Sink: a player's five ships (`Fleet`), placed once; each `ShipPlacement` is a bow and a way.  |
+| shot / outcome  | A Ship Sink move at a cell of the rival's waters / what it did: `water`, `hit` or `sunk`.          |
+| view            | What one player of a hidden-information game knows (a state with `viewer` set); nothing more sent. |
+| preferences     | What a person chose on this device (`@preferences`); the Settings sheet edits them.                |
 
 A game record names who played each side as `seats` (`local`, `computer`, later `remote`), and
 `PlayMode` is `'local' | 'computer'`; records and preferences from before schema 2 (`'humans' |

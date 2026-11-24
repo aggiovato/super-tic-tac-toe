@@ -4,7 +4,6 @@ import {
   cellIndex,
   type Fleet,
   fleetProblem,
-  type FleetView,
   type GameState,
   initialState,
   randomFleet,
@@ -22,7 +21,7 @@ import { chooseMove, type Level, LEVELS } from './computer';
 const FLEETS = { X: FLEET_A, O: FLEET_B };
 
 /** A view of X firing at `target`, built from X's shots alone: what the shooter knows. */
-function firingView(shots: readonly Shot[]): FleetView {
+function firingView(shots: readonly Shot[]): GameState {
   return {
     ...viewOf(play(FLEETS), 'X'),
     shots: { X: shots, O: [] },
@@ -71,7 +70,7 @@ describe('the Ship Sink computer player', () => {
     for (const level of LEVELS) {
       const move = chooseMove(view, { level, seed: 11 });
       expect(move?.kind === 'place' && move.player).toBe('O');
-      expect(move?.kind === 'place' && fleetProblem(move.fleet)).toBeNull();
+      expect(move?.kind === 'place' && fleetProblem(move.fleet ?? [])).toBeNull();
       expect(chooseMove(view, { level, seed: 11 })).toEqual(move);
     }
   });
@@ -83,6 +82,10 @@ describe('the Ship Sink computer player', () => {
     expect(chooseMove(viewOf(play(FLEETS), 'O'), { level: 'advanced', seed: 1 })).toBeNull();
     const over = play(FLEETS, 'J1 J2 J3 J4 J5 A10 B10 C10 D10 E4 E5 E6 A6 B6 C6 G8 H8');
     expect(chooseMove(viewOf(over, 'X'), { level: 'advanced', seed: 1 })).toBeNull();
+  });
+
+  it('refuses to play from a whole game, which would show it the rival fleet', () => {
+    expect(() => chooseMove(play(FLEETS), { level: 'beginner', seed: 1 })).toThrow(/own view/);
   });
 
   it('refuses an unknown level', () => {

@@ -78,7 +78,7 @@ export const DEPENDS = {
   '@i18n': ['@catalog', '@preferences', ...GAME_CORES],
   '@match': ['@tictac', '@catalog', '@preferences', '@storage'],
   // The Worker's messages: plain types, so a Worker imports nothing else of @match.
-  '@match/worker': ['@catalog'],
+  '@match/worker': ['@tictac', '@catalog'],
   // Online play: the route's room behind the match's remote seat, and its panel.
   '@online': ['@catalog', '@protocol', '@match', '@i18n', '@ui'],
   '@pwa': ['@match', '@i18n', '@ui'],

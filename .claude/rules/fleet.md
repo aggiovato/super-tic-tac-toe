@@ -25,20 +25,27 @@ not even corner to corner. One shape for now (`variant` `''`).
   state. The engine stores a fleet normalised to `SHIP_IDS` order.
 - `phase` is `placing` → `firing` → `over`. During `placing`, `legalMoves` is empty and `mayMove`
   is true for each player still to place; afterwards only for `turn`.
-- Hidden information: `viewOf(state, viewer)` is what one player knows (their fleet; the rival's
-  only once over; every shot with its outcome; a sinking shot carries the sunk ship's placement).
-  `redactMoves` is the log the server may send a seat; `replayView(moves, rulesVersion, viewer)`
-  rebuilds the same view without the rival fleet. Properties: the view rebuilt from the redacted
-  log equals the full game's view, and before the end no redacted log locates a rival ship that
-  still floats.
+- Hidden information: a `GameState` is a whole game (`viewer` null: both fleets, as the computer's
+  match and the server hold it) or one player's view (`viewer` set: the rival fleet null until the
+  end; `placed` says who placed). `redactMoves(state, viewer)` is the log the server may send a seat:
+  the rival's placement without its fleet (with it once over), every shot with its `outcome` and a
+  sinking shot with the `sunk` ship. `replayView(moves, rulesVersion, viewer)` rebuilds the view
+  with the same engine: the whole game ignores those extra fields and stores bare moves; a view keeps
+  the outcomes it was given, and a shot of its own without one is `pending` (the turn stays, nothing
+  more may be fired, `mayMove` false) until the room's state replaces it. `viewOf` is the view
+  rebuilt from the redacted log. Properties: a view agrees with the whole game on everything but the
+  hidden fleet, and before the end no redacted log locates a rival ship that still floats.
+- In the catalog (7d) the game declares `mayMove` and `hidden` (`redact`, `replayView`), and
+  `modes: ['computer']`; `@match` then lets both place at once, has no undo, and online mirrors the
+  seat's view (`hidden-match.spec.ts` in `@match` plays this engine through a match).
 - `randomFleet(random)` places a legal fleet (the computer's, and the player's quick placement);
   the same seed gives the same fleet.
 - Fixtures (`@fleet/core/testing`): cells as players name them (`'F4'`), fleets as five bows in
   `SHIP_IDS` order (`'A1h C1v C3h G5v J8h'`), `play(fleets, 'F4 F5')` places both fleets and fires
   each shot for whoever is to fire, failing on the first refusal.
 
-- `@fleet/ai`: `chooseMove(view, { level, seed })` reads only the computer's `FleetView`, never
-  the full state: it places a fleet from the seed during `placing` (null once placed), fires when
+- `@fleet/ai`: `chooseMove(view, { level, seed })` reads only the computer's view (throws on a
+  whole game): it places a fleet from the seed during `placing` (null once placed), fires when
   it is its turn, and is null otherwise. `Knowledge` derives what the view proves: cells fired at,
   water (misses, the rim of every sunk ship, the corners of every hit), open hits, ships afloat.
   - Beginner: anywhere not fired at; beside an open hit only half the time (`BEGINNER_FOLLOW_UP`).
