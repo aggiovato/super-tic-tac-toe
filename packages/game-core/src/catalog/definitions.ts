@@ -71,11 +71,10 @@ export const FLEET_GAME = {
   id: 'fleet',
   rulesVersion: fleet.RULES_VERSION,
   ...ONE_SHAPE,
-  // Hidden fleets: never two people on one screen. Online once the server hides each seat's
-  // rival fleet (phase 7e).
+  // Hidden fleets: never two people on one screen; online, the server sends each seat its view.
   modes: ['computer'],
   draws: false,
-  online: false,
+  online: true,
   levels: COMPUTER_LEVELS,
   featured: false,
   rules: {
@@ -84,6 +83,7 @@ export const FLEET_GAME = {
     sameMove: fleet.sameMove,
     apply: fleet.applyMove,
     mayMove: fleet.mayMove,
+    moverOf: fleet.moverOf,
     hidden: {
       redact: fleet.redactMoves,
       replayView: (moves, rulesVersion, _variant, viewer) =>

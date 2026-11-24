@@ -15,10 +15,19 @@ new version and date.
   Enter or Fire; the departure row announces each shot ("F4 HIT"), the rival's fleet waits on the
   quay as trains whose coaches flip when a ship sinks, and your own fleet shows its damage beside a
   thumbnail of your waters. The computer only ever sees what a player would see.
+- Ship Sink online: invite someone from Settings. Both place their fleets at once; the server sends
+  each player only what they may see (their own fleet, and the rival's ships once sunk), and a
+  shot shows as on its way until the server answers.
 
 ### Changed
 
 - A game that hides information has no undo and is not offered to two people on one device.
+- Every game tags the score of the player to move: "Tu turno" or "Su turno" against the computer or
+  online, "Juega" between two people.
+- Online, the room moves to a "Sala" button in the masthead with a presence dot; the panel under the
+  score shows only while something needs saying (the link to invite, a lost connection, the rival
+  gone).
+- Score entries are centred in their columns.
 
 ## [0.6.0] - 2026-11-24
 

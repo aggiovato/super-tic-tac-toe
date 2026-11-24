@@ -31,11 +31,41 @@ export class ScoreBoard {
   private readonly preferences = inject(Preferences);
   protected readonly t = inject(Translator).t;
 
+  /**
+   * Who may move now, by participant: the player to move, or whoever the game's own rules say
+   * (Ship Sink's placements: each player until their fleet is placed). Nobody is tagged while both
+   * may move at once, or once the game is over.
+   */
+  private readonly mayMove = computed((): readonly [boolean, boolean] => {
+    if (this.store.isOver()) return [false, false];
+    const { rules } = gameById(this.game.id);
+    const position = this.store.game();
+    const may = (participant: Participant): boolean =>
+      rules.mayMove
+        ? rules.mayMove(position, this.store.symbolOf(participant))
+        : this.store.toMove() === participant;
+    const both: [boolean, boolean] = [may(0), may(1)];
+    return both[0] && both[1] ? [false, false] : both;
+  });
+
+  /**
+   * The tag's word: this device's player, the other side, or either of two people here. Online,
+   * nothing until the room says which seat is this device's.
+   */
+  private turnWord(participant: Participant): string | null {
+    const tag = this.t().turnTag;
+    const mode = this.store.mode();
+    if (mode === 'local') return tag.plays;
+    const mine = mode === 'computer' ? 0 : this.store.seat();
+    if (mine === null) return null;
+    return participant === mine ? tag.yours : tag.theirs;
+  }
+
   protected readonly entries = computed((): readonly ScoreEntry[] => {
     const t = this.t();
     const wins = this.store.wins();
     const names = this.preferences.names();
-    const toMove = this.store.isOver() ? null : this.store.toMove();
+    const mayMove = this.mayMove();
     const side = { mode: this.store.mode(), level: this.store.level(), seat: this.store.seat() };
     const computer = (participant: Participant) => side.mode === 'computer' && participant === 1;
     const player = (participant: Participant): ScoreEntry => ({
@@ -50,7 +80,8 @@ export class ScoreBoard {
       levelName: computer(participant) ? t.settings.levels[side.level] : null,
       glyph: glyph(this.store.symbolOf(participant)),
       digits: digits(wins[participant]),
-      active: toMove === participant,
+      active: mayMove[participant],
+      turn: mayMove[participant] ? this.turnWord(participant) : null,
     });
     if (!this.draws()) {
       return [player(0), player(1)];
@@ -62,6 +93,7 @@ export class ScoreBoard {
         glyph: null,
         digits: digits(this.store.draws()),
         active: false,
+        turn: null,
         bars: null,
         levelName: null,
       },

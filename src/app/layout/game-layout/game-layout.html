@@ -1,12 +1,19 @@
 <app-backdrop />
 <div class="game">
-  <header class="masthead"><ng-content select="[masthead]" /></header>
+  <header class="masthead">
+    <ng-content select="app-brand-title" />
+    <!-- Online, the room's button before the page's own masthead actions; nothing on a local game. -->
+    <div class="masthead-end">
+      <app-online-room-button />
+      <ng-content select="[masthead]" />
+    </div>
+  </header>
   <div class="departures"><ng-content select="[status]" /></div>
   <section class="arena" [attr.aria-label]="arenaLabel()"><ng-content select="[arena]" /></section>
   <footer class="controls">
     <ng-content select="[controls]" />
-    <!-- Online, the room's link and connection; nothing on a local game. -->
-    <app-online-panel />
+    <!-- Online, the room's panel only while something needs saying (the masthead button has it all). -->
+    <app-online-panel when="needed" />
     <!-- A new version, offered in the flow under the save notice: never over the controls. -->
     <app-update-notice />
   </footer>

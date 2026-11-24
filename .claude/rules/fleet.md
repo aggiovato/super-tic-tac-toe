@@ -35,8 +35,9 @@ not even corner to corner. One shape for now (`variant` `''`).
   more may be fired, `mayMove` false) until the room's state replaces it. `viewOf` is the view
   rebuilt from the redacted log. Properties: a view agrees with the whole game on everything but the
   hidden fleet, and before the end no redacted log locates a rival ship that still floats.
-- In the catalog (7d) the game declares `mayMove` and `hidden` (`redact`, `replayView`), and
-  `modes: ['computer']`; `@match` then lets both place at once, has no undo, and online mirrors the
+- In the catalog the game declares `mayMove`, `moverOf` (a placement names its player; the server
+  refuses one in the other's name) and `hidden` (`redact`, `replayView`), `modes: ['computer']`,
+  `draws: false`, `online: true`; `@match` then lets both place at once, has no undo, and online mirrors the
   seat's view (`hidden-match.spec.ts` in `@match` plays this engine through a match).
 - `randomFleet(random)` places a legal fleet (the computer's, and the player's quick placement);
   the same seed gives the same fleet.
@@ -63,13 +64,16 @@ not even corner to corner. One shape for now (`variant` `''`).
 - `@fleet/state`: `FleetStore` = `withMatch(FLEET_GAME.rules)` + `person`, `me`, `rival`, `view`
   (the person's view: `viewOf` of the whole game against the computer, the match itself online),
   `lastShot` (`shotsInOrder`), `aimedAt`/`aimed`, `aim(index)`, `fire()`.
-- `@fleet/ui`: `/fleet` (no online route until 7e). `FleetPage` swaps the arena: `FleetPlacement`
+- `@fleet/ui`: `/fleet` and `/fleet/online/:roomId` (the room sends this seat its view; the
+  match replays it with `replayView`, a shot of its own pending until the room answers). `FleetPage` swaps the arena: `FleetPlacement`
   while placing (a random draft from the seed, salted so it is not the computer's; tap a ship, tap
-  water to move its bow, Turn/R, Shuffle, Confirm; a refused change says why) and `FleetBattle`
+  water to move it there (its bow on the cell, or slid back from the edge so it ends there:
+  `placeCovering`), Turn/R, Shuffle, Confirm; a refused change says why) and `FleetBattle`
   (rival trains, the enemy `FleetWaters` with aim and fire, the quay: own trains, a compact
   `FleetWaters` and Fire). `FleetWaters` is the 10×10 grid (native buttons, roving tab stop,
   arrows report focus so focus aims); `FleetTrains` the fleet as coaches. `FleetStatus` announces
-  the last shot on the flaps (cell + outcome, hits in Sand), the tiles shrink to fit eleven.
+  the last shot on the flaps (cell + outcome, hits in Sand; who fired is the sentence's), the tiles
+  shrink to fit within a row of fixed height.
   Design: `.impeccable/surfaces/` (the fleet quay); hits in `--color-hit` (Sand); the water around a
   ship where no other may go is a soft diagonal hatch (around sunk ships, and every ship while
   placing), never dots, which mean a shot.

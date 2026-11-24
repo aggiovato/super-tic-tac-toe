@@ -17,6 +17,10 @@
           <app-split-flap [char]="digit" [index]="$index" [maxSteps]="10" />
         }
       </dd>
+      @if (entry.glyph) {
+        <!-- Always in the flow, so the turn moving between players never shifts the score. -->
+        <dd class="turn" [class.on]="entry.turn">{{ entry.turn ?? ' ' }}</dd>
+      }
     </div>
   }
 </dl>

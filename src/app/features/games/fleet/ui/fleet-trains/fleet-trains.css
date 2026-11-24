@@ -1,6 +1,7 @@
 /*
  * Trains of flap coaches: each coach a tiny flap tile with its hairline split. Afloat rival coaches
- * are blank with an edge; a sunk train drops to the wreck's tone with a Sand pip in each coach.
+ * are blank with an edge; a hit coach turns Sand; a sunk train is the strongest state, every coach
+ * Sand inside a Chalk outline, as the wreck is outlined on the board.
  */
 :host {
   --coach-w: 0.8rem;
@@ -20,6 +21,7 @@
 .train {
   display: flex;
   gap: 2px;
+  border-radius: var(--radius-cell);
 }
 
 .coach {
@@ -51,15 +53,13 @@
   box-shadow: none;
 }
 
-.train.sunk .coach {
-  background: var(--color-surface-done);
-  box-shadow: none;
+.train.sunk {
+  outline: var(--border-line) solid var(--color-fg-strong);
+  outline-offset: 2px;
 }
 
-.train.sunk .coach::before {
-  content: '';
-  position: absolute;
-  inset: 30%;
-  border-radius: var(--radius-pill);
+.train.sunk .coach,
+:host(.own) .train.sunk .coach {
   background: var(--color-hit);
+  box-shadow: none;
 }

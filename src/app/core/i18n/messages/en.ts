@@ -48,6 +48,7 @@ export const en: Messages = {
   opponents: { beginner: 'Rookie', intermediate: 'Veteran', advanced: 'Master' },
   draws: 'Draws',
   score: 'Series score',
+  turnTag: { yours: 'YOUR TURN', theirs: 'THEIR TURN', plays: 'TO PLAY' },
   rematch: 'Rematch',
   undo: 'Undo',
   howToPlay: {
@@ -207,9 +208,11 @@ export const en: Messages = {
       won: 'VICTORY',
       lost: 'DEFEAT',
     },
-    placing: 'Tap a ship, then its new spot; turn it or shuffle, then confirm.',
+    placing: 'Tap a ship, then its new spot; turn it or press Shuffle, then confirm.',
     waitingFleet: (rival) => `Waiting for ${rival} to place their fleet.`,
     yourTurn: 'Your turn: pick a cell in the enemy waters.',
+    rivalTurn: (rival) => `${rival} fires: wait for your turn.`,
+    yourMiss: (cell) => `${cell}: miss.`,
     aiming: (cell) => `Aiming at ${cell}. Tap again or press Fire.`,
     aimingAfterMiss: (rival, missed, cell) =>
       `${rival} missed at ${missed}. Aiming at ${cell}: tap again or press Fire.`,
@@ -265,6 +268,7 @@ export const en: Messages = {
         {
           unknown: 'not fired at',
           water: 'miss',
+          rim: 'no ship can be here',
           hit: 'hit',
           sunk: 'sunk',
           pending: 'shot on its way',
@@ -287,8 +291,8 @@ export const en: Messages = {
       title: 'How to play',
       intro: 'Sink the fleet: the first to sink all five rival ships wins.',
       place:
-        'Place your fleet of 5, 4, 3, 3 and 2 cells. Ships never touch, not even corner to corner.',
-      fire: 'On your turn, fire at a cell of the enemy waters: a miss, a hit or a sinking.',
+        'Place your fleet of 5, 4, 3, 3 and 2 cells. Ships never touch, not even corner to corner: the hatch shows where no other fits.',
+      fire: 'On your turn, tap a cell of the enemy waters to aim and again to fire: a miss, a hit or a sinking.',
       again: 'Hit or sink a ship and you fire again. A miss passes the turn.',
       win: "Sink the rival's five ships before they sink yours.",
     },
@@ -296,6 +300,8 @@ export const en: Messages = {
   games: { 'super-3t': 'Super 3T', classic: 'Classic', dots: 'Boxes', fleet: 'Ship Sink' },
   online: {
     title: 'Online',
+    room: 'Room',
+    roomState: (allWell) => (allWell ? 'Room: all well' : 'Room: check the connection'),
     invite: 'Invite someone online',
     inviteHint: 'Create a private room and share its link: the game is played on two devices.',
     creating: 'Creating the room…',

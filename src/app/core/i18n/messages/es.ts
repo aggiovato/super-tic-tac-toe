@@ -49,6 +49,7 @@ export const es: Messages = {
   opponents: { beginner: 'Novato', intermediate: 'Veterano', advanced: 'Maestro' },
   draws: 'Tablas',
   score: 'Marcador de la serie',
+  turnTag: { yours: 'TU TURNO', theirs: 'SU TURNO', plays: 'JUEGA' },
   rematch: 'Revancha',
   undo: 'Deshacer',
   howToPlay: {
@@ -212,9 +213,11 @@ export const es: Messages = {
       won: 'VICTORIA',
       lost: 'DERROTA',
     },
-    placing: 'Toca un barco y después su nuevo sitio; gíralo o barájala, y confirma.',
+    placing: 'Toca un barco y después su nuevo sitio; gíralo o pulsa Al azar, y confirma.',
     waitingFleet: (rival) => `Esperando a que ${rival} coloque su flota.`,
     yourTurn: 'Tu turno: elige una casilla de las aguas enemigas.',
+    rivalTurn: (rival) => `Dispara ${rival}: espera tu turno.`,
+    yourMiss: (cell) => `${cell}: agua.`,
     aiming: (cell) => `Apuntas a ${cell}. Toca otra vez o pulsa Disparar.`,
     aimingAfterMiss: (rival, missed, cell) =>
       `${rival} falló en ${missed}. Apuntas a ${cell}: toca otra vez o pulsa Disparar.`,
@@ -270,6 +273,7 @@ export const es: Messages = {
         {
           unknown: 'sin disparar',
           water: 'agua',
+          rim: 'zona sin barcos',
           hit: 'tocado',
           sunk: 'hundido',
           pending: 'disparo en camino',
@@ -291,8 +295,9 @@ export const es: Messages = {
     howToPlay: {
       title: 'Cómo se juega',
       intro: 'Hundir la flota: gana quien hunda primero los cinco barcos del rival.',
-      place: 'Coloca tu flota de 5, 4, 3, 3 y 2 casillas. Los barcos no se tocan, ni en diagonal.',
-      fire: 'En tu turno, dispara a una casilla de las aguas enemigas: agua, tocado o hundido.',
+      place:
+        'Coloca tu flota de 5, 4, 3, 3 y 2 casillas. Los barcos no se tocan, ni en diagonal: la zona rayada marca dónde no cabe otro.',
+      fire: 'En tu turno, toca una casilla de las aguas enemigas para apuntar y otra vez para disparar: agua, tocado o hundido.',
       again: 'Si tocas o hundes un barco, vuelves a disparar. Con agua, pasa el turno.',
       win: 'Hunde los cinco barcos del rival antes de que hunda los tuyos.',
     },
@@ -300,6 +305,8 @@ export const es: Messages = {
   games: { 'super-3t': 'Super 3T', classic: 'Clásico', dots: 'Cajas', fleet: 'Ship Sink' },
   online: {
     title: 'Online',
+    room: 'Sala',
+    roomState: (allWell) => (allWell ? 'Sala: todo en orden' : 'Sala: revisa la conexión'),
     invite: 'Invitar a alguien online',
     inviteHint:
       'Crea una sala privada y comparte su enlace: la partida se juega en dos dispositivos.',

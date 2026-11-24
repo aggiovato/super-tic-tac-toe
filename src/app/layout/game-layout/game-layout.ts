@@ -5,7 +5,7 @@ import { Backdrop, Button, Icon } from '@ui';
 import { Preferences } from '@preferences';
 import { GameLibrary } from '@library';
 import { UpdateNotice } from '@pwa';
-import { OnlinePanel } from '@online';
+import { OnlinePanel, OnlineRoomButton } from '@online';
 
 /**
  * The page every game shares: the masthead (title and settings), the status row, the board in the
@@ -15,7 +15,16 @@ import { OnlinePanel } from '@online';
  */
 @Component({
   selector: 'app-game-layout',
-  imports: [Backdrop, Button, Icon, GameLibrary, OnlinePanel, RouterOutlet, UpdateNotice],
+  imports: [
+    Backdrop,
+    Button,
+    Icon,
+    GameLibrary,
+    OnlinePanel,
+    OnlineRoomButton,
+    RouterOutlet,
+    UpdateNotice,
+  ],
   templateUrl: './game-layout.html',
   styleUrl: './game-layout.css',
 })

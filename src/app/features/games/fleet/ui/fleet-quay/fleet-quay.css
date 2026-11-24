@@ -49,7 +49,7 @@ h2 {
   --coach-h: 0.8rem;
 }
 
-/* The magnifier: the thumbnail as a button, a small lens badge in its corner. */
+/* The magnifier: the thumbnail as a button, a small lens badge just past its corner. */
 .lens {
   position: relative;
   display: block;
@@ -81,13 +81,13 @@ h2 {
 }
 
 /*
- * Inside the thumbnail's corner, so nothing beside it (its caption, the trains) can cover it; a
- * ring in the ground colour lifts it off the cells under it.
+ * Just past the thumbnail's corner, covering no cell; the quay's gap keeps it clear of the trains,
+ * and a ring in the ground colour lifts it off the board's edge.
  */
 .badge {
   position: absolute;
-  right: 0.2rem;
-  bottom: 0.2rem;
+  right: -0.6rem;
+  bottom: -0.6rem;
   /* Above the thumbnail's cells and wrecks, which stack up to 3 inside it. */
   z-index: 5;
   display: grid;
@@ -112,10 +112,11 @@ h2 {
   --coach-h: 0.95rem;
 }
 
+/* The waters titled like the fleet rows: caption above, the thumbnail under it. */
 .waters {
   display: flex;
-  align-items: end;
-  gap: var(--spacing-stack);
+  flex-direction: column;
+  gap: calc(var(--spacing) * 1.5);
   margin: var(--spacing-stack-tight) 0 0;
 }
 

@@ -1,6 +1,14 @@
 import { createRandom } from '@tictac';
 import { describe, expect, it } from 'vitest';
-import { applyMove, initialState, legalMoves, mayMove, sameMove, shotsInOrder } from './engine';
+import {
+  applyMove,
+  initialState,
+  legalMoves,
+  mayMove,
+  moverOf,
+  sameMove,
+  shotsInOrder,
+} from './engine';
 import { fleetProblem, randomFleet, shipRim } from './fleet';
 import type { Fleet, GameState, Move } from './models';
 import { replay } from './replay';
@@ -164,6 +172,11 @@ describe('the Ship Sink engine: firing', () => {
 });
 
 describe('the Ship Sink engine: moves and replay', () => {
+  it('names who makes a move: a placement its player, a shot the player to move', () => {
+    expect(moverOf(initialState(), { kind: 'place', player: 'O', fleet: FLEET_B })).toBe('O');
+    expect(moverOf(play(FLEETS, 'B1'), shot('A1'))).toBe('O');
+  });
+
   it('tells moves apart', () => {
     const place: Move = { kind: 'place', player: 'X', fleet: FLEET_A };
     expect(sameMove(shot('A1'), shot('A1'))).toBe(true);

@@ -18,6 +18,7 @@
 
 .stacked,
 .looking,
+.act,
 .board {
   width: var(--board);
   justify-self: center;
@@ -38,12 +39,22 @@
   color: var(--color-fg-strong);
 }
 
+.act {
+  display: none;
+}
+
 @media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
   :host {
-    --board: min(100cqw, 100cqh, 44rem);
+    /* The board takes the arena's height, less the action row under it. */
+    --board: min(100cqw, 100cqh - 3.5rem, 44rem);
   }
 
   .stacked {
     display: none;
+  }
+
+  .act {
+    display: flex;
+    justify-content: flex-end;
   }
 }

@@ -62,6 +62,12 @@ function game(x: Level, o: Level, seed: number): Player {
   return state.status.winner;
 }
 
+/**
+ * Seeded whole games: about a second here, several on a CI runner with coverage on, so these get
+ * more than the default five.
+ */
+const SLOW_MS = 30_000;
+
 const mean = (values: readonly number[]) => values.reduce((a, b) => a + b, 0) / values.length;
 
 describe('the Ship Sink computer player', () => {
@@ -152,35 +158,50 @@ describe('the Ship Sink computer player', () => {
     }
   });
 
-  it('plays legal games to the end at every level, on both sides', () => {
-    for (const x of LEVELS) {
-      for (const o of LEVELS) {
-        expect(['X', 'O']).toContain(game(x, o, 3));
+  it(
+    'plays legal games to the end at every level, on both sides',
+    () => {
+      for (const x of LEVELS) {
+        for (const o of LEVELS) {
+          expect(['X', 'O']).toContain(game(x, o, 3));
+        }
       }
-    }
-  });
+    },
+    SLOW_MS,
+  );
 
-  it('needs fewer shots the stronger it plays', () => {
-    const seeds = Array.from({ length: 40 }, (_, i) => i);
-    const average = Object.fromEntries(
-      LEVELS.map((level) => [
-        level,
-        mean(seeds.map((seed) => shotsToSink(level, randomFleet(createRandom(1000 + seed)), seed))),
-      ]),
-    ) as Record<Level, number>;
-    // Measured on these 40 fleets: 68.8, 44.6 and 38.9 shots (firing at random needs about 95).
-    expect(average.beginner).toBeGreaterThan(average.intermediate + 15);
-    expect(average.intermediate).toBeGreaterThan(average.advanced + 4);
-    expect(average.advanced).toBeLessThan(42);
-  });
+  it(
+    'needs fewer shots the stronger it plays',
+    () => {
+      const seeds = Array.from({ length: 40 }, (_, i) => i);
+      const average = Object.fromEntries(
+        LEVELS.map((level) => [
+          level,
+          mean(
+            seeds.map((seed) => shotsToSink(level, randomFleet(createRandom(1000 + seed)), seed)),
+          ),
+        ]),
+      ) as Record<Level, number>;
+      // Measured on these 40 fleets: 68.8, 44.6 and 38.9 shots (firing at random needs about 95).
+      expect(average.beginner).toBeGreaterThan(average.intermediate + 15);
+      expect(average.intermediate).toBeGreaterThan(average.advanced + 4);
+      expect(average.advanced).toBeLessThan(42);
+    },
+    SLOW_MS,
+  );
 
-  it('wins most games against the level below', () => {
-    const wins = (strong: Level, weak: Level) =>
-      Array.from({ length: 20 }, (_, seed) => seed).filter(
-        (seed) =>
-          game(seed % 2 ? strong : weak, seed % 2 ? weak : strong, seed) === (seed % 2 ? 'X' : 'O'),
-      ).length;
-    expect(wins('intermediate', 'beginner')).toBeGreaterThanOrEqual(15);
-    expect(wins('advanced', 'intermediate')).toBeGreaterThanOrEqual(11);
-  });
+  it(
+    'wins most games against the level below',
+    () => {
+      const wins = (strong: Level, weak: Level) =>
+        Array.from({ length: 20 }, (_, seed) => seed).filter(
+          (seed) =>
+            game(seed % 2 ? strong : weak, seed % 2 ? weak : strong, seed) ===
+            (seed % 2 ? 'X' : 'O'),
+        ).length;
+      expect(wins('intermediate', 'beginner')).toBeGreaterThanOrEqual(15);
+      expect(wins('advanced', 'intermediate')).toBeGreaterThanOrEqual(11);
+    },
+    SLOW_MS,
+  );
 });

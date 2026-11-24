@@ -29,6 +29,14 @@ export class FleetBattle {
   /** A tap or Enter on a cell: aims there, or fires when it was aimed already. */
   protected pick(index: number): void {
     if (!this.store.personTurn()) return;
+    const cell = this.views().enemy.cells[index];
+    if (cell && ['water', 'hit', 'sunk', 'pending'].includes(cell.state)) {
+      // Fired at already: the aim goes (no ring left elsewhere, no unconfirmed shot waiting) and
+      // the engine's refusal is what the sentence says.
+      this.store.aim(null);
+      this.store.play({ kind: 'shot', row: cell.row, col: cell.col });
+      return;
+    }
     if (this.store.aimed() === index) {
       this.store.fire();
     } else {

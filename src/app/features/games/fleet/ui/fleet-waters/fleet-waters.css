@@ -1,5 +1,5 @@
 /*
- * A Ship Sink board: Raven Deep cells on 2px gaps, coordinates in Seagrass Dim. Water is a small
+ * A Ship Sink board: Raven Deep cells on 2px gaps, coordinates in Seagrass. Water is a small
  * dim dot, a hit a round-capped Sand cross, a sunk ship's cells drop to Raven Deepest under a Chalk
  * outline over a softly hatched rim. Ships of one's own are Seagrass capsules under the marks.
  * Apricot rings the aimed cell (the thick ring is the shape cue) and lights its row and column.
@@ -44,7 +44,8 @@
   font-size: var(--text-caption);
   font-weight: 700;
   line-height: 1;
-  color: var(--color-fg-disabled);
+  /* Seagrass on the platform clears 4.5:1: the coordinates are how a player finds a cell. */
+  color: var(--color-fg);
 }
 
 .axis.on {
@@ -70,7 +71,8 @@ button.cell {
   touch-action: manipulation;
 }
 
-button.cell:hover:not(.water, .hit, .sunk, .pending) {
+/* Hover lifts an empty cell; never one over a ship, which would draw a dark disc through it. */
+button.cell:hover:not(.water, .hit, .sunk, .pending, .ship, .shipHit) {
   background: var(--color-surface-raised);
 }
 
@@ -193,6 +195,8 @@ button.cell:focus-visible {
   border-width: var(--border-hairline);
 }
 
+/* On the thumbnail the rival's last shot still has to be seen at a glance: a full-weight ring. */
 :host(.compact) .last::after {
-  border-width: var(--border-hairline);
+  inset: -1px;
+  border-width: var(--border-line);
 }

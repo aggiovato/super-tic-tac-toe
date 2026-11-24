@@ -10,6 +10,10 @@ const status = (page: Page) => page.getByRole('status');
 const cell = (page: Page, at: number) =>
   page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
 const online = (page: Page) => page.getByRole('region', { name: 'Online' });
+/** All well in the room: the masthead's room button says so (the panel then stays away). */
+const allWell = (page: Page) => page.getByRole('button', { name: 'Room: all well' });
+/** Opens the room's details from the masthead button. */
+const openRoom = (page: Page) => page.getByRole('button', { name: /^Room: / }).click();
 const firstScore = (page: Page) => page.locator('app-score-board dd .sr-only').first();
 
 /**
@@ -18,9 +22,19 @@ const firstScore = (page: Page) => page.locator('app-score-board dd .sr-only').f
  * network does (the server is not told), and refuses new sockets until `restore()`.
  */
 async function device(browser: Browser) {
-  const context = await browser.newContext();
+  // Each device its own client address, as two real devices have: the API limits rooms created
+  // and joined per address and minute, and every local request would otherwise share one. Against
+  // a deployed version (E2E_BASE_URL) Cloudflare sets the real address, so nothing is added.
+  const context = await browser.newContext(
+    process.env['E2E_BASE_URL']
+      ? {}
+      : { extraHTTPHeaders: { 'cf-connecting-ip': `e2e-${crypto.randomUUID()}` } },
+  );
   await context.addInitScript((key) => {
-    localStorage.setItem(key, JSON.stringify({ seenTutorials: ['super-3t', 'classic', 'dots'] }));
+    localStorage.setItem(
+      key,
+      JSON.stringify({ seenTutorials: ['super-3t', 'classic', 'dots', 'fleet'] }),
+    );
   }, PREFERENCES);
   let down = false;
   let current: WebSocketRoute | null = null;
@@ -65,7 +79,7 @@ test('two browsers play online, lose the connection, retry and converge on one r
   // The guest opens the invitation and takes the other seat.
   await guest.page.goto(link);
   for (const { page } of [host, guest]) {
-    await expect(online(page)).toContainText(/Rival\s*connected/);
+    await expect(allWell(page)).toBeVisible();
   }
   await expect(host.page.locator('app-score-board')).toContainText('You');
   await expect(host.page.locator('app-score-board')).toContainText('Rival');
@@ -87,7 +101,7 @@ test('two browsers play online, lose the connection, retry and converge on one r
   // Back online, the socket comes back by itself and the move reaches the guest once.
   host.restore();
   await expect(cell(guest.page, 1)).toHaveAccessibleName(/^Cell 2, X/, { timeout: 15_000 });
-  await expect(online(host.page)).toContainText(/Rival\s*connected/);
+  await expect(allWell(host.page)).toBeVisible();
 
   await cell(guest.page, 4).click();
   await expect(cell(host.page, 4)).toHaveAccessibleName(/^Cell 5, O/);
@@ -105,7 +119,7 @@ test('two browsers play online, lose the connection, retry and converge on one r
   await guest.page.goto(link);
   await expect(status(guest.page)).toHaveText('Game over. X wins.');
   await expect(firstScore(guest.page)).toHaveText('01');
-  await expect(online(host.page)).toContainText(/Rival\s*connected/);
+  await expect(allWell(host.page)).toBeVisible();
 
   // The rematch swaps symbols: the guest plays X and opens.
   await host.page.getByRole('button', { name: 'Rematch' }).click();
@@ -142,14 +156,14 @@ test('the history opens over a room; coming back to a room left asks first, leav
   await expect(host.page).toHaveURL(/\/classic\/online\//);
   const link = host.page.url();
   await guest.page.goto(link);
-  await expect(online(guest.page)).toContainText('connected');
+  await expect(allWell(guest.page)).toBeVisible();
 
   // The history opens over the room: the host never leaves it.
   await host.page.getByRole('button', { name: 'History' }).click();
   await expect(host.page.getByRole('dialog', { name: 'Classic history' })).toBeVisible();
   await host.page.keyboard.press('Escape');
   await expect(host.page).toHaveURL(/\/classic\/online\/[^/]+$/);
-  await expect(online(host.page)).toContainText('connected');
+  await expect(allWell(host.page)).toBeVisible();
 
   // The host goes to another game and back: the room waits for them, and so does their rival.
   await host.page.getByRole('button', { name: 'Games' }).click();
@@ -165,10 +179,60 @@ test('the history opens over a room; coming back to a room left asks first, leav
   await expect(cell(guest.page, 4)).toHaveAccessibleName(/^Cell 5, X/);
 
   // "Leave the room" replaces its entry: the back button does not reopen it.
+  await openRoom(host.page);
   await online(host.page).getByRole('link', { name: 'Leave the room' }).click();
   await expect(host.page).toHaveURL(/\/classic$/);
   await host.page.goBack();
   await expect(host.page).not.toHaveURL(/online/);
+
+  await host.context.close();
+  await guest.context.close();
+});
+
+test('two browsers play ship sink online: both place at once and neither sees the other fleet', async ({
+  browser,
+}) => {
+  const host = await device(browser);
+  const guest = await device(browser);
+  const enemy = (page: Page) => page.getByRole('group', { name: 'Enemy waters', exact: true });
+  const why = (page: Page) =>
+    page.getByRole('region', { name: 'Next turn' }).getByRole('paragraph');
+
+  await host.page.goto('/fleet');
+  await host.page.getByRole('button', { name: 'Settings' }).click();
+  await host.page.getByRole('tab', { name: 'Players' }).click();
+  await host.page.getByRole('radio', { name: 'Online room' }).check();
+  await host.page.getByRole('button', { name: 'Invite someone online' }).click();
+  await expect(host.page).toHaveURL(/\/fleet\/online\/[0-9a-f]{64}$/);
+  const link = await online(host.page).getByRole('textbox', { name: 'Room link' }).inputValue();
+  await guest.page.goto(link);
+  for (const { page } of [host, guest]) {
+    await expect(allWell(page)).toBeVisible();
+  }
+
+  // Both confirm their fleets, one right after the other: neither has to wait for the other.
+  // Both place at once: no one's turn to tag. Once the host has placed, only the guest may move,
+  // and the score says so on each device.
+  await host.page.getByRole('button', { name: 'Confirm fleet' }).click();
+  await expect(host.page.locator('app-score-board .turn.on')).toHaveText('THEIR TURN');
+  await expect(guest.page.locator('app-score-board .turn.on')).toHaveText('YOUR TURN');
+  await guest.page.getByRole('button', { name: 'Confirm fleet' }).click();
+  for (const { page } of [host, guest]) {
+    await expect(enemy(page)).toBeVisible();
+    // The rival's fleet is nowhere on the page: no cell of the enemy waters shows a ship.
+    await expect(enemy(page).getByRole('button', { name: /, ship$/ })).toHaveCount(0);
+  }
+
+  // The host plays X and fires first: aim, then fire. The guest hears where it landed.
+  const a1 = enemy(host.page).getByRole('button', { name: /^A1,/ });
+  await a1.click();
+  await a1.click();
+  await expect(a1).toHaveAccessibleName(/^A1, (miss|hit)$/);
+  await expect(why(guest.page)).toHaveText(/^Rival (fires at|hits you at) A1/);
+  // The guest cannot fire out of turn when the host hit: its waters stay untouched.
+  if ((await a1.getAttribute('aria-label'))?.endsWith('hit')) {
+    await expect(enemy(guest.page).getByRole('button', { name: /, (miss|hit)$/ })).toHaveCount(0);
+  }
 
   await host.context.close();
   await guest.context.close();

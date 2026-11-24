@@ -6,4 +6,5 @@ export { ONLINE_GAME, OnlineRoom, SOCKET_FACTORY } from './online-room';
 export { openOnlineRoom, provideOnlineRoom } from './provide-online-room';
 export type { ConnectionState, RivalPresence, RoomProblem } from './online.model';
 export { OnlinePanel } from './online-panel/online-panel';
+export { OnlineRoomButton } from './online-room-button/online-room-button';
 export { OnlineStart } from './online-start/online-start';

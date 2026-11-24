@@ -6,6 +6,7 @@ export {
   initialState,
   legalMoves,
   mayMove,
+  moverOf,
   other,
   resolveShot,
   sameMove,

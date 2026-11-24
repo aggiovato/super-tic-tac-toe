@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, DOCUMENT, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, DOCUMENT, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
 import { Button } from '@ui';
@@ -17,7 +17,8 @@ interface PresenceView {
 }
 
 /**
- * An online game's panel, under the score: both players' presence (a filled dot connected, a ring
+ * An online game's panel, under the score when something needs saying and in the room button's
+ * popover on demand: both players' presence (a filled dot connected, a ring
  * without connection, a dashed ring not in yet: shape, never the accent), one sentence when there
  * is something to say, the link to share while the rival has not joined, the way back into a room
  * this device left, and the way out. Renders nothing on a local game.
@@ -29,6 +30,13 @@ interface PresenceView {
   styleUrl: './online-panel.css',
 })
 export class OnlinePanel {
+  /**
+   * `always` (the room button's popover) shows the whole room; `needed` (the page, under the
+   * score) only while something needs saying: the rival to invite, a connection on its way back,
+   * the rival gone, a problem. All being well, the page keeps its room and the masthead says so.
+   */
+  readonly when = input<'always' | 'needed'>('always');
+
   protected readonly room = inject(OnlineRoom, { optional: true });
   protected readonly gameId = inject(ONLINE_GAME, { optional: true });
   protected readonly t = inject(Translator).t;
@@ -85,6 +93,9 @@ export class OnlinePanel {
     }
     return rival && !rival.online ? t.rivalAway : null;
   });
+
+  /** Whether the panel shows: always, or only while there is something to say. */
+  protected readonly shown = computed(() => this.when() === 'always' || this.note() !== null);
 
   /** The rival has not taken the other seat yet: the link is what matters. */
   protected readonly waiting = computed(() => {

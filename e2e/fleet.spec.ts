@@ -40,13 +40,15 @@ async function fireUntilAnswered(page: Page): Promise<void> {
 }
 
 test.describe('ship sink', () => {
-  test('is played against the computer, never by two people on one screen', async ({ page }) => {
+  test('is played against the computer or online, never by two people on one screen', async ({
+    page,
+  }) => {
     await page.goto('/fleet');
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Players' }).click();
     await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'Two players' })).toHaveCount(0);
-    await expect(page.getByRole('radio', { name: 'Online room' })).toHaveCount(0);
+    await expect(page.getByRole('radio', { name: 'Online room' })).toHaveCount(1);
   });
 
   test('places the fleet, fires, hears the computer and resumes after a reload', async ({

@@ -45,6 +45,11 @@ export interface Messages {
   };
   readonly draws: string;
   readonly score: string;
+  /**
+   * The tag under the score of the player to move (flap capitals): this device's player, the
+   * other side (the computer or the rival online), or either of two people on one device.
+   */
+  readonly turnTag: { readonly yours: string; readonly theirs: string; readonly plays: string };
   readonly rematch: string;
   readonly undo: string;
   /** The how-to-play ticket: four rules, each beside a small board drawing, and a closing tip. */
@@ -219,6 +224,10 @@ export interface Messages {
     readonly placing: string;
     readonly waitingFleet: (rival: string) => string;
     readonly yourTurn: string;
+    /** The rival fires first, before any shot: this player waits. */
+    readonly rivalTurn: (rival: string) => string;
+    /** This player's last shot missed, said again when the rival's volley ends: `B2: agua.` */
+    readonly yourMiss: (cell: string) => string;
     readonly aiming: (cell: string) => string;
     /** Aiming right after the rival's miss handed the turn back: both said in one sentence. */
     readonly aimingAfterMiss: (rival: string, missed: string, cell: string) => string;
@@ -245,7 +254,7 @@ export interface Messages {
     /** A cell's accessible name: its name and what is known of it. */
     readonly cell: (
       cell: string,
-      state: 'unknown' | 'water' | 'hit' | 'sunk' | 'pending' | 'ship' | 'shipHit',
+      state: 'unknown' | 'water' | 'rim' | 'hit' | 'sunk' | 'pending' | 'ship' | 'shipHit',
     ) => string;
     /** A ship in a fleet strip, for screen readers: its name, length and state. */
     readonly shipState: (ship: string, length: number, hits: number, sunk: boolean) => string;
@@ -271,6 +280,9 @@ export interface Messages {
   /** Online play by invitation: a private room and its link. */
   readonly online: {
     readonly title: string;
+    /** The masthead's button that opens the room's details; its state for screen readers. */
+    readonly room: string;
+    readonly roomState: (allWell: boolean) => string;
     readonly invite: string;
     readonly inviteHint: string;
     readonly creating: string;

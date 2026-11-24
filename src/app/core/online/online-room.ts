@@ -7,7 +7,7 @@ import {
   InjectionToken,
   signal,
 } from '@angular/core';
-import type { GameId } from '@catalog';
+import { type GameId, gameById } from '@catalog';
 import { type RemoteGame, RemoteSeat } from '@match';
 import { GAME_ROOMS_PATH, type GameRoomState, type Seat, type ServerMessage } from '@protocol';
 import { GameRoomsApi, RoomsUnreachable } from './game-rooms-api';
@@ -30,10 +30,36 @@ interface PendingMove {
   readonly game: number;
   readonly expectedRevision: number;
   readonly move: unknown;
+  /** The revision the server accepted it at (its `ack`), once known. */
+  readonly acked?: number;
 }
 
-/** The pending moves that still follow the server's state, in order; the rest are dropped. */
-function stillPending(pending: readonly PendingMove[], state: GameRoomState): PendingMove[] {
+/**
+ * The pending moves that still follow the server's state, in order; the rest are dropped. In a
+ * game where both may move at once (Ship Sink's placements), a move stays until the state carries
+ * it (its `ack` names where) or the server refuses it: the rival's move landing first does not
+ * make it stale.
+ */
+function stillPending(
+  pending: readonly PendingMove[],
+  state: GameRoomState,
+  simultaneous: ((moves: readonly unknown[]) => boolean) | null,
+): PendingMove[] {
+  if (simultaneous) {
+    // Also dropped: a move the state already holds (resent after a reconnection, before its ack),
+    // which no longer fits on top of the server's moves.
+    const kept: PendingMove[] = [];
+    let moves = state.moves;
+    for (const move of pending) {
+      const acked = move.acked !== undefined && move.acked <= state.revision;
+      const next = [...moves, move.move];
+      if (move.game === state.game && !acked && simultaneous(next)) {
+        kept.push(move);
+        moves = next;
+      }
+    }
+    return kept;
+  }
   const kept = pending.filter(
     (move) => move.game === state.game && move.expectedRevision >= state.revision,
   );
@@ -50,6 +76,11 @@ function stillPending(pending: readonly PendingMove[], state: GameRoomState): Pe
 @Injectable()
 export class OnlineRoom extends RemoteSeat {
   private readonly gameId = inject(ONLINE_GAME);
+  /**
+   * In a game where both players may move at once (its rules say who may move): whether a list of
+   * moves replays, as this seat sees it. Null for turn-based games.
+   */
+  private readonly simultaneous = this.replays();
   private readonly api = inject(GameRoomsApi);
   private readonly credentials = inject(RoomCredentialsStore);
   private readonly createSocket = inject(SOCKET_FACTORY);
@@ -216,8 +247,9 @@ export class OnlineRoom extends RemoteSeat {
   private receive(message: ServerMessage): void {
     switch (message.type) {
       case 'state':
-        this.pending.update((moves) => stillPending(moves, message));
+        // The new state first: whether a pending move still fits is read against it.
         this.server.set(message);
+        this.pending.update((moves) => stillPending(moves, message, this.simultaneous));
         return;
       case 'refused':
         // That move and everything played after it go; the server's state stands.
@@ -228,10 +260,28 @@ export class OnlineRoom extends RemoteSeat {
         return;
       case 'ack':
         // The state that follows carries the move; until then it stays pending.
+        this.pending.update((moves) =>
+          moves.map((move) =>
+            move.commandId === message.commandId ? { ...move, acked: message.revision } : move,
+          ),
+        );
         return;
       case 'error':
         console.error('The room did not understand a message.', message.reason);
     }
+  }
+
+  private replays(): ((moves: readonly unknown[]) => boolean) | null {
+    const { rules } = gameById(this.gameId);
+    if (!rules.mayMove) return null;
+    return (moves) => {
+      const state = this.server();
+      if (!state) return false;
+      const viewer = state.you === state.xSeat ? 'X' : 'O';
+      return rules.hidden
+        ? rules.hidden.replayView(moves, state.rulesVersion, state.variant, viewer).ok
+        : rules.replay(moves, state.rulesVersion, state.variant).ok;
+    };
   }
 
   private send({ commandId, expectedRevision, move }: PendingMove): void {

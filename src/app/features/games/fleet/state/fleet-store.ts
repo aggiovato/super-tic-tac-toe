@@ -8,17 +8,11 @@ import {
   type Player,
   type RejectionReason,
   BOARD_SIZE,
-  type Shot,
   shotsInOrder,
   viewOf,
 } from '@fleet/core';
 import { type Participant, withMatch } from '@match';
-
-/** The last shot fired in the game on the board, and who fired it. */
-export interface LastShot {
-  readonly by: Player;
-  readonly shot: Shot;
-}
+import type { LastShot } from './last-shot.model';
 
 /**
  * Ship Sink's store: a match, plus what this device's player may see of it. Against the computer

@@ -7,10 +7,4 @@
   .side {
     display: flex;
   }
-
-  /* Sized to its label at the start of the row, as Rematch is. */
-  .fire {
-    align-self: start;
-    display: inline-flex;
-  }
 }

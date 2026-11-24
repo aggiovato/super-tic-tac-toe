@@ -4,7 +4,6 @@ import { FleetStore } from '@fleet/state';
 import { Translator } from '@i18n';
 import {
   BrandTitle,
-  GameActions,
   GameLayout,
   HistoryLink,
   SaveNotice,
@@ -36,7 +35,6 @@ import { FleetStatus } from '../fleet-status/fleet-status';
     FleetQuay,
     FleetSettings,
     FleetStatus,
-    GameActions,
     GameLayout,
     GamesMenu,
     HistoryLink,
