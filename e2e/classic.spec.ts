@@ -158,7 +158,9 @@ test.describe('saving and resuming', () => {
   test('a game resumes after a reload, on the same turn', async ({ page }) => {
     await play(page, 4, 2);
     await play(page, 2, 4);
-    await expect(page.getByText('Saved')).toBeVisible();
+    // Both moves written before the reload: "Saved" is already showing from the first one, so it
+    // cannot tell the second save has landed (it had not, once, on a busy CI runner).
+    await expect.poll(() => savedMoves(page, 'super-3t')).toBe(2);
     await page.reload();
     await expect(status(page)).toHaveText('X to move. Must play on board 5.');
     await expect(page.getByText('O played cell 5, so X plays on board 5.')).toBeVisible();
