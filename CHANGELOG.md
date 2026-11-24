@@ -28,6 +28,9 @@ new version and date.
   score shows only while something needs saying (the link to invite, a lost connection, the rival
   gone).
 - Score entries are centred in their columns.
+- On upright phones every board takes the full width (the page scrolls a little on short phones
+  rather than shrinking it), buttons are more compact, and Undo is offered only against the
+  computer at its first level.
 
 ## [0.6.0] - 2026-11-24
 

@@ -34,5 +34,6 @@
       <p>{{ t().fleet.howToPlay.win }}</p>
     </li>
   </ol>
+  <button actions app-button="quiet" (click)="dismiss()">{{ t().howToPlay.skip }}</button>
   <button actions app-button="primary" (click)="dismiss()">{{ t().howToPlay.play }}</button>
 </app-ticket>

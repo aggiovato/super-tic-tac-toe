@@ -36,6 +36,8 @@ import { Super3tSettings } from '../super3t-settings/super3t-settings';
     Super3tSettings,
   ],
   templateUrl: './super3t-page.html',
+  // On an upright phone the arena keeps room for the board at full width (three number rows taller than it is wide).
+  styles: ':host { --game-arena-min: calc(100vw - 2 * var(--spacing-gutter) + 4.5rem); }',
 })
 export class Super3tPage {
   protected readonly t = inject(Translator).t;

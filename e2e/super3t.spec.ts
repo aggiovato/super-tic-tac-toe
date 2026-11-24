@@ -31,16 +31,18 @@ test('opening, forced target and free choice', async ({ page }) => {
   await expect(page.getByText('but board 3 is closed')).toBeVisible();
 });
 
-test('explains a refused move and takes back the last one', async ({ page, isMobile }) => {
+test('explains a refused move; two people on one device have no undo', async ({
+  page,
+  isMobile,
+}) => {
   test.skip(isMobile, 'Refused cells are on the whole board, a desktop flow');
   await play(page, 4, 2);
   // Unavailable cells are aria-disabled but still reachable by a tap, which explains the refusal.
   await cell(page, 5, 0).click({ force: true });
   await expect(page.getByText('This turn is played on board 3.')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Undo' }).click();
-  await expect(status(page)).toHaveText('X to move. May pick any open board.');
-  await expect(page.getByRole('button', { name: 'Undo' })).toBeDisabled();
+  // Undo is offered only against the computer at its first level.
+  await expect(page.getByRole('button', { name: 'Undo' })).toHaveCount(0);
 });
 
 test('a won game counts once and the rematch swaps symbols', async ({ page }) => {

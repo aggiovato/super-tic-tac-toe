@@ -1,10 +1,20 @@
-/* The quay in the side column only on wide screens; phones stack it around the board. */
-.side {
-  display: none;
+/*
+ * On an upright phone the arena keeps room for the board at full width plus what stands around
+ * it: the rival's trains and the quay in battle, the note and the actions while placing.
+ */
+:host {
+  --game-arena-min: calc(100vw - 2 * var(--spacing-gutter) + 7.5rem);
 }
 
-@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
-  .side {
-    display: flex;
+:host(.placing) {
+  --game-arena-min: calc(100vw - 2 * var(--spacing-gutter) + 5.5rem);
+}
+
+/* The quay in the side column only on wide screens; phones stack it around the board. */
+/* The side column exists from 48rem wide in landscape (5:4); below either, the quay is stacked. */
+@media (max-width: 47.99rem), (max-aspect-ratio: 1249 / 1000) {
+  /* Named with its element: the quay's own layout (a grid on wide screens) must not win here. */
+  app-fleet-quay.side {
+    display: none;
   }
 }

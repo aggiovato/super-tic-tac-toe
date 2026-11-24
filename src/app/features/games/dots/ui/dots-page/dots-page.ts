@@ -35,6 +35,8 @@ import { DotsStatus } from '../dots-status/dots-status';
     SettingsSheet,
   ],
   templateUrl: './dots-page.html',
+  // On an upright phone the arena keeps room for the board at full width (square).
+  styles: ':host { --game-arena-min: calc(100vw - 2 * var(--spacing-gutter)); }',
 })
 export class DotsPage {
   protected readonly t = inject(Translator).t;

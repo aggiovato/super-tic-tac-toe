@@ -47,6 +47,29 @@
   cursor: not-allowed;
 }
 
+/*
+ * Phones: a quieter button (38 px tall, a smaller label) so controls do not crowd the board, while
+ * an invisible band above and below keeps the 44 px touch target.
+ */
+@media (max-width: 47.99rem) {
+  :host {
+    position: relative;
+    min-height: 2.375rem;
+    padding-inline: calc(var(--spacing) * 3);
+    font-size: calc(var(--text-body) * 0.9);
+  }
+
+  :host(.small) {
+    font-size: var(--text-caption);
+  }
+
+  :host::after {
+    content: '';
+    position: absolute;
+    inset: -0.1875rem 0;
+  }
+}
+
 @media (hover: hover) {
   :host(.btn-secondary:not(:disabled):hover),
   :host(.btn-quiet:not(:disabled):hover) {

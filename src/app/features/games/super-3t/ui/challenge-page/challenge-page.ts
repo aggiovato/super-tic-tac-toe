@@ -20,6 +20,8 @@ import { Super3tBoard } from '../super3t-board/super3t-board';
   selector: 'app-challenge-page',
   imports: [BrandTitle, Button, ChallengePanel, DeparturePanel, Super3tBoard, GameLayout, Icon],
   templateUrl: './challenge-page.html',
+  // On an upright phone the arena keeps room for the board at full width (three number rows taller than it is wide).
+  styles: ':host { --game-arena-min: calc(100vw - 2 * var(--spacing-gutter) + 4.5rem); }',
 })
 export class ChallengePage {
   protected readonly t = inject(Translator).t;

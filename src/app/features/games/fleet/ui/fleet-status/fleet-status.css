@@ -38,3 +38,11 @@ app-departure-board {
 .why.refused {
   color: var(--color-fg-strong);
 }
+
+/* The narrowest phones: a step smaller, so the longest sentence keeps to its two lines. */
+@media (max-width: 22.5rem) {
+  .why {
+    font-size: var(--text-caption);
+    height: calc(2 * var(--text-caption) * var(--text-body--line-height));
+  }
+}
