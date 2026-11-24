@@ -1,0 +1,40 @@
+:host {
+  container-type: inline-size;
+  display: block;
+}
+
+/*
+ * The row always keeps the height of full-size tiles (a tile is 1.18em tall), so a change of
+ * announcement never moves the sentence or the board below. Its longest one ("x F10 HUNDIDO") has
+ * twelve tiles: past what the column holds at the flap size, the tiles shrink to fit (a tile and its
+ * gap take about 0.86em), centred in the row's full height.
+ */
+.row {
+  display: flex;
+  align-items: center;
+  height: calc(var(--text-flap) * 1.18);
+}
+
+app-departure-board {
+  font-size: min(var(--text-flap), calc(100cqw / (var(--tiles) * 0.86)));
+}
+
+.departures {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack-tight);
+}
+
+.why {
+  /* Fixed at two lines (Ship Sink's sentences are short): a change never moves the board below. */
+  max-width: 60ch;
+  height: calc(2 * var(--text-body) * var(--text-body--line-height));
+  overflow: hidden;
+  text-wrap: pretty;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+}
+
+.why.refused {
+  color: var(--color-fg-strong);
+}

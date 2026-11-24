@@ -40,7 +40,13 @@ describe('the catalog', () => {
       if (!start.state) {
         throw new Error(`${game.id} did not start`);
       }
+      // A game that opens with both players placing at once lists no moves yet: it says who may move.
       const [move] = rules.legalMoves(start.state);
+      if (move === undefined) {
+        expect(rules.mayMove?.(start.state, 'X'), game.id).toBe(true);
+        expect(rules.mayMove?.(start.state, 'O'), game.id).toBe(true);
+        continue;
+      }
       expect(rules.sameMove(move, move)).toBe(true);
       expect(rules.apply(start.state, move).ok).toBe(true);
     }

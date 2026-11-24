@@ -9,6 +9,7 @@ export {
   other,
   resolveShot,
   sameMove,
+  shotsInOrder,
   statusOf,
 } from './engine';
 export {

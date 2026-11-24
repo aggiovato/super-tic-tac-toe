@@ -58,5 +58,18 @@ not even corner to corner. One shape for now (`variant` `''`).
     every pairing; shots to sink 40 seeded fleets: 68.8 / 44.6 / 38.9 (random ≈ 95); intermediate
     beats beginner ≥ 15/20, advanced beats intermediate ≥ 11/20. A turn costs well under 1 ms.
 
-Until the app plays it, `fleet` is in `ENGINE_ONLY` of `scripts/check-architecture.mjs` (an engine
-folder outside the catalog); joining the catalog removes it from there.
+- `@fleet/session`: `FleetSession` and `FleetComputer` (a `WorkerComputer`; `computer.worker.ts`
+  replays the whole game and passes `chooseMove` only `viewOf(state, request.player)`).
+- `@fleet/state`: `FleetStore` = `withMatch(FLEET_GAME.rules)` + `person`, `me`, `rival`, `view`
+  (the person's view: `viewOf` of the whole game against the computer, the match itself online),
+  `lastShot` (`shotsInOrder`), `aimedAt`/`aimed`, `aim(index)`, `fire()`.
+- `@fleet/ui`: `/fleet` (no online route until 7e). `FleetPage` swaps the arena: `FleetPlacement`
+  while placing (a random draft from the seed, salted so it is not the computer's; tap a ship, tap
+  water to move its bow, Turn/R, Shuffle, Confirm; a refused change says why) and `FleetBattle`
+  (rival trains, the enemy `FleetWaters` with aim and fire, the quay: own trains, a compact
+  `FleetWaters` and Fire). `FleetWaters` is the 10×10 grid (native buttons, roving tab stop,
+  arrows report focus so focus aims); `FleetTrains` the fleet as coaches. `FleetStatus` announces
+  the last shot on the flaps (cell + outcome, hits in Sand), the tiles shrink to fit eleven.
+  Design: `.impeccable/surfaces/` (the fleet quay); hits in `--color-hit` (Sand); the water around a
+  ship where no other may go is a soft diagonal hatch (around sunk ships, and every ship while
+  placing), never dots, which mean a shot.

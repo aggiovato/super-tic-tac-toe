@@ -1,6 +1,6 @@
 import { createRandom } from '@tictac';
 import { describe, expect, it } from 'vitest';
-import { applyMove, initialState, legalMoves, mayMove, sameMove } from './engine';
+import { applyMove, initialState, legalMoves, mayMove, sameMove, shotsInOrder } from './engine';
 import { fleetProblem, randomFleet, shipRim } from './fleet';
 import type { Fleet, GameState, Move } from './models';
 import { replay } from './replay';
@@ -143,6 +143,18 @@ describe('the Ship Sink engine: firing', () => {
     expect(mayMove(state, 'X')).toBe(false);
     expect(refusal(state, shot('A1'))).toBe('game-over');
     expect(refusal(state, { kind: 'place', player: 'X', fleet: FLEET_A })).toBe('game-over');
+  });
+
+  it('lists the shots in the order fired, with who fired each', () => {
+    // X misses at B1; O hits A1 and fires again; O misses at B2; X fires at J1.
+    const order = shotsInOrder(play(FLEETS, 'B1 A1 B2 J1'));
+    expect(order.map(({ by, shot }) => `${by} ${label(shot)} ${shot.outcome}`)).toEqual([
+      'X B1 water',
+      'O A1 hit',
+      'O B2 water',
+      'X J1 hit',
+    ]);
+    expect(shotsInOrder(play(FLEETS))).toEqual([]);
   });
 
   it('lets O win too', () => {

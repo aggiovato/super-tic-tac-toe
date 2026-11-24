@@ -7,6 +7,19 @@ new version and date.
 
 ## [Unreleased]
 
+### Added
+
+- Ship Sink, a fourth game: sink the rival fleet (10×10, ships of 5, 4, 3, 3 and 2 cells that never
+  touch; a hit fires again) against the computer at three levels. Your fleet arrives placed at
+  random: move, turn or shuffle it and confirm. Aim with a tap or the arrows, fire with a second tap,
+  Enter or Fire; the departure row announces each shot ("F4 HIT"), the rival's fleet waits on the
+  quay as trains whose coaches flip when a ship sinks, and your own fleet shows its damage beside a
+  thumbnail of your waters. The computer only ever sees what a player would see.
+
+### Changed
+
+- A game that hides information has no undo and is not offered to two people on one device.
+
 ## [0.6.0] - 2026-11-24
 
 ### Changed

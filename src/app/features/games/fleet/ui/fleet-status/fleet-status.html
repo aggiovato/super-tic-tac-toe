@@ -1,0 +1,9 @@
+<section class="departures" aria-labelledby="fleet-status-heading">
+  <h2 id="fleet-status-heading" class="sr-only">{{ t().departureLabel }}</h2>
+  <div class="row text-flap">
+    <app-departure-board [style.--tiles]="tiles().length" [tiles]="tiles()" [label]="why()" />
+  </div>
+  <p class="why" [class.refused]="store.lastRejection()">{{ why() }}</p>
+</section>
+
+<p class="sr-only" role="status">{{ status() }}</p>

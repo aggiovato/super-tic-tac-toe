@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { gameById } from '@catalog';
 import { Translator } from '@i18n';
 import { Button, Icon } from '@ui';
 import { ACTIVE_GAME } from '@match';
@@ -12,10 +13,16 @@ import { ACTIVE_GAME } from '@match';
   imports: [Button, Icon],
   templateUrl: './game-actions.html',
   styleUrl: './game-actions.css',
-  // Online there is no undo: until the rematch there is nothing here, so no row either.
-  host: { '[hidden]': "store.mode() === 'online' && !store.isOver()" },
+  // Without undo (online, or a game of hidden information) there is nothing here until the
+  // rematch, so no row either.
+  host: { '[hidden]': '!undoable() && !store.isOver()' },
 })
 export class GameActions {
-  protected readonly store = inject(ACTIVE_GAME).match;
+  private readonly game = inject(ACTIVE_GAME);
+  protected readonly store = this.game.match;
+  /** Whether this game offers undo at all: not online, and not over hidden information. */
+  protected readonly undoable = computed(
+    () => this.store.mode() !== 'online' && !gameById(this.game.id).rules.hidden,
+  );
   protected readonly t = inject(Translator).t;
 }

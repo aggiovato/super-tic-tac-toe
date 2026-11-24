@@ -3,6 +3,7 @@ import type { LoadChildrenCallback } from '@angular/router';
 import type { GameId } from '@catalog';
 import { ClassicPreview } from '@classic/ui/preview';
 import { DotsPreview } from '@dots/ui/preview';
+import { FleetPreview } from '@fleet/ui/preview';
 import { Super3tPreview } from '@super3t/ui/preview';
 
 /** What the app shows of a game besides its engine (`@catalog`): its routes and its preview. */
@@ -29,6 +30,10 @@ export const GAME_UI: Readonly<Record<GameId, GameUi>> = {
   dots: {
     routes: () => import('@dots/ui').then((m) => m.DOTS_ROUTES),
     preview: DotsPreview,
+  },
+  fleet: {
+    routes: () => import('@fleet/ui').then((m) => m.FLEET_ROUTES),
+    preview: FleetPreview,
   },
 };
 

@@ -1,5 +1,5 @@
-<!-- Online, a move sent is the other player's to see: there is no undo. -->
-@if (store.mode() !== 'online') {
+<!-- Online a move sent is the other player's to see, and hidden information would be peeked at. -->
+@if (undoable()) {
   <button app-button="secondary" [disabled]="!store.canUndo()" (click)="store.undo()">
     <app-icon name="undo" />
     {{ t().undo }}

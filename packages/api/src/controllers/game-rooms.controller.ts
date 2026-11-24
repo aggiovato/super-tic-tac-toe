@@ -24,8 +24,8 @@ gameRoomsController.post('*', async (c, next) => {
 });
 
 /**
- * Creates a private room for a game of the catalog (and a variant it offers): the creator gets
- * seat 0 and its token, and shares the room's id as the invitation.
+ * Creates a private room for a game of the catalog that is played online (and a variant it
+ * offers): the creator gets seat 0 and its token, and shares the room's id as the invitation.
  */
 gameRoomsController.post('/', async (c) => {
   const body: unknown = await c.req.json().catch(() => null);
@@ -34,6 +34,10 @@ gameRoomsController.post('/', async (c) => {
     return c.json({ error: 'unknown-game' }, 400);
   }
   const game = gameById(gameId);
+  // A game not offered online yet (Ship Sink, until each seat is sent only its own view).
+  if (!game.online) {
+    return c.json({ error: 'not-online' }, 400);
+  }
   const id = c.env.GAME_ROOMS.newUniqueId();
   const token = await c.env.GAME_ROOMS.get(id).create({
     gameId,

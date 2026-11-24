@@ -1,0 +1,33 @@
+<div class="waters">
+  <app-fleet-waters
+    class="own"
+    [cells]="cells()"
+    [ships]="ships()"
+    [interactive]="!placed()"
+    [platform]="true"
+    [label]="t().fleet.yourWaters"
+    (picked)="pick($event)"
+  />
+</div>
+
+<p class="note" [class.problem]="problem()" aria-live="polite">
+  @if (problem(); as why) {
+    {{ t().fleet.problem(why) }}
+  } @else if (selected(); as ship) {
+    @if (!placed()) {
+      {{ t().fleet.selected(t().fleet.ships[ship]) }}
+    }
+  }
+</p>
+
+@if (!placed()) {
+  <div class="actions">
+    <button app-button="secondary" (click)="rotate()" [disabled]="!selected()">
+      {{ t().fleet.rotate }}
+    </button>
+    <button app-button="secondary" (click)="shuffle()">{{ t().fleet.shuffle }}</button>
+    <button app-button="primary" class="confirm" (click)="confirm()">
+      {{ t().fleet.confirmFleet }}
+    </button>
+  </div>
+}

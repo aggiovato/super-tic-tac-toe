@@ -1,0 +1,35 @@
+<app-fleet-how-to-play />
+<app-game-layout [arenaLabel]="t().boardLabel">
+  <app-brand-title masthead />
+  <div masthead class="flex items-center gap-1">
+    <app-games-menu />
+    <app-history-link />
+    <app-settings-sheet>
+      <app-fleet-settings (howToPlay)="howToPlay().open()" />
+    </app-settings-sheet>
+  </div>
+  <app-fleet-status status />
+  @if (placing()) {
+    <app-fleet-placement arena />
+  } @else {
+    <app-fleet-battle arena />
+  }
+  @if (!placing()) {
+    <app-fleet-quay controls part="both" class="side" />
+  }
+  <app-score-board controls [compact]="true" />
+  <!-- Wide screens: Fire stands where Rematch comes at the end, one primary action at a time. -->
+  @if (!placing() && !store.isOver()) {
+    <button
+      controls
+      app-button="primary"
+      class="side fire"
+      [disabled]="store.aimed() === null"
+      (click)="store.fire()"
+    >
+      {{ t().fleet.fire }}
+    </button>
+  }
+  <app-game-actions controls />
+  <app-save-notice controls />
+</app-game-layout>

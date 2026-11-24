@@ -1,0 +1,198 @@
+/*
+ * A Ship Sink board: Raven Deep cells on 2px gaps, coordinates in Seagrass Dim. Water is a small
+ * dim dot, a hit a round-capped Sand cross, a sunk ship's cells drop to Raven Deepest under a Chalk
+ * outline over a softly hatched rim. Ships of one's own are Seagrass capsules under the marks.
+ * Apricot rings the aimed cell (the thick ring is the shape cue) and lights its row and column.
+ */
+:host {
+  --gap: 2px;
+  --axis: 1.1rem;
+  display: block;
+  width: 100%;
+}
+
+:host(.compact) {
+  --gap: 1px;
+}
+
+/* The enemy waters stand on a platform with the panel lift, as Super 3T's and Dots' boards. */
+:host(.platform) {
+  padding: var(--spacing-panel-pad);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-panel);
+}
+
+.board {
+  /* Ship insets are in container units: percentage margins would follow each ship's width. */
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: var(--axis) repeat(10, minmax(0, 1fr));
+  grid-template-rows: var(--axis) repeat(10, minmax(0, 1fr));
+  gap: var(--gap);
+  aspect-ratio: 1;
+}
+
+:host(.compact) .board {
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+}
+
+.axis {
+  display: grid;
+  place-items: center;
+  font-size: var(--text-caption);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-fg-disabled);
+}
+
+.axis.on {
+  color: var(--color-target);
+}
+
+.cell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-cell);
+  background: var(--color-surface-panel);
+  color: inherit;
+}
+
+button.cell {
+  cursor: crosshair;
+  touch-action: manipulation;
+}
+
+button.cell:hover:not(.water, .hit, .sunk, .pending) {
+  background: var(--color-surface-raised);
+}
+
+button.cell:focus-visible {
+  z-index: 4;
+  outline: var(--border-emphasis) solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+/* Cells over one's own ships stay see-through, so the capsule shows. */
+.cell.ship,
+.cell.shipHit {
+  background: transparent;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.water .mark::before {
+  content: '';
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: var(--color-fg-disabled);
+}
+
+/*
+ * The water around a ship, where no other ship can be (ships never touch): a soft diagonal hatch,
+ * a zone rather than a mark, so it never reads as a shot. Around a sunk ship it is known water;
+ * while placing, where the next ship may not go.
+ */
+.cell.rim {
+  --hatch: color-mix(in srgb, var(--color-fg-disabled) 30%, transparent);
+  background:
+    repeating-linear-gradient(-45deg, var(--hatch) 0 1.5px, transparent 1.5px 6px),
+    var(--color-surface-panel);
+}
+
+:host(.compact) .cell.rim {
+  background:
+    repeating-linear-gradient(-45deg, var(--hatch) 0 1px, transparent 1px 3px),
+    var(--color-surface-panel);
+}
+
+.mark svg {
+  width: 70%;
+  height: 70%;
+  fill: none;
+  stroke: var(--color-hit);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.sunk {
+  background: var(--color-surface-done);
+}
+
+.pending .mark::before {
+  content: '';
+  width: 40%;
+  aspect-ratio: 1;
+  border: var(--border-line) solid var(--color-hit);
+  border-radius: var(--radius-pill);
+  animation: pending 900ms var(--ease-out) infinite alternate;
+}
+
+@keyframes pending {
+  from {
+    opacity: 0.35;
+  }
+}
+
+/* The last shot at this board: a Chalk ring, as the last move elsewhere in the family. */
+.last::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: var(--border-line) solid var(--color-last-move);
+  border-radius: var(--radius-cell);
+}
+
+/* The aimed cell: Apricot, a thick ring (the shape cue besides the colour). */
+.aimed::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 3;
+  border: var(--border-emphasis) solid var(--color-target);
+  border-radius: var(--radius-tile);
+}
+
+.ship {
+  z-index: 0;
+  margin: 1.1cqw;
+  border-radius: var(--radius-pill);
+  background: var(--color-fg-disabled);
+  transition: background-color var(--duration-quick) var(--ease-out);
+}
+
+:host(.compact) .ship {
+  margin: 0.8cqw;
+}
+
+.ship.selected {
+  background: var(--color-line-strong);
+}
+
+.wreck {
+  z-index: 2;
+  border: var(--border-line) solid var(--color-fg-strong);
+  border-radius: var(--radius-tile);
+  pointer-events: none;
+}
+
+:host(.compact) .wreck {
+  border-width: var(--border-hairline);
+}
+
+:host(.compact) .last::after {
+  border-width: var(--border-hairline);
+}

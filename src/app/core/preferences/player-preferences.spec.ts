@@ -28,4 +28,20 @@ describe('reading saved preferences', () => {
     );
     expect(TestBed.inject(Preferences).play().dots.mode).toBe('local');
   });
+
+  it('plays a game of hidden information against the computer, whatever was saved', () => {
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ play: { fleet: { mode: 'local', level: 'advanced' } } }),
+    );
+    const preferences = TestBed.inject(Preferences);
+    expect(preferences.play().fleet).toEqual({ mode: 'computer', level: 'advanced' });
+    // Two people on one device are not offered: asking for it changes nothing.
+    preferences.setPlay('fleet', { mode: 'local', level: 'beginner' });
+    expect(preferences.play().fleet.mode).toBe('computer');
+  });
+
+  it('starts a new player of Ship Sink against the computer', () => {
+    expect(TestBed.inject(Preferences).play().fleet.mode).toBe('computer');
+  });
 });

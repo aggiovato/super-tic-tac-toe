@@ -17,11 +17,6 @@ const layer = (game, name) => `@${game}/${name}`;
 /** The family's games by alias prefix and folder; `check` below verifies it against the catalog. */
 const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots', fleet: 'fleet' };
 
-/**
- * Games whose engine lands before the app plays them: their engine folder may stand outside the
- * catalog until the game joins it (and then leaves this list).
- */
-const ENGINE_ONLY = ['fleet'];
 const GAME_CORES = Object.keys(GAMES).map((game) => layer(game, 'core'));
 
 /** What each layer of a game may import, the same for every game. */
@@ -266,10 +261,7 @@ export function check() {
     if (!new RegExp(`: '${id}'`).test(lint)) problems.push(`${id}: missing from GAMES in eslint`);
   }
   for (const folder of new Set([...engines, ...apps])) {
-    const ahead = ENGINE_ONLY.includes(folder) && !apps.includes(folder);
-    if (!ids.includes(folder) && !ahead) {
-      problems.push(`${folder}: a game folder not in the catalog`);
-    }
+    if (!ids.includes(folder)) problems.push(`${folder}: a game folder not in the catalog`);
   }
 
   // Dependencies: only what DEPENDS allows, and no cycle.

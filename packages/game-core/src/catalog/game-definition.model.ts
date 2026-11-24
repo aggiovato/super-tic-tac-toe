@@ -82,6 +82,10 @@ export interface GameDefinition<
    * leaves out `local`: two people sharing a screen would see each other's secrets.
    */
   readonly modes: readonly PlayMode[];
+  /** Whether a game can end in a draw: the series score counts draws only where it can. */
+  readonly draws: boolean;
+  /** Whether the game may be played online, in a room by invitation. */
+  readonly online: boolean;
   /** The computer player's levels, weakest first. */
   readonly levels: readonly ComputerLevel[];
   /** The main game: first in the library, as a banner. */

@@ -200,3 +200,22 @@ export function statusOf(shots: readonly Shot[], mover: Player): FleetStatus {
   const sunk = shots.filter((shot) => shot.outcome === 'sunk').length;
   return sunk === SHIP_IDS.length ? { kind: 'won', winner: mover } : { kind: 'in-progress' };
 }
+
+/**
+ * Every shot of the game in the order fired, with who fired it: X opens, a water shot passes the
+ * turn (each player's own list keeps their shots in order, so the log is rebuilt from both).
+ */
+export function shotsInOrder(state: GameState): { readonly by: Player; readonly shot: Shot }[] {
+  const next = { X: 0, O: 0 };
+  const fired: { by: Player; shot: Shot }[] = [];
+  let by: Player = 'X';
+  for (const move of state.moves) {
+    if (move.kind !== 'shot') continue;
+    const shot = state.shots[by][next[by]];
+    if (!shot) break;
+    next[by] += 1;
+    fired.push({ by, shot });
+    if (shot.outcome === 'water') by = other(by);
+  }
+  return fired;
+}

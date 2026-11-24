@@ -1,5 +1,6 @@
 import type { GameId } from '@catalog';
 import type { PlayMode } from '@preferences';
+import type { FleetProblem, ShipId, RejectionReason as FleetRejection } from '@fleet/core';
 import type { RejectionReason } from '@super3t/core';
 
 export type Lang = 'es' | 'en';
@@ -200,6 +201,68 @@ export interface Messages {
       readonly draw: string;
       readonly close: string;
       readonly careful: string;
+      readonly win: string;
+    };
+  };
+  /** The Ship Sink screen. `cell` arrives as players name it (`F4`); `rival` is the rival's name. */
+  readonly fleet: {
+    /** Flap words, at most 7 letters: the outcome of the last shot, and the phases. */
+    readonly flap: {
+      readonly water: string;
+      readonly hit: string;
+      readonly sunk: string;
+      readonly fleet: string;
+      readonly fire: string;
+      readonly won: string;
+      readonly lost: string;
+    };
+    readonly placing: string;
+    readonly waitingFleet: (rival: string) => string;
+    readonly yourTurn: string;
+    readonly aiming: (cell: string) => string;
+    /** Aiming right after the rival's miss handed the turn back: both said in one sentence. */
+    readonly aimingAfterMiss: (rival: string, missed: string, cell: string) => string;
+    readonly pending: (cell: string) => string;
+    /** The person's last shot: water passes the turn, a hit or a sinking shot fires again. */
+    readonly yourShot: (cell: string, outcome: 'water' | 'hit' | 'sunk', ship: string) => string;
+    /** The rival's last shot, at the person's waters. */
+    readonly rivalShot: (
+      rival: string,
+      cell: string,
+      outcome: 'water' | 'hit' | 'sunk',
+      ship: string,
+    ) => string;
+    readonly won: (rival: string) => string;
+    readonly lost: (rival: string) => string;
+    readonly rejected: (reason: FleetRejection) => string;
+    readonly problem: (problem: FleetProblem) => string;
+    readonly ships: Readonly<Record<ShipId, string>>;
+    readonly rivalFleet: string;
+    readonly yourFleet: string;
+    readonly afloat: (count: number) => string;
+    readonly rivalWaters: string;
+    readonly yourWaters: string;
+    /** A cell's accessible name: its name and what is known of it. */
+    readonly cell: (
+      cell: string,
+      state: 'unknown' | 'water' | 'hit' | 'sunk' | 'pending' | 'ship' | 'shipHit',
+    ) => string;
+    /** A ship in a fleet strip, for screen readers: its name, length and state. */
+    readonly shipState: (ship: string, length: number, hits: number, sunk: boolean) => string;
+    readonly fire: string;
+    /** The thumbnail as a magnifier: shows this player's waters on the big board, and back. */
+    readonly lookAtOwn: string;
+    readonly lookAtRival: string;
+    readonly shuffle: string;
+    readonly rotate: string;
+    readonly confirmFleet: string;
+    readonly selected: (ship: string) => string;
+    readonly howToPlay: {
+      readonly title: string;
+      readonly intro: string;
+      readonly place: string;
+      readonly fire: string;
+      readonly again: string;
       readonly win: string;
     };
   };

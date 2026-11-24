@@ -1,0 +1,77 @@
+<div class="board" role="group" [attr.aria-label]="label()" (keydown)="onKey($event)">
+  @if (!compact()) {
+    @for (name of cols; track $index) {
+      <span
+        class="axis"
+        aria-hidden="true"
+        [class.on]="$index === aimedCol()"
+        [style.grid-area]="'1 / ' + ($index + 2)"
+        >{{ name }}</span
+      >
+    }
+    @for (name of rows; track $index) {
+      <span
+        class="axis"
+        aria-hidden="true"
+        [class.on]="$index === aimedRow()"
+        [style.grid-area]="$index + 2 + ' / 1'"
+        >{{ name }}</span
+      >
+    }
+  }
+
+  @for (ship of ships(); track ship.ship) {
+    <span
+      class="ship"
+      [class.selected]="ship.selected"
+      [style.grid-row]="span(ship, 'row')"
+      [style.grid-column]="span(ship, 'col')"
+    ></span>
+  }
+
+  @for (cell of cells(); track cell.index) {
+    @if (interactive()) {
+      <button
+        type="button"
+        class="cell"
+        [class]="'cell ' + cell.state"
+        [class.last]="cell.last"
+        [class.aimed]="cell.index === aimed()"
+        [attr.data-cell]="cell.index"
+        [attr.aria-label]="cell.label"
+        [attr.aria-current]="cell.index === aimed() ? 'true' : null"
+        [tabindex]="cell.index === roving() ? 0 : -1"
+        [style.grid-row]="cell.row + offset()"
+        [style.grid-column]="cell.col + offset()"
+        (click)="pick(cell.index)"
+      >
+        <span class="mark" aria-hidden="true">
+          @if (cell.state === 'hit' || cell.state === 'shipHit' || cell.state === 'sunk') {
+            <svg viewBox="0 0 10 10"><path d="M2.4 2.4 7.6 7.6 M7.6 2.4 2.4 7.6" /></svg>
+          }
+        </span>
+      </button>
+    } @else {
+      <span
+        [class]="'cell ' + cell.state"
+        [class.last]="cell.last"
+        [style.grid-row]="cell.row + offset()"
+        [style.grid-column]="cell.col + offset()"
+      >
+        <span class="mark">
+          @if (cell.state === 'hit' || cell.state === 'shipHit' || cell.state === 'sunk') {
+            <svg viewBox="0 0 10 10"><path d="M2.4 2.4 7.6 7.6 M7.6 2.4 2.4 7.6" /></svg>
+          }
+        </span>
+      </span>
+    }
+  }
+
+  @for (wreck of wrecks(); track wreck.ship) {
+    <span
+      class="wreck"
+      [style.grid-row]="span(wreck, 'row')"
+      [style.grid-column]="span(wreck, 'col')"
+    ></span>
+  }
+</div>
