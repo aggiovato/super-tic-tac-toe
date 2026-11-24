@@ -35,37 +35,25 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 7 · Ship Sink: in progress (7a).** Phase 6 shipped as v0.6.0: online rooms for every game
-(`@protocol`, `@online`, the API Worker `super-3t-api` with one `GameRoom` Durable Object per room,
-reached by the app under `/api/*` through a service binding; rooms expire after 7 days idle, a
-rematch stays in the room and swaps symbols), three deploy environments, limits and a heartbeat.
+**Phase 8 · Chat: in progress (8a).** Phase 7 shipped as v0.7.0: Ship Sink (rule `fleet`), the
+first game of hidden information, against the computer and online (each seat sent only its view),
+plus whose-turn tags, the room button and full-width boards on phones for every game.
 
-Phase 7 adds a fourth game, Ship Sink (rule `fleet`): the first with hidden information, so it is
-played against the computer or online, never by two people on one device. One PR each:
+Phase 8 adds a chat between the two players of an online room (v0.8.0). Free text, unmoderated,
+plain text only. One PR each, each branched from `main` once the previous one is merged:
 
-- 7a (`phase/7a-fleet-core`, PR #32): the engine `@fleet/core`: rules, fleets, replay, and what each player
-  sees (`viewOf`, `redactMoves`, `replayView`). (merged).
-- 7b (`phase/7b-fleet-ai`, PR #33): the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
-  follow-up; hunt and target on parity; a density map of every placement still possible), with a
-  property that the hidden fleet never changes its shot, and a benchmark of shots per game.
-- 7c (`phase/7c-fleet-platform`): the platform. `GameDefinition.modes` (`PlayMode` moves to
-  `@catalog`; preferences and Settings offer only a game's modes), `GameRules.mayMove` (both may
-  move at once) and `GameRules.hidden` (`redact`, `replayView`): no undo, the computer told its
-  symbol (`ComputerRequest.player`), and online the match mirrors this seat's view. Ship Sink's
-  engine plays views as states (`viewer`, `placed`, pending shots). The other games unchanged.
-- 7d (`phase/7d-fleet-app`, PR #35): the app. `FLEET_GAME` in `@catalog` (`modes: ['computer']`,
-  `online: false` until 7e: Settings offer online only to games with `online`), `@fleet/session`
-  (its Worker hands the computer `viewOf` its own side), `@fleet/state` (`FleetStore`: the person's
-  `view`, `lastShot`, `aim`/`fire`), `@fleet/ui` (placement, the fleet quay, the departure row,
-  how to play, preview), copy in both languages, `--color-hit` (Sand), no Undo row for hidden games,
-  `e2e/fleet.spec.ts`.
-- 7e (`phase/7e-fleet-online`): online. The API judges with `mayMove` and `moverOf` (placements
-  at once, on any revision, never in the other's name), stores the engine's move, and sends each
-  seat `redact`'s view; `OnlineRoom` keeps a simultaneous move pending until its `ack`; Ship Sink
-  `online: true` with its route; Workers tests that nothing a seat hears holds the rival fleet, a
-  two-browser e2e (each e2e device its own client address). Then the release (v0.7.0).
+- 8a (`phase/8a-chat-api`): the protocol (`say`, `said`, `chat` in `@protocol`, `CHAT_MAX`,
+  `CHAT_KEPT`) and the API: the room's `chat` table on both repositories, `GameRoomService.say`,
+  the history sent on connecting, a chat budget per socket; tests in the Workers runtime.
+- 8b: the client. `OnlineRoom` keeps the conversation (its own messages pending until their
+  `said`), sends with retries, and remembers per room the last message read on this device.
+- 8c: the UI. A chat FAB on online rooms (above the controls on phones, the page's corner on wide
+  screens) with an Apricot unread dot (a second, recorded exception to the One Departure Rule); an
+  incoming message previewed as a ticket bubble for about 4 s; the chat as a full-screen ticket on
+  phones and a tall one on desktop; copy, DESIGN.md, an impeccable pass, a two-browser e2e. Then
+  the release (v0.8.0).
 
-Accounts (phase 8) add Neon Postgres (Hyperdrive, Drizzle) for verified history across devices.
+Accounts (phase 9) add Neon Postgres (Hyperdrive, Drizzle) for verified history across devices.
 
 | Phase         | Accepted when…                                                                        |
 | ------------- | ------------------------------------------------------------------------------------- |
@@ -76,8 +64,9 @@ Accounts (phase 8) add Neon Postgres (Hyperdrive, Drizzle) for verified history 
 | 4 Local MVP ✓ | A game resumes mid-turn and each game counts a single result.                         |
 | 5 PWA beta ✓  | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
 | 6 Online ✓    | Two browsers converge after playing, losing the connection and retrying; one result.  |
-| 7 Ship Sink   | Against each level and online, no message or view locates a rival ship still afloat.  |
-| 8 Accounts    | One account sees verified results on two devices; local play needs no sign-in.        |
+| 7 Ship Sink ✓ | Against each level and online, no message or view locates a rival ship still afloat.  |
+| 8 Chat        | Two browsers chat in a room; a reconnection keeps the talk; unread shows on the FAB.  |
+| 9 Accounts    | One account sees verified results on two devices; local play needs no sign-in.        |
 
 Update this table when a phase closes.
 

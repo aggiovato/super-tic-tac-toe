@@ -88,3 +88,41 @@ describe('the room service', () => {
     expect(service.expiresAt()).toBeNull();
   });
 });
+
+describe('the chat of a room', () => {
+  it('stores a message once, a retry getting the same one back, and keeps the room alive', async () => {
+    const { service, later } = await room();
+    const expiry = service.expiresAt();
+    later(1_000);
+    const said = service.say(0, { type: 'say', clientId: 'm1', text: 'hola' });
+    if (!said) throw new Error('not said');
+    expect(said).toEqual({
+      fresh: true,
+      message: { id: said.message.id, clientId: 'm1', seat: 0, text: 'hola', at: 2_000 },
+    });
+    expect(service.expiresAt()).toBe((expiry ?? 0) + 1_000);
+    expect(service.say(0, { type: 'say', clientId: 'm1', text: 'hola' })).toEqual({
+      fresh: false,
+      message: said.message,
+    });
+    expect(service.chat()).toEqual([said.message]);
+  });
+
+  it("never lets one seat reach the other's message through its id", async () => {
+    const { service } = await room();
+    const mine = service.say(0, { type: 'say', clientId: 'same', text: 'del anfitrión' });
+    const theirs = service.say(1, { type: 'say', clientId: 'same', text: 'del invitado' });
+    expect(theirs).toMatchObject({ fresh: true, message: { seat: 1, text: 'del invitado' } });
+    expect(service.said(1, 'same')?.text).toBe('del invitado');
+    expect(service.said(0, 'same')).toEqual(mine?.message);
+  });
+
+  it('keeps nothing once the room is gone', async () => {
+    const { service, later } = await room();
+    later(GAME_ROOM_TTL_MS + 1);
+    expect(service.expireIfIdle()).toBe(true);
+    expect(service.say(0, { type: 'say', clientId: 'late', text: 'hola' })).toBeNull();
+    expect(service.said(0, 'late')).toBeNull();
+    expect(service.chat()).toEqual([]);
+  });
+});

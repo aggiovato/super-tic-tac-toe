@@ -1,9 +1,15 @@
 import { HEARTBEAT, HEARTBEAT_REPLY } from '@protocol';
 import { DurableObject } from 'cloudflare:workers';
-import type { ClientMessage, JoinOutcome, GameRoomSetup, Seat, ServerMessage } from '../models';
-import { parseClientMessage } from '../protocol/parse';
+import type { GameRoomSetup, JoinOutcome, SayMessage, Seat, ServerMessage } from '../models';
+import { parseClientMessage, type ReadMessage } from '../protocol/parse';
 import { SqliteGameRoomRepository } from '../repositories';
-import { isSilent, MAX_SOCKETS_PER_SEAT, MessageBudget, SWEEP_MS } from '../security/limits';
+import {
+  ChatBudget,
+  isSilent,
+  MAX_SOCKETS_PER_SEAT,
+  MessageBudget,
+  SWEEP_MS,
+} from '../security/limits';
 import { GameRoomService } from '../services/game-room.service';
 
 /** What a socket carries through hibernation: its seat and when it connected. */
@@ -25,6 +31,7 @@ const seatOf = (socket: WebSocket) => infoOf(socket).seat;
 export class GameRoom extends DurableObject<Env> {
   private readonly rooms: GameRoomService;
   private readonly budgets = new WeakMap<WebSocket, MessageBudget>();
+  private readonly chatBudgets = new WeakMap<WebSocket, ChatBudget>();
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -67,6 +74,8 @@ export class GameRoom extends DurableObject<Env> {
     server.serializeAttachment({ seat, since: Date.now() } satisfies SocketInfo);
     await this.schedule();
     this.broadcast();
+    // The conversation so far, to this socket alone (the others have it).
+    this.send(server, { type: 'chat', messages: this.rooms.chat() });
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -130,9 +139,17 @@ export class GameRoom extends DurableObject<Env> {
     return budget;
   }
 
-  private async handle(socket: WebSocket, seat: Seat, message: ClientMessage): Promise<void> {
+  private async handle(socket: WebSocket, seat: Seat, message: ReadMessage): Promise<void> {
+    if (message.type === 'invalid-say') {
+      this.send(socket, { type: 'unsaid', clientId: message.clientId, reason: 'invalid' });
+      return;
+    }
     if (message.type === 'sync') {
       this.send(socket, this.rooms.view(seat, this.online()));
+      return;
+    }
+    if (message.type === 'say') {
+      await this.say(socket, seat, message);
       return;
     }
     const changed =
@@ -144,6 +161,42 @@ export class GameRoom extends DurableObject<Env> {
       this.broadcast();
     } else {
       this.send(socket, this.rooms.view(seat, this.online()));
+    }
+  }
+
+  /**
+   * A chat message: a retry of one already stored goes back to its writer only, without spending
+   * the chat budget (a reconnection resends everything pending); a new one, within the socket's
+   * chat budget, is stored and sent to every player (its writer too, which tells them it arrived).
+   * One past the budget is refused by its `clientId`.
+   */
+  private async say(socket: WebSocket, seat: Seat, message: SayMessage): Promise<void> {
+    const retried = this.rooms.said(seat, message.clientId);
+    if (retried) {
+      this.send(socket, { type: 'said', message: retried });
+      return;
+    }
+    let budget = this.chatBudgets.get(socket);
+    if (!budget) {
+      budget = new ChatBudget(Date.now());
+      this.chatBudgets.set(socket, budget);
+    }
+    if (!budget.spend(Date.now())) {
+      this.send(socket, { type: 'unsaid', clientId: message.clientId, reason: 'too-fast' });
+      return;
+    }
+    const outcome = this.rooms.say(seat, message);
+    if (!outcome) {
+      return;
+    }
+    const { message: said, fresh } = outcome;
+    if (!fresh) {
+      this.send(socket, { type: 'said', message: said });
+      return;
+    }
+    await this.schedule();
+    for (const open of this.sockets()) {
+      this.send(open, { type: 'said', message: said });
     }
   }
 

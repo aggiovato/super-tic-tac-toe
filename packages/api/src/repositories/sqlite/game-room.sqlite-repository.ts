@@ -1,6 +1,8 @@
 import type { GameId } from '@catalog';
 import type {
+  ChatMessage,
   GameRow,
+  NewChatMessage,
   MoveRow,
   GameRoomResult,
   GameRoomScore,
@@ -39,7 +41,27 @@ const SCHEMA = `
     at INTEGER NOT NULL,
     PRIMARY KEY (game, revision)
   );
+  CREATE TABLE IF NOT EXISTS chat (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id TEXT NOT NULL,
+    seat INTEGER NOT NULL CHECK (seat IN (0, 1)),
+    text TEXT NOT NULL,
+    at INTEGER NOT NULL,
+    UNIQUE (seat, client_id)
+  );
 `;
+
+// A type, not an interface: SqlStorage's rows need the index signature an interface lacks.
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type ChatRow = { id: number; client_id: string; seat: number; text: string; at: number };
+
+const chatOf = (row: ChatRow): ChatMessage => ({
+  id: row.id,
+  clientId: row.client_id,
+  seat: row.seat as Seat,
+  text: row.text,
+  at: row.at,
+});
 
 /** A room's repository in its Durable Object's own SQLite database. */
 export class SqliteGameRoomRepository implements GameRoomRepository {
@@ -54,7 +76,7 @@ export class SqliteGameRoomRepository implements GameRoomRepository {
 
   wipe(): void {
     this.sql.exec(
-      'DROP TABLE IF EXISTS moves; DROP TABLE IF EXISTS games; DROP TABLE IF EXISTS seats; DROP TABLE IF EXISTS room;',
+      'DROP TABLE IF EXISTS chat; DROP TABLE IF EXISTS moves; DROP TABLE IF EXISTS games; DROP TABLE IF EXISTS seats; DROP TABLE IF EXISTS room;',
     );
     this.ensureSchema();
   }
@@ -184,6 +206,40 @@ export class SqliteGameRoomRepository implements GameRoomRepository {
       JSON.stringify(row.move),
       now,
     );
+  }
+
+  chat(): ChatMessage[] {
+    return this.sql
+      .exec<ChatRow>('SELECT id, client_id, seat, text, at FROM chat ORDER BY id')
+      .toArray()
+      .map(chatOf);
+  }
+
+  chatBy(seat: Seat, clientId: string): ChatMessage | null {
+    const [row] = this.sql
+      .exec<ChatRow>(
+        'SELECT id, client_id, seat, text, at FROM chat WHERE seat = ? AND client_id = ?',
+        seat,
+        clientId,
+      )
+      .toArray();
+    return row ? chatOf(row) : null;
+  }
+
+  addChat(message: NewChatMessage, now: number, kept: number): ChatMessage {
+    const [row] = this.sql
+      .exec<ChatRow>(
+        'INSERT INTO chat (client_id, seat, text, at) VALUES (?, ?, ?, ?) RETURNING id, client_id, seat, text, at',
+        message.clientId,
+        message.seat,
+        message.text,
+        now,
+      )
+      .toArray();
+    if (!row) throw new Error('The chat message was not stored');
+    // Only the last `kept` stay: the oldest go first.
+    this.sql.exec('DELETE FROM chat WHERE id <= ?', row.id - kept);
+    return chatOf(row);
   }
 
   touch(now: number): void {

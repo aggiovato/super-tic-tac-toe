@@ -11,6 +11,10 @@ import type { MoveReply, GameRoomState, ServerMessage } from '../src/models';
 
 const BASE = 'http://api.test/api';
 
+type Said = Extract<ServerMessage, { type: 'said' }>;
+type Chat = Extract<ServerMessage, { type: 'chat' }>;
+type Unsaid = Extract<ServerMessage, { type: 'unsaid' }>;
+
 /** A request from `address` (a fresh one by default, so the rate limit stays out of the way). */
 async function call(
   path: string,
@@ -406,5 +410,79 @@ describe('a room of hidden information (Ship Sink)', () => {
     );
     expect(leaks).toEqual([]);
     expect(heardByO.join('')).not.toContain(JSON.stringify(fleetA[0]));
+  });
+});
+
+describe('the chat of a room', () => {
+  it('sends a message to both players, its writer told it arrived, and the history on connecting', async () => {
+    const { roomId, x, o, guestToken } = await playing();
+    x.send({ type: 'say', clientId: 'hi-1', text: '  hola  ' });
+    const [toX, toO] = await Promise.all([
+      x.next<Said>((m) => m.type === 'said'),
+      o.next<Said>((m) => m.type === 'said'),
+    ]);
+    expect(toX.message).toMatchObject({ clientId: 'hi-1', seat: 0, text: 'hola' });
+    expect(toO.message).toEqual(toX.message);
+
+    // A second device of the guest connects: it gets the conversation so far.
+    const again = await connect(roomId, guestToken);
+    const history = await again.next<Chat>((m) => m.type === 'chat');
+    expect(history.messages).toEqual([toX.message]);
+  });
+
+  it('stores a retried message once and sends it back to its writer only', async () => {
+    const { x, o } = await playing();
+    x.send({ type: 'say', clientId: 'once', text: 'una vez' });
+    await o.next((m) => m.type === 'said');
+    o.clear();
+    x.send({ type: 'say', clientId: 'once', text: 'una vez' });
+    const back = await x.next<Said>((m) => m.type === 'said' && m.message.clientId === 'once');
+    expect(back.message.clientId).toBe('once');
+    o.send({ type: 'sync' });
+    await o.state();
+    expect(
+      await Promise.race([
+        o.next((m) => m.type === 'said').then(() => 'said again'),
+        new Promise((resolve) => setTimeout(() => resolve('nothing'), 200)),
+      ]),
+    ).toBe('nothing');
+  });
+
+  it('refuses a burst past its budget by its client id, without closing the socket', async () => {
+    const { x } = await playing();
+    for (let i = 0; i < 6; i++) x.send({ type: 'say', clientId: `burst-${i}`, text: `${i}` });
+    const refused = await x.next<Unsaid>((m) => m.type === 'unsaid');
+    expect(refused).toEqual({ type: 'unsaid', clientId: 'burst-5', reason: 'too-fast' });
+    // Retries of messages already kept spend nothing: a reconnection resends everything pending.
+    x.send({ type: 'say', clientId: 'burst-0', text: '0' });
+    expect(
+      (await x.next<Said>((m) => m.type === 'said' && m.message.clientId === 'burst-0')).message
+        .text,
+    ).toBe('0');
+    x.send({ type: 'sync' });
+    expect((await x.state()).type).toBe('state');
+  });
+
+  it('refuses a message with nothing to say by its client id', async () => {
+    const { x } = await playing();
+    x.send({ type: 'say', clientId: 'blank', text: '   ' });
+    expect(await x.next<Unsaid>((m) => m.type === 'unsaid')).toEqual({
+      type: 'unsaid',
+      clientId: 'blank',
+      reason: 'invalid',
+    });
+  });
+
+  it('keeps each room to itself', async () => {
+    const one = await playing();
+    const two = await playing();
+    one.x.send({ type: 'say', clientId: 'private', text: 'solo aquí' });
+    await one.o.next((m) => m.type === 'said');
+    expect(
+      await Promise.race([
+        two.o.next((m) => m.type === 'said').then(() => 'leaked'),
+        new Promise((resolve) => setTimeout(() => resolve('kept'), 200)),
+      ]),
+    ).toBe('kept');
   });
 });

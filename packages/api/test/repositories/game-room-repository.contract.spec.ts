@@ -92,4 +92,39 @@ describe.each(kinds)('the %s room repository', (_kind, withRepository) => {
       expect(repository.takenSeats()).toEqual([0]);
     });
   });
+
+  it('keeps the chat in order, finds a message by its client id, keeps only the last ones', async () => {
+    await withRepository((repository) => {
+      repository.create(SETUP, 'h', 0);
+      const first = repository.addChat({ clientId: 'a', seat: 0, text: 'hola' }, 5, 3);
+      const second = repository.addChat({ clientId: 'b', seat: 1, text: '¿revancha?' }, 6, 3);
+      expect(second.id).toBeGreaterThan(first.id);
+      expect(repository.chat()).toEqual([
+        { id: first.id, clientId: 'a', seat: 0, text: 'hola', at: 5 },
+        { id: second.id, clientId: 'b', seat: 1, text: '¿revancha?', at: 6 },
+      ]);
+      expect(repository.chatBy(1, 'b')).toEqual(second);
+      expect(repository.chatBy(0, 'b')).toBeNull();
+      expect(repository.chatBy(1, 'nope')).toBeNull();
+      // With three kept, the fourth message lets the first go.
+      repository.addChat({ clientId: 'c', seat: 0, text: '3' }, 7, 3);
+      repository.addChat({ clientId: 'd', seat: 1, text: '4' }, 8, 3);
+      expect(repository.chat().map((message) => message.clientId)).toEqual(['b', 'c', 'd']);
+      expect(() => repository.addChat({ clientId: 'd', seat: 1, text: 'x' }, 9, 3)).toThrow();
+      // Each seat has its own ids: the other seat may use the same one.
+      const other = repository.addChat({ clientId: 'd', seat: 0, text: 'mío' }, 9, 3);
+      expect(repository.chatBy(0, 'd')).toEqual(other);
+    });
+  });
+
+  it('forgets the chat on a wipe', async () => {
+    await withRepository((repository) => {
+      repository.create(SETUP, 'h', 0);
+      repository.addChat({ clientId: 'a', seat: 0, text: 'hola' }, 1, 10);
+      repository.wipe();
+      repository.create(SETUP, 'h', 2);
+      expect(repository.chat()).toEqual([]);
+      expect(repository.chatBy(0, 'a')).toBeNull();
+    });
+  });
 });
