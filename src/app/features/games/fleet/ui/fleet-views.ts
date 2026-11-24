@@ -168,6 +168,7 @@ export function battleViews(
       ships: (ownFleet ?? []).map((ship) => overlay(ship)),
       wrecks: sunkBy(view.shots[rival]).map((ship) => overlay(ship)),
       trains: trains(t, ownFleet, view.shots[rival]),
+      afloat: afloat(view, rival),
     },
   };
 }

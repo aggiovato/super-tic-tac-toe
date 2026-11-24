@@ -1,4 +1,7 @@
-/* Trains of flap coaches: each coach a tiny flap tile with its hairline split. */
+/*
+ * Trains of flap coaches: each coach a tiny flap tile with its hairline split. Afloat rival coaches
+ * are blank with an edge; a sunk train drops to the wreck's tone with a Sand pip in each coach.
+ */
 :host {
   --coach-w: 0.8rem;
   --coach-h: 1.05rem;
@@ -8,7 +11,7 @@
 .trains {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2);
+  gap: calc(var(--spacing) * 1.5) calc(var(--spacing) * 2.5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -48,14 +51,9 @@
   box-shadow: none;
 }
 
-.train.sunk {
-  outline: var(--border-hairline) solid var(--color-fg-strong);
-  outline-offset: 2px;
-  border-radius: var(--radius-cell);
-}
-
 .train.sunk .coach {
   background: var(--color-surface-done);
+  box-shadow: none;
 }
 
 .train.sunk .coach::before {

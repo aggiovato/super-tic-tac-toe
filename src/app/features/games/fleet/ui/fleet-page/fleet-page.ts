@@ -13,6 +13,7 @@ import {
 } from '@layout';
 import { GamesMenu } from '@library';
 import { Preferences } from '@preferences';
+import { Button } from '@ui';
 import { FleetBattle } from '../fleet-battle/fleet-battle';
 import { FleetHowToPlay } from '../fleet-how-to-play/fleet-how-to-play';
 import { FleetPlacement } from '../fleet-placement/fleet-placement';
@@ -28,6 +29,7 @@ import { FleetStatus } from '../fleet-status/fleet-status';
   selector: 'app-fleet-page',
   imports: [
     BrandTitle,
+    Button,
     FleetBattle,
     FleetHowToPlay,
     FleetPlacement,
@@ -48,7 +50,7 @@ import { FleetStatus } from '../fleet-status/fleet-status';
 export class FleetPage {
   protected readonly t = inject(Translator).t;
   protected readonly howToPlay = viewChild.required(FleetHowToPlay);
-  private readonly store = inject(FleetStore);
+  protected readonly store = inject(FleetStore);
   protected readonly placing = computed(() => this.store.view().phase === 'placing');
 
   constructor() {

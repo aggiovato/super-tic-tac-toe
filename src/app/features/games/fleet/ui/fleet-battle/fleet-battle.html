@@ -1,16 +1,37 @@
-<app-fleet-quay part="rival" class="stacked" />
+@if (store.lookingAtOwn()) {
+  <!-- Through the magnifier: the big board says whose waters it shows, and the way back. -->
+  <div class="looking">
+    <h2>{{ t().fleet.yourWaters }}</h2>
+    <button app-button="quiet" class="back" (click)="store.look(false)">
+      {{ t().fleet.lookAtRival }}
+    </button>
+  </div>
+} @else {
+  <app-fleet-quay part="rival" class="stacked" />
+}
 
-<app-fleet-waters
-  class="enemy"
-  [cells]="enemy().cells"
-  [ships]="enemy().ships"
-  [wrecks]="enemy().wrecks"
-  [aimed]="store.aimed()"
-  [interactive]="true"
-  [platform]="true"
-  [label]="t().fleet.rivalWaters"
-  (picked)="pick($event)"
-  (focused)="focus($event)"
-/>
+@if (store.lookingAtOwn()) {
+  <app-fleet-waters
+    class="board"
+    [cells]="views().own.cells"
+    [ships]="views().own.ships"
+    [wrecks]="views().own.wrecks"
+    [platform]="true"
+    [label]="t().fleet.yourWaters"
+  />
+} @else {
+  <app-fleet-waters
+    class="board"
+    [cells]="views().enemy.cells"
+    [ships]="views().enemy.ships"
+    [wrecks]="views().enemy.wrecks"
+    [aimed]="store.aimed()"
+    [interactive]="true"
+    [platform]="true"
+    [label]="t().fleet.rivalWaters"
+    (picked)="pick($event)"
+    (focused)="focus($event)"
+  />
+}
 
 <app-fleet-quay part="own" class="stacked" />

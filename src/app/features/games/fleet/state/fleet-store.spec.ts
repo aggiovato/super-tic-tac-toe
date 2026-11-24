@@ -93,4 +93,24 @@ describe("Ship Sink's store", () => {
     store.fire();
     expect(store.canUndo()).toBe(false);
   });
+
+  it('looks at its own waters through the magnifier, keeping the aim for when it looks back', async () => {
+    const { store } = await placed();
+    store.aim(42);
+    store.look(true);
+    expect(store.lookingAtOwn()).toBe(true);
+    // Nothing is fired while the big board shows the person's own waters.
+    expect(store.aimed()).toBeNull();
+    store.fire();
+    expect(store.view().shots.X).toHaveLength(0);
+    store.look(false);
+    expect(store.aimed()).toBe(42);
+  });
+
+  it('forgets the magnifier with a new game', async () => {
+    const { store } = await placed();
+    store.look(true);
+    store.newSeries();
+    expect(store.lookingAtOwn()).toBe(false);
+  });
 });

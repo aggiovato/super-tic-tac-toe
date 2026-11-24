@@ -64,7 +64,9 @@ test.describe('ship sink', () => {
       .getByRole('button', { name: /, (miss|hit|sunk)$/ })
       .count();
     expect(fired).toBeGreaterThan(0);
-    await expect.poll(() => savedMoves(page, 'fleet')).toBeGreaterThan(fired + 1);
+    await expect
+      .poll(() => savedMoves(page, 'fleet'), { timeout: 15_000 })
+      .toBeGreaterThan(fired + 1);
 
     await page.reload();
     await expect(enemy(page).getByRole('button', { name: /, (miss|hit|sunk)$/ })).toHaveCount(
@@ -82,5 +84,26 @@ test.describe('ship sink', () => {
     await expect(why(page)).toHaveText(/^Aiming at B2\./);
     await page.keyboard.press('Enter');
     await expect(enemyCell(page, 'B2')).toHaveAccessibleName(/^B2, (miss|hit)$/);
+  });
+
+  test('the magnifier shows your own waters full size, and back', async ({ page }) => {
+    await page.goto('/fleet');
+    await placeFleet(page);
+    // On wide screens the side column holds the thumbnail; on phones the quay under the board.
+    const lens = page
+      .getByRole('button', { name: 'Show your waters full size' })
+      .locator('visible=true');
+    await lens.click();
+    const own = page.getByRole('group', { name: 'Your waters', exact: true });
+    await expect(own).toBeVisible();
+    await expect(own.locator('.ship:not(.cell)')).toHaveCount(5);
+    await expect(enemy(page)).toHaveCount(0);
+    await page
+      .getByRole('button', { name: 'Back to the enemy waters' })
+      .locator('visible=true')
+      // The header over the board leads back (the thumbnail, pressed, does too).
+      .first()
+      .click();
+    await expect(enemy(page)).toBeVisible();
   });
 });

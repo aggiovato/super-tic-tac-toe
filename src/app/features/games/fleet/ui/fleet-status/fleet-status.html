@@ -1,11 +1,8 @@
 <section class="departures" aria-labelledby="fleet-status-heading">
   <h2 id="fleet-status-heading" class="sr-only">{{ t().departureLabel }}</h2>
-  <app-departure-board
-    class="text-flap"
-    [style.--tiles]="tiles().length"
-    [tiles]="tiles()"
-    [label]="why()"
-  />
+  <div class="row text-flap">
+    <app-departure-board [style.--tiles]="tiles().length" [tiles]="tiles()" [label]="why()" />
+  </div>
   <p class="why" [class.refused]="store.lastRejection()">{{ why() }}</p>
 </section>
 

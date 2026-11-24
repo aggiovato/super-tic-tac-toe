@@ -282,6 +282,8 @@ export const es: Messages = {
         ? `${ship}, ${length} casillas, hundido`
         : `${ship}, ${length} casillas${hits > 0 ? `, ${hits} tocadas` : ''}`,
     fire: 'Disparar',
+    lookAtOwn: 'Ver tus aguas en grande',
+    lookAtRival: 'Volver a las aguas enemigas',
     shuffle: 'Al azar',
     rotate: 'Girar',
     confirmFleet: 'Confirmar flota',

@@ -18,6 +18,18 @@
     <app-fleet-quay controls part="both" class="side" />
   }
   <app-score-board controls [compact]="true" />
+  <!-- Wide screens: Fire stands where Rematch comes at the end, one primary action at a time. -->
+  @if (!placing() && !store.isOver()) {
+    <button
+      controls
+      app-button="primary"
+      class="side fire"
+      [disabled]="store.aimed() === null"
+      (click)="store.fire()"
+    >
+      {{ t().fleet.fire }}
+    </button>
+  }
   <app-game-actions controls />
   <app-save-notice controls />
 </app-game-layout>

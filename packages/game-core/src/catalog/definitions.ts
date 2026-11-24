@@ -93,7 +93,7 @@ export const FLEET_GAME = {
 } as const satisfies GameDefinition<'fleet', fleet.Move, fleet.GameState>;
 
 /** The games of the app, in the order the library lists them. */
-export const GAMES = [SUPER3T_GAME, CLASSIC_GAME, DOTS_GAME, FLEET_GAME] as const;
+export const GAMES = [SUPER3T_GAME, FLEET_GAME, DOTS_GAME, CLASSIC_GAME] as const;
 
 /** A game of the app; each has its own route and its own way of playing. */
 export type GameId = (typeof GAMES)[number]['id'];

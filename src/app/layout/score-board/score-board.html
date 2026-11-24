@@ -1,4 +1,4 @@
-<dl class="score" [attr.aria-label]="t().score">
+<dl class="score" [attr.aria-label]="t().score" [style.--entries]="entries().length">
   @for (entry of entries(); track $index) {
     <div class="score-entry" [class.active]="entry.active">
       <dt>

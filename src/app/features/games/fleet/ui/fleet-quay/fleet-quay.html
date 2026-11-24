@@ -1,33 +1,67 @@
-@if (part() !== 'own') {
-  <section class="rival" [attr.aria-label]="t().fleet.rivalFleet">
+<ng-template #rivalRow>
+  <section class="fleet" [attr.aria-label]="t().fleet.rivalFleet">
     <div class="heading">
       <h2>{{ t().fleet.rivalFleet }}</h2>
       <span class="afloat">{{ t().fleet.afloat(views().enemy.afloat) }}</span>
     </div>
     <app-fleet-trains [ships]="views().enemy.trains" [label]="t().fleet.rivalFleet" />
   </section>
-}
-@if (part() !== 'rival') {
-  <section class="quay" [attr.aria-label]="t().fleet.yourFleet">
+</ng-template>
+
+<ng-template #ownRow>
+  <section class="fleet" [attr.aria-label]="t().fleet.yourFleet">
+    <div class="heading">
+      <h2>{{ t().fleet.yourFleet }}</h2>
+      <span class="afloat">{{ t().fleet.afloat(views().own.afloat) }}</span>
+    </div>
+    <app-fleet-trains [ships]="views().own.trains" [own]="true" [label]="t().fleet.yourFleet" />
+  </section>
+</ng-template>
+
+<!-- The magnifier: the thumbnail shows the board not on the big one; a tap swaps them. -->
+<ng-template #ownWaters>
+  <button
+    type="button"
+    class="lens"
+    [attr.aria-pressed]="store.lookingAtOwn()"
+    [attr.aria-label]="store.lookingAtOwn() ? t().fleet.lookAtRival : t().fleet.lookAtOwn"
+    (click)="store.look(!store.lookingAtOwn())"
+  >
     <app-fleet-waters
       class="mini"
-      [cells]="views().own.cells"
-      [ships]="views().own.ships"
-      [wrecks]="views().own.wrecks"
+      [cells]="thumbnail().cells"
+      [ships]="thumbnail().ships"
+      [wrecks]="thumbnail().wrecks"
       [compact]="true"
-      [label]="t().fleet.yourWaters"
+      [label]="''"
     />
-    <div class="own">
-      <h2>{{ t().fleet.yourFleet }}</h2>
-      <app-fleet-trains [ships]="views().own.trains" [own]="true" [label]="t().fleet.yourFleet" />
+    <span class="badge"><app-icon name="zoom" /></span>
+  </button>
+</ng-template>
+
+@switch (part()) {
+  @case ('rival') {
+    <ng-container *ngTemplateOutlet="rivalRow" />
+  }
+  @case ('own') {
+    <div class="quay">
+      <ng-container *ngTemplateOutlet="ownWaters" />
+      <ng-container *ngTemplateOutlet="ownRow" />
+      @if (!store.isOver()) {
+        <button app-button="primary" [disabled]="store.aimed() === null" (click)="store.fire()">
+          {{ t().fleet.fire }}
+        </button>
+      }
     </div>
-    <button
-      app-button="primary"
-      class="fire"
-      [disabled]="store.aimed() === null"
-      (click)="store.fire()"
-    >
-      {{ t().fleet.fire }}
-    </button>
-  </section>
+  }
+  @default {
+    <ng-container *ngTemplateOutlet="rivalRow" />
+    <ng-container *ngTemplateOutlet="ownRow" />
+    <figure class="waters">
+      <ng-container *ngTemplateOutlet="ownWaters" />
+      <figcaption>
+        {{ store.lookingAtOwn() ? t().fleet.rivalWaters : t().fleet.yourWaters }}
+      </figcaption>
+    </figure>
+  }
 }

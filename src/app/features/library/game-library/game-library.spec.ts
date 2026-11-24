@@ -33,9 +33,9 @@ describe('GameLibrary', () => {
     const { links } = render('dots');
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/super-3t',
-      '/classic',
-      '/dots',
       '/fleet',
+      '/dots',
+      '/classic',
     ]);
     expect(links[0].classList).toContain('banner');
   });
@@ -44,11 +44,11 @@ describe('GameLibrary', () => {
     const { links } = render('classic');
     expect(links.map((link) => link.getAttribute('aria-current'))).toEqual([
       null,
+      null,
+      null,
       'page',
-      null,
-      null,
     ]);
-    expect(links[1].querySelector('.badge')).not.toBeNull();
+    expect(links[3].querySelector('.badge')).not.toBeNull();
     expect(links[0].querySelector('.badge')).toBeNull();
   });
 

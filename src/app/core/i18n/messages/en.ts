@@ -277,6 +277,8 @@ export const en: Messages = {
         ? `${ship}, ${length} cells, sunk`
         : `${ship}, ${length} cells${hits > 0 ? `, ${hits} hit` : ''}`,
     fire: 'Fire',
+    lookAtOwn: 'Show your waters full size',
+    lookAtRival: 'Back to the enemy waters',
     shuffle: 'Shuffle',
     rotate: 'Turn',
     confirmFleet: 'Confirm fleet',

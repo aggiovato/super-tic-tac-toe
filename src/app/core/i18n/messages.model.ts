@@ -250,6 +250,9 @@ export interface Messages {
     /** A ship in a fleet strip, for screen readers: its name, length and state. */
     readonly shipState: (ship: string, length: number, hits: number, sunk: boolean) => string;
     readonly fire: string;
+    /** The thumbnail as a magnifier: shows this player's waters on the big board, and back. */
+    readonly lookAtOwn: string;
+    readonly lookAtRival: string;
     readonly shuffle: string;
     readonly rotate: string;
     readonly confirmFleet: string;
