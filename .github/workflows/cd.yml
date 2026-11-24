@@ -159,6 +159,11 @@ jobs:
     if: needs.plan.outputs.environment == 'pre' && needs.cloudflare.outputs.url != ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Playwright's image, as CI's e2e: browsers and system libraries come installed (no apt). The
+    # tag follows the locked @playwright/test version.
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user 1001 --ipc=host
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -166,7 +171,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
       # The two-browser online game, against pre in the cloud: its app, binding, API and rooms.
       - name: Online play on pre
         env:

@@ -9,9 +9,12 @@ name: CI
 #             pre for a merge to main, then production when main carries a version not yet tagged
 #             (a release PR from `task release:*`). Tags are created by CD, never pushed by hand.
 #             No host builds on its own, so nothing reaches production without this.
+# A PR stacked on another branch (its base is not main) runs quality only: build, e2e and its
+# preview wait until it targets main. Retargeting it to main (an `edited` event that changes the
+# base, as GitHub does when the PR below merges) runs everything; other edits run nothing.
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
   push:
     branches: [main]
 
@@ -19,9 +22,10 @@ permissions:
   contents: read
 
 # A newer push to a PR replaces its run; runs on main queue, so a deploy to pre or production is
-# never cut short.
+# never cut short. An edit that leaves the base alone (title, body) gets a group of its own, so it
+# never cancels a run in progress.
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}${{ github.event.action == 'edited' && !github.event.changes.base && '-edit' || '' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -29,7 +33,10 @@ jobs:
     name: Format, lint & unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    # Every run that runs at all: a push to main, or a ready PR opened, pushed to, reopened or
+    # retargeted (a title or body edit runs nothing).
+    if: >-
+      (github.event_name == 'push' || (!github.event.pull_request.draft && (github.event.action != 'edited' || github.event.changes.base != null)))
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -48,7 +55,9 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    # As quality, but only for main or a PR into main: a stacked PR waits until it targets main.
+    if: >-
+      (github.event_name == 'push' || (!github.event.pull_request.draft && (github.event.action != 'edited' || github.event.changes.base != null))) && (github.event_name == 'push' || github.event.pull_request.base.ref == 'main')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -68,6 +77,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: build
+    # Playwright's own image: its browsers and their system libraries come installed, so nothing
+    # waits on apt (an install from a slow mirror once ate the whole timeout). The tag follows the
+    # locked @playwright/test version (package.json), as `task e2e:webkit` does; a mismatch fails
+    # at once with Playwright's "Executable doesn't exist".
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user 1001 --ipc=host
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -75,8 +91,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # After `npm ci`, so the browser matches the locked @playwright/test version.
-      - run: npx playwright install --with-deps chromium firefox webkit
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: dist

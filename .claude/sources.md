@@ -27,7 +27,7 @@ Copied unmodified.
 | @ngrx/signals                                                                  | 22.0.1                                                                   |
 | Tailwind CSS / @tailwindcss/postcss / PostCSS                                  | 4.3.5 / 4.3.5 / 8.5.33                                                   |
 | @playwright/test (Chromium headless shell 159)                                 | 1.65.1                                                                   |
-| Playwright browsers / WebKit container                                         | Firefox 1572, WebKit 2388 / `mcr.microsoft.com/playwright:v1.65.1-noble` |
+| Playwright browsers / container (WebKit locally, every e2e job on CI)          | Firefox 1572, WebKit 2388 / `mcr.microsoft.com/playwright:v1.65.1-noble` |
 | @angular/service-worker (2026-11-22)                                           | 22.3.0                                                                   |
 | @types/node                                                                    | 24.19.2                                                                  |
 | ESLint / angular-eslint / typescript-eslint                                    | 10.15.0 / 22.8.0 / 8.73.0                                                |
