@@ -1,0 +1,38 @@
+/* The game drawn in the board's own marks for the game library; scales with its card. */
+:host {
+  display: block;
+  height: 100%;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cell {
+  fill: var(--color-surface-raised);
+}
+
+.water {
+  fill: var(--color-fg-disabled);
+}
+
+.hit {
+  fill: none;
+  stroke: var(--color-hit);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.wreck {
+  fill: var(--color-surface-done);
+  stroke: var(--color-line-strong);
+  stroke-width: 0.8;
+}
+
+.aim {
+  fill: none;
+  stroke: var(--color-target);
+  stroke-width: 1.2;
+}

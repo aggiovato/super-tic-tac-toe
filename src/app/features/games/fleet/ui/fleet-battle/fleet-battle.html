@@ -1,0 +1,16 @@
+<app-fleet-quay part="rival" class="stacked" />
+
+<app-fleet-waters
+  class="enemy"
+  [cells]="enemy().cells"
+  [ships]="enemy().ships"
+  [wrecks]="enemy().wrecks"
+  [aimed]="store.aimed()"
+  [interactive]="true"
+  [platform]="true"
+  [label]="t().fleet.rivalWaters"
+  (picked)="pick($event)"
+  (focused)="focus($event)"
+/>
+
+<app-fleet-quay part="own" class="stacked" />

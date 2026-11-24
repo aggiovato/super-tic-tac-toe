@@ -1,0 +1,39 @@
+<app-ticket labelledBy="fleet-how-to-play-title" (closed)="onClose()">
+  <h2 id="fleet-how-to-play-title" tabindex="-1">{{ t().fleet.howToPlay.title }}</h2>
+  <p class="intro">{{ t().fleet.howToPlay.intro }}</p>
+  <ol class="rules">
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <rect class="ship" x="5" y="6" width="20" height="6" rx="3" />
+        <rect class="ship" x="5" y="18" width="11" height="6" rx="3" />
+      </svg>
+      <p>{{ t().fleet.howToPlay.place }}</p>
+    </li>
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <circle class="water" cx="9" cy="15" r="1.6" />
+        <path class="hit" d="M17 11 l6 6 m0 -6 l-6 6" />
+      </svg>
+      <p>{{ t().fleet.howToPlay.fire }}</p>
+    </li>
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <path class="hit" d="M6 12 l5 5 m0 -5 l-5 5" />
+        <rect class="aim" x="17" y="10" width="9" height="9" rx="1.5" />
+      </svg>
+      <p>{{ t().fleet.howToPlay.again }}</p>
+    </li>
+    <li class="rule">
+      <svg class="mini" viewBox="0 0 30 30" aria-hidden="true">
+        <rect class="wreck" x="4" y="11" width="22" height="8" rx="1.5" />
+        <path
+          class="hit win"
+          d="M7 13 l4 4 m0 -4 l-4 4 M13 13 l4 4 m0 -4 l-4 4 M19 13 l4 4 m0 -4 l-4 4"
+        />
+      </svg>
+      <p>{{ t().fleet.howToPlay.win }}</p>
+    </li>
+  </ol>
+  <button actions app-button="quiet" (click)="dismiss()">{{ t().howToPlay.skip }}</button>
+  <button actions app-button="primary" (click)="dismiss()">{{ t().howToPlay.play }}</button>
+</app-ticket>

@@ -41,6 +41,8 @@
    */
   --color-player-x: var(--ref-verdigris-300);
   --color-player-o: var(--ref-sand-300);
+  /* Ship Sink: a hit on a ship, in Sand (the accent stays for the next shot and the win). */
+  --color-hit: var(--ref-sand-300);
 
   /* Atmosphere: light and shade (torn strips come from artwork, see Backdrop). Decorative only; never carries information. */
   --color-glow: color-mix(in srgb, var(--ref-raven-700) 85%, transparent); /* soft light */

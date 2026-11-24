@@ -129,6 +129,12 @@ describe('creating and joining a room', () => {
     expect((await call('/game-rooms', 'not json')).status).toBe(400);
   });
 
+  it('refuses a game of the catalog that is not played online', async () => {
+    const response = await call('/game-rooms', { gameId: 'fleet' });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'not-online' });
+  });
+
   it('gives seat 1 once: a second guest finds the room full', async () => {
     const room = await createRoom();
     await joinRoom(room.roomId);

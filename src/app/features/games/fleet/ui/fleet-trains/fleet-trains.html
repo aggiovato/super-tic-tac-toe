@@ -1,0 +1,9 @@
+<ul class="trains" [attr.aria-label]="label()">
+  @for (train of ships(); track train.ship) {
+    <li class="train" [class.sunk]="train.sunk" [attr.aria-label]="train.label">
+      @for (hit of train.coaches; track $index) {
+        <span class="coach" [class.hit]="hit" aria-hidden="true"></span>
+      }
+    </li>
+  }
+</ul>

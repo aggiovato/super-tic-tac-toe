@@ -1,5 +1,6 @@
 import * as classic from '@classic/core';
 import * as dots from '@dots/core';
+import * as fleet from '@fleet/core';
 import * as super3t from '@super3t/core';
 import type { GameDefinition } from './game-definition.model';
 import { COMPUTER_LEVELS } from './levels';
@@ -18,6 +19,8 @@ export const SUPER3T_GAME = {
   rulesVersion: super3t.RULES_VERSION,
   ...ONE_SHAPE,
   modes: BOTH_MODES,
+  draws: true,
+  online: true,
   levels: COMPUTER_LEVELS,
   featured: true,
   rules: {
@@ -33,6 +36,8 @@ export const CLASSIC_GAME = {
   rulesVersion: classic.RULES_VERSION,
   ...ONE_SHAPE,
   modes: BOTH_MODES,
+  draws: true,
+  online: true,
   levels: COMPUTER_LEVELS,
   featured: false,
   rules: {
@@ -50,6 +55,8 @@ export const DOTS_GAME = {
   variants: dots.SIZES.map(dots.variantOf),
   variantOf: (raw: string | undefined) => dots.variantOf(dots.sizeOfVariant(raw ?? '')),
   modes: BOTH_MODES,
+  draws: true,
+  online: true,
   levels: COMPUTER_LEVELS,
   featured: false,
   rules: {
@@ -60,8 +67,33 @@ export const DOTS_GAME = {
   },
 } as const satisfies GameDefinition<'dots', dots.Move, dots.GameState>;
 
+export const FLEET_GAME = {
+  id: 'fleet',
+  rulesVersion: fleet.RULES_VERSION,
+  ...ONE_SHAPE,
+  // Hidden fleets: never two people on one screen. Online once the server hides each seat's
+  // rival fleet (phase 7e).
+  modes: ['computer'],
+  draws: false,
+  online: false,
+  levels: COMPUTER_LEVELS,
+  featured: false,
+  rules: {
+    legalMoves: fleet.legalMoves,
+    replay: fleet.replay,
+    sameMove: fleet.sameMove,
+    apply: fleet.applyMove,
+    mayMove: fleet.mayMove,
+    hidden: {
+      redact: fleet.redactMoves,
+      replayView: (moves, rulesVersion, _variant, viewer) =>
+        fleet.replayView(moves, rulesVersion, viewer),
+    },
+  },
+} as const satisfies GameDefinition<'fleet', fleet.Move, fleet.GameState>;
+
 /** The games of the app, in the order the library lists them. */
-export const GAMES = [SUPER3T_GAME, CLASSIC_GAME, DOTS_GAME] as const;
+export const GAMES = [SUPER3T_GAME, CLASSIC_GAME, DOTS_GAME, FLEET_GAME] as const;
 
 /** A game of the app; each has its own route and its own way of playing. */
 export type GameId = (typeof GAMES)[number]['id'];

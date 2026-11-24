@@ -197,7 +197,101 @@ export const en: Messages = {
       win: 'Once every line is drawn, whoever holds more boxes wins.',
     },
   },
-  games: { 'super-3t': 'Super 3T', classic: 'Classic', dots: 'Boxes' },
+  fleet: {
+    flap: {
+      water: 'MISS',
+      hit: 'HIT',
+      sunk: 'SUNK',
+      fleet: 'FLEET',
+      fire: 'FIRE',
+      won: 'VICTORY',
+      lost: 'DEFEAT',
+    },
+    placing: 'Tap a ship, then its new spot; turn it or shuffle, then confirm.',
+    waitingFleet: (rival) => `Waiting for ${rival} to place their fleet.`,
+    yourTurn: 'Your turn: pick a cell in the enemy waters.',
+    aiming: (cell) => `Aiming at ${cell}. Tap again or press Fire.`,
+    aimingAfterMiss: (rival, missed, cell) =>
+      `${rival} missed at ${missed}. Aiming at ${cell}: tap again or press Fire.`,
+    pending: (cell) => `Shot at ${cell} on its way…`,
+    yourShot: (cell, outcome, ship) =>
+      outcome === 'water'
+        ? `${cell}: miss. The rival's turn.`
+        : outcome === 'hit'
+          ? `${cell}: hit. Fire again.`
+          : `${cell}: sunk! It was their ${ship}. Fire again.`,
+    rivalShot: (rival, cell, outcome, ship) =>
+      outcome === 'water'
+        ? `${rival} fires at ${cell}: miss. Your turn.`
+        : outcome === 'hit'
+          ? `${rival} hits you at ${cell} and fires again.`
+          : `${rival} sinks your ${ship} at ${cell} and fires again.`,
+    won: (rival) => `You sank ${rival}'s whole fleet.`,
+    lost: (rival) => `${rival} sank your whole fleet.`,
+    rejected: (reason) =>
+      reason === 'already-shot'
+        ? 'You already fired at that cell.'
+        : reason === 'game-over'
+          ? 'The game is over: press Rematch to play another.'
+          : reason === 'invalid-fleet'
+            ? 'That fleet will not do: check that no ship touches another.'
+            : reason === 'pending'
+              ? 'Wait to learn what your last shot did.'
+              : reason === 'placing'
+                ? 'A fleet is still to be placed.'
+                : 'That move is not possible now.',
+    problem: (problem) =>
+      problem === 'touching'
+        ? 'Ships may not touch, not even corner to corner.'
+        : problem === 'overlap'
+          ? 'Two ships cannot share a cell.'
+          : problem === 'out-of-bounds'
+            ? 'The ship runs off the board.'
+            : 'Ships are missing from the fleet.',
+    ships: {
+      carrier: 'carrier',
+      battleship: 'battleship',
+      cruiser: 'cruiser',
+      submarine: 'submarine',
+      destroyer: 'destroyer',
+    },
+    rivalFleet: 'Rival fleet',
+    yourFleet: 'Your fleet',
+    afloat: (count) => `${count} afloat`,
+    rivalWaters: 'Enemy waters',
+    yourWaters: 'Your waters',
+    cell: (cell, state) =>
+      `${cell}, ${
+        {
+          unknown: 'not fired at',
+          water: 'miss',
+          hit: 'hit',
+          sunk: 'sunk',
+          pending: 'shot on its way',
+          ship: 'ship',
+          shipHit: 'ship hit',
+        }[state]
+      }`,
+    shipState: (ship, length, hits, sunk) =>
+      sunk
+        ? `${ship}, ${length} cells, sunk`
+        : `${ship}, ${length} cells${hits > 0 ? `, ${hits} hit` : ''}`,
+    fire: 'Fire',
+    shuffle: 'Shuffle',
+    rotate: 'Turn',
+    confirmFleet: 'Confirm fleet',
+    selected: (ship) => `${ship[0]?.toUpperCase() ?? ''}${ship.slice(1)} selected`,
+    howToPlay: {
+      title: 'How to play',
+      intro: 'Sink the fleet: the first to sink all five rival ships wins.',
+      place:
+        'Place your fleet of 5, 4, 3, 3 and 2 cells. Ships never touch, not even corner to corner.',
+      fire: 'On your turn, fire at a cell of the enemy waters: a miss, a hit or a sinking.',
+      again: 'Hit or sink a ship and you fire again. A miss passes the turn.',
+      win: "Sink the rival's five ships before they sink yours.",
+    },
+  },
+  games: { 'super-3t': 'Super 3T', classic: 'Classic', dots: 'Boxes', fleet: 'Ship Sink' },
   online: {
     title: 'Online',
     invite: 'Invite someone online',
@@ -242,6 +336,7 @@ export const en: Messages = {
       'super-3t': 'Nine boards in one: every move decides where your opponent plays.',
       classic: 'The tic tac toe you know, against a friend or the computer.',
       dots: 'Join the dots, close boxes and play again.',
+      fleet: 'Sink the rival fleet before it sinks yours.',
     },
   },
   settings: {

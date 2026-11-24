@@ -35,13 +35,19 @@ describe('GameLibrary', () => {
       '/super-3t',
       '/classic',
       '/dots',
+      '/fleet',
     ]);
     expect(links[0].classList).toContain('banner');
   });
 
   it('marks only the game on screen as playing', () => {
     const { links } = render('classic');
-    expect(links.map((link) => link.getAttribute('aria-current'))).toEqual([null, 'page', null]);
+    expect(links.map((link) => link.getAttribute('aria-current'))).toEqual([
+      null,
+      'page',
+      null,
+      null,
+    ]);
     expect(links[1].querySelector('.badge')).not.toBeNull();
     expect(links[0].querySelector('.badge')).toBeNull();
   });

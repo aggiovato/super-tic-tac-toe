@@ -2,7 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import type { Player } from '@tictac';
 import { Translator } from '@i18n';
 import { LevelBars, SplitFlap } from '@ui';
-import { COMPUTER_LEVELS } from '@catalog';
+import { COMPUTER_LEVELS, gameById } from '@catalog';
 import { Preferences } from '@preferences';
 import { type Participant, ACTIVE_GAME } from '@match';
 import { participantName } from '../participant-name';
@@ -24,7 +24,10 @@ export class ScoreBoard {
   /** A quieter series score, where the game shows its own score above (Dots and Boxes). */
   readonly compact = input(false);
 
-  private readonly store = inject(ACTIVE_GAME).match;
+  private readonly game = inject(ACTIVE_GAME);
+  private readonly store = this.game.match;
+  /** A game that cannot end in a draw (Ship Sink) shows no draws. */
+  private readonly draws = computed(() => gameById(this.game.id).draws);
   private readonly preferences = inject(Preferences);
   protected readonly t = inject(Translator).t;
 
@@ -49,6 +52,9 @@ export class ScoreBoard {
       digits: digits(wins[participant]),
       active: toMove === participant,
     });
+    if (!this.draws()) {
+      return [player(0), player(1)];
+    }
     return [
       player(0),
       {

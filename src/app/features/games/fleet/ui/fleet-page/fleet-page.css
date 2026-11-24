@@ -1,0 +1,10 @@
+/* The quay in the side column only on wide screens; phones stack it around the board. */
+.side {
+  display: none;
+}
+
+@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
+  .side {
+    display: flex;
+  }
+}

@@ -44,7 +44,7 @@ Phase 7 adds a fourth game, Ship Sink (rule `fleet`): the first with hidden info
 played against the computer or online, never by two people on one device. One PR each:
 
 - 7a (`phase/7a-fleet-core`, PR #32): the engine `@fleet/core`: rules, fleets, replay, and what each player
-  sees (`viewOf`, `redactMoves`, `replayView`). Outside the catalog until 7d (`ENGINE_ONLY`).
+  sees (`viewOf`, `redactMoves`, `replayView`). (merged).
 - 7b (`phase/7b-fleet-ai`, PR #33): the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
   follow-up; hunt and target on parity; a density map of every placement still possible), with a
   property that the hidden fleet never changes its shot, and a benchmark of shots per game.
@@ -53,8 +53,12 @@ played against the computer or online, never by two people on one device. One PR
   move at once) and `GameRules.hidden` (`redact`, `replayView`): no undo, the computer told its
   symbol (`ComputerRequest.player`), and online the match mirrors this seat's view. Ship Sink's
   engine plays views as states (`viewer`, `placed`, pending shots). The other games unchanged.
-- 7d: the app: catalog entry, routes, placement and the game screen (direction contract in
-  `.impeccable/surfaces/`, the fleet quay), preview, copy, history, e2e against the computer.
+- 7d (`phase/7d-fleet-app`): the app. `FLEET_GAME` in `@catalog` (`modes: ['computer']`,
+  `online: false` until 7e: Settings offer online only to games with `online`), `@fleet/session`
+  (its Worker hands the computer `viewOf` its own side), `@fleet/state` (`FleetStore`: the person's
+  `view`, `lastShot`, `aim`/`fire`), `@fleet/ui` (placement, the fleet quay, the departure row,
+  how to play, preview), copy in both languages, `--color-hit` (Sand), no Undo row for hidden games,
+  `e2e/fleet.spec.ts`.
 - 7e: online: the API redacts per seat, placements accepted in either order without a revision
   check, a shot pending until the server answers; Workers tests that no message leaks a floating
   ship, the two-browser e2e. Then the release (v0.7.0).

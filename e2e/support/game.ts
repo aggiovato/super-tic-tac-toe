@@ -55,7 +55,7 @@ export async function asReturningVisitor({ page }: { page: Page }): Promise<void
     }
     const saved = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
     if (saved['seenTutorials'] === undefined) {
-      const seenTutorials = ['super-3t', 'classic', 'dots'];
+      const seenTutorials = ['super-3t', 'classic', 'dots', 'fleet'];
       localStorage.setItem(key, JSON.stringify({ ...saved, seenTutorials }));
     }
   }, PREFERENCES);

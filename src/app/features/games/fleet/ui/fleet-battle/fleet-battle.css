@@ -1,0 +1,33 @@
+/*
+ * Phones: the rival's trains, the enemy board as large as the room left allows, the quay in the
+ * thumb zone, all as wide as the board. Wide screens: the quay moves to the side column (FleetPage)
+ * and the board takes the arena's whole height.
+ */
+:host {
+  /* Room the rival's trains and the quay take around the board. */
+  --around: 7.5rem;
+  --board: min(100cqw, 100cqh - var(--around), 40rem);
+  container-type: size;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  gap: var(--spacing-stack-tight);
+  height: 100%;
+  min-height: 0;
+}
+
+.stacked,
+.enemy {
+  width: var(--board);
+  justify-self: center;
+}
+
+@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
+  :host {
+    --board: min(100cqw, 100cqh, 44rem);
+  }
+
+  .stacked {
+    display: none;
+  }
+}

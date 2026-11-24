@@ -1,0 +1,79 @@
+/* Ship Sink's rules inside the shared ticket: the type of Super 3T's, drawings in the board's marks. */
+h2:focus-visible {
+  outline: none;
+}
+
+h2 {
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  font-weight: 600;
+  color: var(--color-fg-strong);
+}
+
+.intro {
+  margin-top: var(--spacing-stack-tight);
+  font-size: var(--text-caption);
+  line-height: 1.35;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack);
+  margin: var(--spacing-stack) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--spacing-stack);
+}
+
+.rule p {
+  text-wrap: pretty;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  color: var(--color-fg-strong);
+}
+
+/* 30-unit drawings at 2.9rem, as Super 3T's: a Raven Teal tile with the board's own marks. */
+.mini {
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: var(--radius-tile);
+  background: var(--color-surface);
+}
+
+.mini .ship {
+  fill: var(--color-fg-disabled);
+}
+
+.mini .water {
+  fill: var(--color-fg-disabled);
+}
+
+.mini .hit {
+  fill: none;
+  stroke: var(--color-hit);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.mini .hit.win {
+  stroke: var(--color-win);
+}
+
+.mini .aim {
+  fill: none;
+  stroke: var(--color-target);
+  stroke-width: 2;
+}
+
+.mini .wreck {
+  fill: var(--color-surface-done);
+  stroke: var(--color-fg-strong);
+  stroke-width: 1.2;
+}

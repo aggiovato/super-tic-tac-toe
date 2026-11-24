@@ -202,7 +202,100 @@ export const es: Messages = {
       win: 'Cuando se trazan todas las líneas, gana quien tenga más cajas.',
     },
   },
-  games: { 'super-3t': 'Super 3T', classic: 'Clásico', dots: 'Cajas' },
+  fleet: {
+    flap: {
+      water: 'AGUA',
+      hit: 'TOCADO',
+      sunk: 'HUNDIDO',
+      fleet: 'FLOTA',
+      fire: 'FUEGO',
+      won: 'VICTORIA',
+      lost: 'DERROTA',
+    },
+    placing: 'Toca un barco y después su nuevo sitio; gíralo o barájala, y confirma.',
+    waitingFleet: (rival) => `Esperando a que ${rival} coloque su flota.`,
+    yourTurn: 'Tu turno: elige una casilla de las aguas enemigas.',
+    aiming: (cell) => `Apuntas a ${cell}. Toca otra vez o pulsa Disparar.`,
+    aimingAfterMiss: (rival, missed, cell) =>
+      `${rival} falló en ${missed}. Apuntas a ${cell}: toca otra vez o pulsa Disparar.`,
+    pending: (cell) => `Disparo a ${cell} en camino…`,
+    yourShot: (cell, outcome, ship) =>
+      outcome === 'water'
+        ? `${cell}: agua. Turno del rival.`
+        : outcome === 'hit'
+          ? `${cell}: tocado. Vuelves a disparar.`
+          : `${cell}: ¡hundido! Era su ${ship}. Vuelves a disparar.`,
+    rivalShot: (rival, cell, outcome, ship) =>
+      outcome === 'water'
+        ? `${rival} dispara a ${cell}: agua. Tu turno.`
+        : outcome === 'hit'
+          ? `${rival} te toca en ${cell} y vuelve a disparar.`
+          : `${rival} hunde tu ${ship} en ${cell} y vuelve a disparar.`,
+    won: (rival) => `Has hundido toda la flota de ${rival}.`,
+    lost: (rival) => `${rival} ha hundido toda tu flota.`,
+    rejected: (reason) =>
+      reason === 'already-shot'
+        ? 'Ya disparaste a esa casilla.'
+        : reason === 'game-over'
+          ? 'La partida ha terminado: pulsa Revancha para jugar otra.'
+          : reason === 'invalid-fleet'
+            ? 'Esa flota no vale: revisa que ningún barco toque a otro.'
+            : reason === 'pending'
+              ? 'Espera a saber qué hizo tu último disparo.'
+              : reason === 'placing'
+                ? 'Aún falta colocar alguna flota.'
+                : 'Esa jugada no vale ahora.',
+    problem: (problem) =>
+      problem === 'touching'
+        ? 'Los barcos no pueden tocarse, ni en diagonal.'
+        : problem === 'overlap'
+          ? 'Dos barcos no caben en la misma casilla.'
+          : problem === 'out-of-bounds'
+            ? 'El barco se sale del tablero.'
+            : 'Faltan barcos en la flota.',
+    ships: {
+      carrier: 'portaaviones',
+      battleship: 'acorazado',
+      cruiser: 'crucero',
+      submarine: 'submarino',
+      destroyer: 'destructor',
+    },
+    rivalFleet: 'Flota rival',
+    yourFleet: 'Tu flota',
+    afloat: (count) => (count === 1 ? '1 a flote' : `${count} a flote`),
+    rivalWaters: 'Aguas enemigas',
+    yourWaters: 'Tus aguas',
+    cell: (cell, state) =>
+      `${cell}, ${
+        {
+          unknown: 'sin disparar',
+          water: 'agua',
+          hit: 'tocado',
+          sunk: 'hundido',
+          pending: 'disparo en camino',
+          ship: 'barco',
+          shipHit: 'barco tocado',
+        }[state]
+      }`,
+    shipState: (ship, length, hits, sunk) =>
+      sunk
+        ? `${ship}, ${length} casillas, hundido`
+        : `${ship}, ${length} casillas${hits > 0 ? `, ${hits} tocadas` : ''}`,
+    fire: 'Disparar',
+    shuffle: 'Al azar',
+    rotate: 'Girar',
+    confirmFleet: 'Confirmar flota',
+    selected: (ship) => `${ship[0]?.toUpperCase() ?? ''}${ship.slice(1)} seleccionado`,
+    howToPlay: {
+      title: 'Cómo se juega',
+      intro: 'Hundir la flota: gana quien hunda primero los cinco barcos del rival.',
+      place: 'Coloca tu flota de 5, 4, 3, 3 y 2 casillas. Los barcos no se tocan, ni en diagonal.',
+      fire: 'En tu turno, dispara a una casilla de las aguas enemigas: agua, tocado o hundido.',
+      again: 'Si tocas o hundes un barco, vuelves a disparar. Con agua, pasa el turno.',
+      win: 'Hunde los cinco barcos del rival antes de que hunda los tuyos.',
+    },
+  },
+  games: { 'super-3t': 'Super 3T', classic: 'Clásico', dots: 'Cajas', fleet: 'Ship Sink' },
   online: {
     title: 'Online',
     invite: 'Invitar a alguien online',
@@ -249,6 +342,7 @@ export const es: Messages = {
       'super-3t': 'Nueve tableros en uno: cada jugada decide dónde juega el rival.',
       classic: 'El tres en raya de siempre, contra otra persona o la máquina.',
       dots: 'Une puntos, cierra cajas y vuelve a jugar.',
+      fleet: 'Hunde la flota rival antes de que hunda la tuya.',
     },
   },
   settings: {
