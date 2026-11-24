@@ -67,9 +67,9 @@
   border-radius: var(--radius-pill);
 }
 
-/* Connected: a filled Chalk dot. Gone: a Seagrass ring. Not in yet: a dashed ring. */
+/* Connected: a filled signal-green dot. Gone: a Seagrass ring. Not in yet: a dashed ring. */
 .dot.here {
-  background: var(--color-fg-strong);
+  background: var(--color-online);
 }
 
 .dot.away {

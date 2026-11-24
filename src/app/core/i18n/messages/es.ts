@@ -303,10 +303,29 @@ export const es: Messages = {
     },
   },
   games: { 'super-3t': 'Super 3T', classic: 'Clásico', dots: 'Cajas', fleet: 'Ship Sink' },
+  chat: {
+    open: (unread) => (unread > 0 ? `Chat, ${unread} sin leer` : 'Chat'),
+    title: 'Chat',
+    close: 'Cerrar',
+    empty: 'Aún no hay mensajes. Escribe al rival.',
+    placeholder: 'Escribe un mensaje',
+    send: 'Enviar',
+    left: (count) => (count === 1 ? 'Queda 1 carácter' : `Quedan ${count} caracteres`),
+    sending: 'Enviando…',
+    refused: (reason) =>
+      reason === 'too-fast'
+        ? 'No enviado: demasiados seguidos.'
+        : 'No enviado: el mensaje no vale.',
+    retry: 'Reintentar',
+    discard: 'Descartar',
+    you: 'Tú',
+    rival: 'Rival',
+    incoming: (text) => `Rival: ${text}`,
+  },
   online: {
     title: 'Online',
     room: 'Sala',
-    roomState: (allWell) => (allWell ? 'Sala: todo en orden' : 'Sala: revisa la conexión'),
+    roomState: (note) => (note === null ? 'Sala: todo en orden' : `Sala: ${note}`),
     invite: 'Invitar a alguien online',
     inviteHint:
       'Crea una sala privada y comparte su enlace: la partida se juega en dos dispositivos.',

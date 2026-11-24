@@ -1,0 +1,231 @@
+/*
+ * The chat. Phones: the button floats at the bottom right over the page (which keeps room for it at
+ * its end); wide screens: it sits in the side column's flow, where nothing is under it. The glimpse
+ * of an incoming message rises over the button as a small ticket. The conversation is a tall ticket.
+ */
+:host {
+  --fab: 3.25rem;
+  display: block;
+}
+
+.dock {
+  position: fixed;
+  right: var(--spacing-gutter);
+  bottom: calc(var(--spacing-stack) + env(safe-area-inset-bottom));
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-stack-tight);
+}
+
+@media (min-width: 48rem) and (min-aspect-ratio: 5 / 4) {
+  .dock {
+    position: static;
+    align-items: flex-start;
+  }
+}
+
+.fab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--fab);
+  height: var(--fab);
+  padding: 0;
+  border: var(--border-hairline) solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-panel);
+  color: var(--color-fg-strong);
+  font-size: var(--text-title);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.fab:focus-visible,
+.glimpse:focus-visible {
+  outline: var(--border-emphasis) solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* Unread: an Apricot dot (the One Departure Rule's recorded exception), ringed in the ground. */
+.dot {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.1rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: var(--border-line) solid var(--color-surface);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+/* The glimpse: a small Raven Deep ticket with the message's first lines. */
+.glimpse {
+  max-width: min(17rem, 100vw - 2 * var(--spacing-gutter));
+  padding: var(--spacing-stack-tight) var(--spacing-stack);
+  border: var(--border-hairline) solid var(--color-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-panel);
+  box-shadow: var(--shadow-panel);
+  color: var(--color-fg-strong);
+  font: inherit;
+  font-size: var(--text-caption);
+  line-height: 1.35;
+  text-align: start;
+  cursor: pointer;
+  animation: glimpse var(--duration-frame) var(--ease-out);
+}
+
+.glimpse-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@keyframes glimpse {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
+/* The conversation. */
+.head {
+  position: sticky;
+  top: calc(-1 * var(--spacing-stack-loose));
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: calc(-1 * var(--spacing-stack-loose));
+  padding: var(--spacing-stack) 0 var(--spacing-stack-tight);
+  background: var(--color-surface-panel);
+}
+
+h2 {
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  font-weight: 600;
+  color: var(--color-fg-strong);
+}
+
+h2:focus-visible {
+  outline: none;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-stack);
+  margin: 0;
+  padding: var(--spacing-stack-tight) 0 var(--spacing-stack);
+  list-style: none;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--spacing) * 1);
+  max-width: 85%;
+}
+
+.message.mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.bubble {
+  padding: var(--spacing-stack-tight) calc(var(--spacing) * 3);
+  border: var(--border-hairline) solid var(--color-line);
+  border-radius: var(--radius-control);
+  border-end-start-radius: var(--radius-cell);
+  background: var(--color-surface);
+  color: var(--color-fg-strong);
+  font-size: var(--text-body);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.mine .bubble {
+  border-color: transparent;
+  border-end-start-radius: var(--radius-control);
+  border-end-end-radius: var(--radius-cell);
+  background: var(--color-surface-raised);
+}
+
+.pending .bubble {
+  opacity: 0.7;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-stack-tight);
+  font-size: var(--text-caption);
+  line-height: 1.3;
+  color: var(--color-fg);
+}
+
+.refused {
+  color: var(--color-fg-strong);
+}
+
+.empty {
+  margin: auto 0;
+  padding: var(--spacing-stack-loose) 0;
+  text-align: center;
+  color: var(--color-fg);
+}
+
+/* The composer, at the tear line: the field grows to a few lines, then scrolls. */
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-stack-tight);
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 1);
+  min-width: 0;
+}
+
+textarea {
+  min-height: 2.75rem;
+  max-height: 7rem;
+  padding: calc(var(--spacing) * 2.5) calc(var(--spacing) * 3);
+  border: var(--border-line) solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-fg-strong);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: 1.3;
+  resize: none;
+  field-sizing: content;
+}
+
+textarea:focus-visible {
+  outline: var(--border-emphasis) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+textarea::placeholder {
+  color: var(--color-fg-disabled);
+}
+
+.left {
+  font-size: var(--text-caption);
+  color: var(--color-fg);
+}

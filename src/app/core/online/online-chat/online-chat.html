@@ -1,0 +1,75 @@
+@if (room; as room) {
+  <div class="dock">
+    @if (glimpse(); as text) {
+      <!-- A glimpse of what just came in: a tap opens the chat. -->
+      <button type="button" class="glimpse" (click)="open()">
+        <span class="glimpse-text">{{ text }}</span>
+      </button>
+    }
+    <button type="button" class="fab" [attr.aria-label]="t().chat.open(unread())" (click)="open()">
+      <app-icon name="chat" />
+      @if (unread() > 0) {
+        <span class="dot" aria-hidden="true"></span>
+      }
+    </button>
+    <!-- Heard as it comes in, whatever is on screen. -->
+    <p class="sr-only" aria-live="polite">
+      {{ glimpse() ? t().chat.incoming(glimpse() ?? '') : '' }}
+    </p>
+  </div>
+
+  <app-ticket labelledBy="online-chat-title" [tall]="true" (closed)="onClosed()">
+    <div class="head">
+      <h2 id="online-chat-title" tabindex="-1">{{ t().chat.title }}</h2>
+      <button app-button="quiet" size="small" (click)="close()">{{ t().chat.close }}</button>
+    </div>
+    <ol #list class="messages" [attr.aria-label]="t().chat.title">
+      @for (message of messages(); track message.key) {
+        <li class="message" [class.mine]="message.mine" [class.pending]="message.state !== 'sent'">
+          <span class="sr-only">{{ message.mine ? t().chat.you : t().chat.rival }}: </span>
+          <p class="bubble">{{ message.text }}</p>
+          <p class="meta">
+            @switch (message.state) {
+              @case ('sending') {
+                {{ t().chat.sending }}
+              }
+              @case ('refused') {
+                <span class="refused">{{ t().chat.refused(message.reason ?? 'invalid') }}</span>
+                <button app-button="quiet" size="small" (click)="room.chat.retry(message.key)">
+                  {{ t().chat.retry }}
+                </button>
+                <button app-button="quiet" size="small" (click)="room.chat.discard(message.key)">
+                  {{ t().chat.discard }}
+                </button>
+              }
+              @default {
+                <time>{{ timeOf(message.at) }}</time>
+              }
+            }
+          </p>
+        </li>
+      } @empty {
+        <li class="empty">{{ t().chat.empty }}</li>
+      }
+    </ol>
+    <form actions class="composer" (submit)="send($event)">
+      <div class="field">
+        <textarea
+          rows="1"
+          [attr.aria-label]="t().chat.placeholder"
+          [placeholder]="t().chat.placeholder"
+          [value]="draft()"
+          [attr.maxlength]="CHAT_LIMIT"
+          (input)="onInput($event)"
+          (keydown)="onKey($event)"
+        ></textarea>
+        @if (left() !== null) {
+          <span class="left" aria-live="polite">{{ t().chat.left(left() ?? 0) }}</span>
+        }
+      </div>
+      <button app-button="primary" type="submit" [disabled]="!canSend()">
+        {{ t().chat.send }}
+      </button>
+    </form>
+  </app-ticket>
+}

@@ -119,9 +119,30 @@
   border-top: var(--border-line) dashed var(--color-surface-raised);
 }
 
+/* Tall (the chat): the whole screen on phones, inside the gutters; the body fills to the tear line. */
+:host(.tall) .ticket {
+  width: calc(100vw - 2 * var(--spacing-gutter));
+  height: calc(100dvh - 2 * var(--spacing-stack));
+  margin: var(--spacing-stack) auto;
+}
+
+:host(.tall) .card {
+  height: 100%;
+}
+
+:host(.tall) .body {
+  flex: 1;
+}
+
 @media (min-width: 35rem) {
   :host {
     --ticket-pad: var(--spacing-stack-loose);
+  }
+
+  :host(.tall) .ticket {
+    width: min(30rem, 100vw - 2 * var(--spacing-gutter));
+    height: min(46rem, 100dvh - 4rem);
+    margin: auto;
   }
 
   /* Centred on wide screens: the system's downward panel lift instead of the phone sheet's. */

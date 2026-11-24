@@ -4,12 +4,12 @@
     size="small"
     class="room"
     popovertarget="online-room-popover"
-    [attr.aria-label]="t().online.roomState(allWell())"
+    [attr.aria-label]="t().online.roomState(note())"
   >
     <span class="dot" [class.well]="allWell()" aria-hidden="true"></span>
     {{ t().online.room }}
   </button>
-  <div id="online-room-popover" class="popover" popover>
+  <div #popover id="online-room-popover" class="popover" popover>
     <app-online-panel when="always" />
   </div>
 }

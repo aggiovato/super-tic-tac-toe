@@ -283,4 +283,27 @@ describe('an online room', () => {
     last().receive(state({ gameId: 'fleet', moves: [mine], revision: 1 }));
     expect(room.game()?.moves).toEqual([mine]);
   });
+
+  it('passes the chat to its own keeping and sends it again when the socket comes back', async () => {
+    const { room, last } = await open();
+    last().open();
+    last().receive(state());
+    room.chat.say('hola');
+    const said = last().sent.at(-1) as { type: string; clientId: string; text: string };
+    expect(said).toMatchObject({ type: 'say', text: 'hola' });
+    // The connection drops before the room answers: the new socket sends it again.
+    last().drop();
+    await vi.waitFor(() => expect(last().readyState).toBe(WebSocket.CONNECTING), {
+      timeout: 5_000,
+    });
+    last().open();
+    expect(last().sent).toContainEqual({ type: 'say', clientId: said.clientId, text: 'hola' });
+    last().receive({
+      type: 'said',
+      message: { id: 1, clientId: said.clientId, seat: 1, text: 'hola', at: 5 },
+    });
+    expect(room.chat.messages()).toEqual([
+      { key: said.clientId, mine: true, text: 'hola', at: 5, state: 'sent' },
+    ]);
+  });
 });

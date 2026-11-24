@@ -277,12 +277,34 @@ export interface Messages {
   };
   /** Each game's name, in the game library. */
   readonly games: Readonly<Record<GameId, string>>;
+  /** The chat between the two players of an online room. */
+  readonly chat: {
+    /** The floating button's name, with the unread count when there is one. */
+    readonly open: (unread: number) => string;
+    readonly title: string;
+    readonly close: string;
+    readonly empty: string;
+    readonly placeholder: string;
+    readonly send: string;
+    /** Characters left, shown near the limit. */
+    readonly left: (count: number) => string;
+    readonly sending: string;
+    readonly refused: (reason: 'too-fast' | 'invalid') => string;
+    readonly retry: string;
+    readonly discard: string;
+    /** Who wrote a message, for screen readers: this player or the rival. */
+    readonly you: string;
+    readonly rival: string;
+    /** The glimpse of a message that just came in. */
+    readonly incoming: (text: string) => string;
+  };
   /** Online play by invitation: a private room and its link. */
   readonly online: {
     readonly title: string;
     /** The masthead's button that opens the room's details; its state for screen readers. */
     readonly room: string;
-    readonly roomState: (allWell: boolean) => string;
+    /** The room button's name: all well, or the room's note. */
+    readonly roomState: (note: string | null) => string;
     readonly invite: string;
     readonly inviteHint: string;
     readonly creating: string;

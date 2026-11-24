@@ -1,6 +1,6 @@
 /*
- * The room button: a quiet masthead button with a presence dot, Chalk filled when all is well and
- * a Seagrass ring otherwise, as the panel's own dots. Its popover drops the whole panel under the
+ * The room button: a quiet masthead button with a presence dot, signal green filled (with a halo)
+ * when all is well and a Seagrass ring otherwise, as the panel's own dots. Its popover drops the whole panel under the
  * masthead, at the right edge; Escape or a tap outside closes it.
  */
 :host {
@@ -18,9 +18,11 @@
   border-radius: var(--radius-pill);
 }
 
+/* All well: a signal-green dot inside a soft halo, readable at a glance in the masthead. */
 .dot.well {
-  border-color: var(--color-fg-strong);
-  background: var(--color-fg-strong);
+  border-color: var(--color-online);
+  background: var(--color-online);
+  box-shadow: 0 0 0 0.2rem var(--color-online-halo);
 }
 
 .popover {

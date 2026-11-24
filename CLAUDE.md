@@ -35,19 +35,21 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 8 · Chat: in progress (8a).** Phase 7 shipped as v0.7.0: Ship Sink (rule `fleet`), the
+**Phase 8 · Chat: in progress (8b and 8c together, PR #41).** Phase 7 shipped as v0.7.0: Ship Sink (rule `fleet`), the
 first game of hidden information, against the computer and online (each seat sent only its view),
 plus whose-turn tags, the room button and full-width boards on phones for every game.
 
 Phase 8 adds a chat between the two players of an online room (v0.8.0). Free text, unmoderated,
 plain text only. One PR each, each branched from `main` once the previous one is merged:
 
-- 8a (`phase/8a-chat-api`): the protocol (`say`, `said`, `chat` in `@protocol`, `CHAT_MAX`,
+- 8a ✓ (`phase/8a-chat-api`, PR #40, merged): the protocol (`say`, `said`, `chat` in `@protocol`, `CHAT_MAX`,
   `CHAT_KEPT`) and the API: the room's `chat` table on both repositories, `GameRoomService.say`,
   the history sent on connecting, a chat budget per socket; tests in the Workers runtime.
-- 8b: the client. `OnlineRoom` keeps the conversation (its own messages pending until their
-  `said`), sends with retries, and remembers per room the last message read on this device.
-- 8c: the UI. A chat FAB on online rooms (above the controls on phones, the page's corner on wide
+- 8b (`phase/8b-chat-client`): the client. `OnlineRoom.chat` (`RoomChat`) keeps the conversation:
+  this player's messages shown at once and replaced by the room's copy on `said` (by client id),
+  resent when the socket opens, marked when `unsaid` (retry or discard); unread are the rival's
+  messages after the last one read, remembered per room on this device (`readChat`).
+- 8c (same branch and PR as 8b): the UI, `OnlineChat` in `@online`, mounted by the game layout. A chat FAB on online rooms (above the controls on phones, the page's corner on wide
   screens) with an Apricot unread dot (a second, recorded exception to the One Departure Rule); an
   incoming message previewed as a ticket bubble for about 4 s; the chat as a full-screen ticket on
   phones and a tall one on desktop; copy, DESIGN.md, an impeccable pass, a two-browser e2e. Then

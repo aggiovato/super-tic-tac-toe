@@ -10,10 +10,16 @@ import { Component, type ElementRef, input, output, viewChild } from '@angular/c
   selector: 'app-ticket',
   templateUrl: './ticket.html',
   styleUrl: './ticket.css',
+  host: { '[class.tall]': 'tall()' },
 })
 export class Ticket {
   /** Id of the heading that names the dialog. */
   readonly labelledBy = input.required<string>();
+  /**
+   * A tall ticket (the chat): the whole screen on phones, a tall card on wide screens; its body
+   * takes every pixel between the top and the tear line.
+   */
+  readonly tall = input(false);
   /** Emitted however the ticket closes: an action, Escape. */
   readonly closed = output();
 

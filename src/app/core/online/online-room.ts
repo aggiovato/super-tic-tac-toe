@@ -13,6 +13,7 @@ import { GAME_ROOMS_PATH, type GameRoomState, type Seat, type ServerMessage } fr
 import { GameRoomsApi, RoomsUnreachable } from './game-rooms-api';
 import type { RivalPresence, RoomProblem } from './online.model';
 import { RoomCredentialsStore } from './room-credentials';
+import { RoomChat } from './room-chat';
 import { RoomSocket, type SocketFactory } from './room-socket';
 
 /** The game an online route plays. */
@@ -89,6 +90,21 @@ export class OnlineRoom extends RemoteSeat {
   private readonly server = signal<GameRoomState | null>(null);
   private readonly pending = signal<readonly PendingMove[]>([]);
   private readonly socket = signal<RoomSocket | null>(null);
+
+  /** The room's chat between its two players. */
+  readonly chat = new RoomChat({
+    send: (message) => this.socket()?.send(message),
+    you: () => this.server()?.you ?? null,
+    readUpTo: () => {
+      const roomId = this.roomId();
+      return roomId ? (this.credentials.get(roomId)?.readChat ?? 0) : 0;
+    },
+    saveReadUpTo: (id) => {
+      const roomId = this.roomId();
+      if (roomId) this.credentials.setReadChat(roomId, id);
+    },
+    now: () => Date.now(),
+  });
 
   /** The room's id, once opened. */
   readonly roomId = signal<string | null>(null);
@@ -236,7 +252,10 @@ export class OnlineRoom extends RemoteSeat {
     const url = `${scheme}//${location?.host ?? ''}${path}?token=${encodeURIComponent(token)}`;
     const socket = new RoomSocket(url, this.createSocket, {
       // What was on its way when the connection dropped goes again; the server keeps it once.
-      open: () => this.pending().forEach((move) => this.send(move)),
+      open: () => {
+        this.pending().forEach((move) => this.send(move));
+        this.chat.resend();
+      },
       message: (message) => this.receive(message),
       expired: () => this.problem.set('expired'),
     });
@@ -265,6 +284,11 @@ export class OnlineRoom extends RemoteSeat {
             move.commandId === message.commandId ? { ...move, acked: message.revision } : move,
           ),
         );
+        return;
+      case 'chat':
+      case 'said':
+      case 'unsaid':
+        this.chat.receive(message);
         return;
       case 'error':
         console.error('The room did not understand a message.', message.reason);
