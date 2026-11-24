@@ -35,33 +35,29 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 6 · Online by invitation: in progress (6d).** Phase 5 shipped as v0.4 (offline play, safe
-updates, Firefox and WebKit in e2e, hosting on Cloudflare Workers with Netlify as a backup) and the
-architecture was consolidated (glossary, `@catalog`, seats in records, engine and app trees,
-architecture checks). Phase 6 plan, one PR each:
+**Phase 7 · Ship Sink: in progress (7a).** Phase 6 shipped as v0.6.0: online rooms for every game
+(`@protocol`, `@online`, the API Worker `super-3t-api` with one `GameRoom` Durable Object per room,
+reached by the app under `/api/*` through a service binding; rooms expire after 7 days idle, a
+rematch stays in the room and swaps symbols), three deploy environments, limits and a heartbeat.
 
-- 6a: npm workspaces, the engine as `packages/game-core` (merged).
-- 6b: the API (`packages/api`, rule `api`): Hono on Cloudflare Workers, one `GameRoom` Durable Object per
-  room (SQLite), the protocol (`commandId`, expected revision, full snapshots, reconnection, one result,
-  rematch, a week's TTL), tested in the Workers runtime (merged).
-- 6c: online play (`@online`, merged): the protocol's types shared as `@protocol`;
-  `/<game>/online/:roomId` with an `OnlineRoom` as the match's `RemoteSeat` (the match mirrors the
-  server; this player's moves show at once and go back if refused; no undo, the rematch is the
-  room's; nothing saved on the device); the invitation from Settings, the online panel (link,
-  connection, rival present, leave); `/api` proxied to `wrangler dev` locally and in e2e; a
-  two-browser e2e that drops the connection and retries.
-- 6d (done in `phase/6d-deploy`): the app's Worker (`edge/index.ts`, only for `/api/*`) with the
-  service binding to the API, which has no public address; three environments (a PR's own API,
-  pre from `main`, production from a release PR); limits (rooms created and joined per address and
-  minute, a message budget per socket, four sockets per seat); a heartbeat (`ping`/`pong` answered
-  without waking the room; a silent socket is dropped by the client and swept by the room's alarm).
-  Then the release that closes the phase (v0.5.0), through the new release PR.
+Phase 7 adds a fourth game, Ship Sink (rule `fleet`): the first with hidden information, so it is
+played against the computer or online, never by two people on one device. One PR each:
 
-Decided: all three games online; the API in its own Worker (`super-3t-api`), reached by the app
-under `/api/*` through a service binding, since Cloudflare gives no preview URLs to a Worker holding a
-Durable Object (the app keeps its PR previews); rooms expire after 7 days idle, a missing player is
-waited for until then, a rematch stays in the room and swaps symbols. Accounts (phase 7) add Neon
-Postgres (Hyperdrive, Drizzle) for verified history across devices.
+- 7a (`phase/7a-fleet-core`): the engine `@fleet/core`: rules, fleets, replay, and what each player
+  sees (`viewOf`, `redactMoves`, `replayView`). Outside the catalog until 7d (`ENGINE_ONLY`).
+- 7b: the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
+  follow-up; hunt and target on parity; a density map of every placement still possible), with a
+  property that the hidden fleet never changes its shot, and a benchmark of shots per game.
+- 7c: the platform: play modes per game (Ship Sink: computer and online only), undo per game (none
+  here: undoing a miss would peek), `mayMove` for simultaneous placement, a per-seat redaction in
+  the catalog for the API, the view replay for the client; the other games unchanged.
+- 7d: the app: catalog entry, routes, placement and the game screen (direction contract in
+  `.impeccable/surfaces/`, the fleet quay), preview, copy, history, e2e against the computer.
+- 7e: online: the API redacts per seat, placements accepted in either order without a revision
+  check, a shot pending until the server answers; Workers tests that no message leaks a floating
+  ship, the two-browser e2e. Then the release (v0.7.0).
+
+Accounts (phase 8) add Neon Postgres (Hyperdrive, Drizzle) for verified history across devices.
 
 | Phase         | Accepted when…                                                                        |
 | ------------- | ------------------------------------------------------------------------------------- |
@@ -71,8 +67,9 @@ Postgres (Hyperdrive, Drizzle) for verified history across devices.
 | 3 Opponent ✓  | Every reply is legal, restarting cancels the previous turn, search budgets hold.      |
 | 4 Local MVP ✓ | A game resumes mid-turn and each game counts a single result.                         |
 | 5 PWA beta ✓  | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
-| 6 Online      | Two browsers converge after playing, losing the connection and retrying; one result.  |
-| 7 Accounts    | One account sees verified results on two devices; local play needs no sign-in.        |
+| 6 Online ✓    | Two browsers converge after playing, losing the connection and retrying; one result.  |
+| 7 Ship Sink   | Against each level and online, no message or view locates a rival ship still afloat.  |
+| 8 Accounts    | One account sees verified results on two devices; local play needs no sign-in.        |
 
 Update this table when a phase closes.
 
@@ -163,6 +160,9 @@ train names).
 | level           | How strong the computer plays (`ComputerLevel`: beginner, intermediate, advanced).                |
 | move / revision | One accepted action of the engine / the count of them, which orders saves and, later, the server. |
 | variant         | A game's shape that is not a rule change, e.g. the Dots board size (`'3'`, `'5'`).                |
+| fleet / ship    | Ship Sink: a player's five ships (`Fleet`), placed once; each `ShipPlacement` is a bow and a way. |
+| shot / outcome  | A Ship Sink move at a cell of the rival's waters / what it did: `water`, `hit` or `sunk`.         |
+| view            | What one player of a hidden-information game knows (`FleetView`); the server sends no more.       |
 | preferences     | What a person chose on this device (`@preferences`); the Settings sheet edits them.               |
 
 A game record names who played each side as `seats` (`local`, `computer`, later `remote`), and
@@ -218,6 +218,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui`         | `packages/game-core/src/super-3t/` · `src/app/features/games/super-3t/` |
 | `@classic/core`, `/ai`, `/session`, `/state`, `/ui`              | `packages/game-core/src/classic/` · `src/app/features/games/classic/`   |
 | `@dots/core`, `/ai`, `/session`, `/state`, `/ui`                 | `packages/game-core/src/dots/` · `src/app/features/games/dots/`         |
+| `@fleet/core`, `@fleet/core/testing` (tests)                     | `packages/game-core/src/fleet/core/`                                    |
 | `@match`, `@online`, `@pwa`, `@storage`, `@i18n`, `@preferences` | `src/app/core/<block>/`                                                 |
 | `@layout`, `@ui`                                                 | `src/app/layout/`, `src/app/ui/`                                        |
 | `@library`, `@history`                                           | `src/app/features/<block>/`                                             |
@@ -251,6 +252,7 @@ Loaded automatically for the files you touch:
 | `super-3t`      | `packages/game-core/src/super-3t/**`, `features/games/super-3t/**`, `tictac/**` | Rules v1, engine contract, fixtures, invariants  |
 | `classic`       | `packages/game-core/src/classic/**`, `features/games/classic/**`                | Classic rules, engine, three opponent levels     |
 | `dots`          | `packages/game-core/src/dots/**`, `features/games/dots/**`                      | Dots and Boxes rules, opponent, board, inks      |
+| `fleet`         | `packages/game-core/src/fleet/**`, `features/games/fleet/**`                    | Ship Sink rules, hidden information, the view    |
 | `storage`       | `src/app/core/storage/**`, `match/**`                                           | Records, saving, restoring, history              |
 | `pwa`           | `ngsw-config.json`, headers, updates                                            | Service worker, offline cache, update notice     |
 | `api`           | `packages/api/**`                                                               | API Worker: structure, room protocol, tests      |

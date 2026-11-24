@@ -12,7 +12,7 @@ const prettier = require('eslint-config-prettier');
  * @<game>/<layer>). A new game adds its alias and folder to GAMES (scripts/check-architecture.mjs checks they match
  * the catalog).
  */
-const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots' };
+const GAMES = { super3t: 'super-3t', classic: 'classic', dots: 'dots', fleet: 'fleet' };
 const GAME_ALIASES = Object.keys(GAMES).join('|');
 const LAYERS = 'core|ai|challenge|session|state|ui';
 const SHARED =
