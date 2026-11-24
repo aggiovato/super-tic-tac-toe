@@ -1,52 +1,72 @@
 @if (room; as room) {
+  @if (glimpse(); as text) {
+    <!-- A glimpse of what just came in, at the top of the screen: a tap opens the chat. -->
+    <button
+      type="button"
+      class="glimpse"
+      animate.enter="glimpse-in"
+      animate.leave="glimpse-out"
+      (click)="open()"
+    >
+      <span class="glimpse-from">{{ t().chat.rival }}</span>
+      <span class="glimpse-text">{{ text }}</span>
+    </button>
+  }
   <div class="dock">
-    @if (glimpse(); as text) {
-      <!-- A glimpse of what just came in: a tap opens the chat. -->
-      <button type="button" class="glimpse" (click)="open()">
-        <span class="glimpse-text">{{ text }}</span>
-      </button>
-    }
     <button type="button" class="fab" [attr.aria-label]="t().chat.open(unread())" (click)="open()">
       <app-icon name="chat" />
       @if (unread() > 0) {
         <span class="dot" aria-hidden="true"></span>
       }
     </button>
-    <!-- Heard as it comes in, whatever is on screen. -->
-    <p class="sr-only" aria-live="polite">
-      {{ glimpse() ? t().chat.incoming(glimpse() ?? '') : '' }}
-    </p>
   </div>
+  <!-- Heard as it comes in, whatever is on screen. -->
+  <p class="sr-only" aria-live="polite">
+    {{ glimpse() ? t().chat.incoming(glimpse() ?? '') : '' }}
+  </p>
 
-  <app-ticket labelledBy="online-chat-title" [tall]="true" (closed)="onClosed()">
+  <app-ticket
+    labelledBy="online-chat-title"
+    [tall]="true"
+    [dismissable]="true"
+    (closed)="onClosed()"
+  >
     <div class="head">
       <h2 id="online-chat-title" tabindex="-1">{{ t().chat.title }}</h2>
       <button app-button="quiet" size="small" (click)="close()">{{ t().chat.close }}</button>
     </div>
     <ol #list class="messages" [attr.aria-label]="t().chat.title">
-      @for (message of messages(); track message.key) {
-        <li class="message" [class.mine]="message.mine" [class.pending]="message.state !== 'sent'">
+      @for (message of rows(); track message.key) {
+        <li
+          class="message"
+          [class.mine]="message.mine"
+          [class.start]="message.start"
+          [class.end]="message.end"
+          [class.pending]="message.state !== 'sent'"
+        >
           <span class="sr-only">{{ message.mine ? t().chat.you : t().chat.rival }}: </span>
           <p class="bubble">{{ message.text }}</p>
-          <p class="meta">
-            @switch (message.state) {
-              @case ('sending') {
-                {{ t().chat.sending }}
+          @if (message.end || message.state !== 'sent') {
+            <p class="meta">
+              @switch (message.state) {
+                @case ('sending') {
+                  {{ t().chat.sending }}
+                }
+                @case ('refused') {
+                  <span class="refused">{{ t().chat.refused(message.reason ?? 'invalid') }}</span>
+                  <button app-button="quiet" size="small" (click)="room.chat.retry(message.key)">
+                    {{ t().chat.retry }}
+                  </button>
+                  <button app-button="quiet" size="small" (click)="room.chat.discard(message.key)">
+                    {{ t().chat.discard }}
+                  </button>
+                }
+                @default {
+                  <time>{{ timeOf(message.at) }}</time>
+                }
               }
-              @case ('refused') {
-                <span class="refused">{{ t().chat.refused(message.reason ?? 'invalid') }}</span>
-                <button app-button="quiet" size="small" (click)="room.chat.retry(message.key)">
-                  {{ t().chat.retry }}
-                </button>
-                <button app-button="quiet" size="small" (click)="room.chat.discard(message.key)">
-                  {{ t().chat.discard }}
-                </button>
-              }
-              @default {
-                <time>{{ timeOf(message.at) }}</time>
-              }
-            }
-          </p>
+            </p>
+          }
         </li>
       } @empty {
         <li class="empty">{{ t().chat.empty }}</li>
@@ -67,7 +87,7 @@
           <span class="left" aria-live="polite">{{ t().chat.left(left() ?? 0) }}</span>
         }
       </div>
-      <button app-button="primary" type="submit" [disabled]="!canSend()">
+      <button app-button="primary" [disabled]="!canSend()" (click)="send()">
         {{ t().chat.send }}
       </button>
     </form>

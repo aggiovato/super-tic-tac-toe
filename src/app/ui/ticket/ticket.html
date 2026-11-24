@@ -1,4 +1,10 @@
-<dialog #dialog class="ticket" [attr.aria-labelledby]="labelledBy()" (close)="closed.emit()">
+<dialog
+  #dialog
+  class="ticket"
+  [attr.aria-labelledby]="labelledBy()"
+  [attr.closedby]="dismissable() ? 'any' : null"
+  (close)="closed.emit()"
+>
   <div class="card">
     <div class="body"><ng-content /></div>
     <div class="actions"><ng-content select="[actions]" /></div>

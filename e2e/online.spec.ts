@@ -281,7 +281,12 @@ test('two browsers chat in a room: unread on the button, the talk kept across a 
   await expect(chat(host.page).getByText('Best of three?')).toBeVisible();
   await write(host.page, 'Deal');
   await expect(chat(guest.page).getByText('Deal')).toBeVisible();
-  await chat(host.page).getByRole('button', { name: 'Close' }).click();
+  // The Send button sends too; a tap outside the ticket closes it, as Close does.
+  await chat(host.page).getByRole('textbox', { name: 'Write a message' }).fill('My move first');
+  await chat(host.page).getByRole('button', { name: 'Send' }).click();
+  await expect(chat(guest.page).getByText('My move first')).toBeVisible();
+  await host.page.mouse.click(4, 4);
+  await expect(chat(host.page)).toBeHidden();
   await expect(fab(host.page)).toHaveAccessibleName('Chat');
 
   // The host loses the connection: a message written meanwhile waits, and goes on reconnecting.
@@ -298,7 +303,7 @@ test('two browsers chat in a room: unread on the button, the talk kept across a 
   await expect(allWell(host.page)).toBeVisible();
   await expect(fab(host.page)).toHaveAccessibleName('Chat');
   await fab(host.page).click();
-  for (const text of ['Best of three?', 'Deal', 'Still there?']) {
+  for (const text of ['Best of three?', 'Deal', 'My move first', 'Still there?']) {
     await expect(chat(host.page).getByText(text)).toBeVisible();
   }
 

@@ -13,6 +13,7 @@ import {
 import { CHAT_MAX } from '@protocol';
 import { Translator } from '@i18n';
 import { Button, Icon, Ticket } from '@ui';
+import type { ChatEntry } from '../online.model';
 import { OnlineRoom } from '../online-room';
 import { chatText } from '../room-chat';
 
@@ -20,6 +21,8 @@ import { chatText } from '../room-chat';
 const GLIMPSE_MS = 4000;
 /** From how many characters left the composer counts them down. */
 const COUNT_FROM = 40;
+/** Messages of one writer closer than this in time read as one group (one time, tight). */
+const GROUP_MS = 3 * 60 * 1000;
 
 /**
  * The room's chat, for an online game: a floating button with an Apricot dot while the rival's
@@ -52,6 +55,20 @@ export class OnlineChat {
   protected readonly glimpse = signal<string | null>(null);
 
   protected readonly messages = computed(() => this.room?.chat.messages() ?? []);
+  /**
+   * The conversation as rows: a writer's messages close in time form a group, drawn tight, its time
+   * under the last one only (a message on its way or not kept always says so).
+   */
+  protected readonly rows = computed(() => {
+    const messages = this.messages();
+    const joins = (a: ChatEntry | undefined, b: ChatEntry | undefined) =>
+      !!a && !!b && a.mine === b.mine && Math.abs(b.at - a.at) < GROUP_MS;
+    return messages.map((message, i) => ({
+      ...message,
+      start: !joins(messages[i - 1], message),
+      end: !joins(message, messages[i + 1]),
+    }));
+  });
   protected readonly unread = computed(() => this.room?.chat.unread() ?? 0);
   protected readonly canSend = computed(() => chatText(this.draft()) !== null);
   /** Characters left, once the draft comes near the limit. */
