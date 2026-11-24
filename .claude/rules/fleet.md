@@ -37,5 +37,19 @@ not even corner to corner. One shape for now (`variant` `''`).
   `SHIP_IDS` order (`'A1h C1v C3h G5v J8h'`), `play(fleets, 'F4 F5')` places both fleets and fires
   each shot for whoever is to fire, failing on the first refusal.
 
+- `@fleet/ai`: `chooseMove(view, { level, seed })` reads only the computer's `FleetView`, never
+  the full state: it places a fleet from the seed during `placing` (null once placed), fires when
+  it is its turn, and is null otherwise. `Knowledge` derives what the view proves: cells fired at,
+  water (misses, the rim of every sunk ship, the corners of every hit), open hits, ships afloat.
+  - Beginner: anywhere not fired at; beside an open hit only half the time (`BEGINNER_FOLLOW_UP`).
+  - Intermediate: extends a run of open hits, else tries beside a lone one, else hunts on the
+    lattice spaced by the smallest ship afloat; never fires at known water.
+  - Advanced: a density map of every placement of the ships afloat that avoids known water and
+    wrecks (with open hits, only those through them, weighted 10^hits), firing at the maximum.
+  - Specs: the fleet is legal and seeded; changing or hiding the rival fleet in the view changes no
+    shot (fast-check); follows a hit, then the line; never fires at known water; legal games at
+    every pairing; shots to sink 40 seeded fleets: 68.8 / 44.6 / 38.9 (random ≈ 95); intermediate
+    beats beginner ≥ 15/20, advanced beats intermediate ≥ 11/20. A turn costs well under 1 ms.
+
 Until the app plays it, `fleet` is in `ENGINE_ONLY` of `scripts/check-architecture.mjs` (an engine
 folder outside the catalog); joining the catalog removes it from there.

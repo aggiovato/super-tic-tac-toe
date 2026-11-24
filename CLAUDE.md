@@ -43,9 +43,9 @@ rematch stays in the room and swaps symbols), three deploy environments, limits 
 Phase 7 adds a fourth game, Ship Sink (rule `fleet`): the first with hidden information, so it is
 played against the computer or online, never by two people on one device. One PR each:
 
-- 7a (`phase/7a-fleet-core`): the engine `@fleet/core`: rules, fleets, replay, and what each player
+- 7a (`phase/7a-fleet-core`, PR #32): the engine `@fleet/core`: rules, fleets, replay, and what each player
   sees (`viewOf`, `redactMoves`, `replayView`). Outside the catalog until 7d (`ENGINE_ONLY`).
-- 7b: the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
+- 7b (`phase/7b-fleet-ai`): the computer player `@fleet/ai`, three levels that read only the view (random with a sloppy
   follow-up; hunt and target on parity; a density map of every placement still possible), with a
   property that the hidden fleet never changes its shot, and a benchmark of shots per game.
 - 7c: the platform: play modes per game (Ship Sink: computer and online only), undo per game (none
@@ -218,7 +218,7 @@ points to it (`tsconfig.json` `paths`, the single source of truth; Vitest reads 
 | `@super3t/ai`, `/challenge`, `/session`, `/state`, `/ui`         | `packages/game-core/src/super-3t/` · `src/app/features/games/super-3t/` |
 | `@classic/core`, `/ai`, `/session`, `/state`, `/ui`              | `packages/game-core/src/classic/` · `src/app/features/games/classic/`   |
 | `@dots/core`, `/ai`, `/session`, `/state`, `/ui`                 | `packages/game-core/src/dots/` · `src/app/features/games/dots/`         |
-| `@fleet/core`, `@fleet/core/testing` (tests)                     | `packages/game-core/src/fleet/core/`                                    |
+| `@fleet/core`, `@fleet/core/testing` (tests), `@fleet/ai`        | `packages/game-core/src/fleet/`                                         |
 | `@match`, `@online`, `@pwa`, `@storage`, `@i18n`, `@preferences` | `src/app/core/<block>/`                                                 |
 | `@layout`, `@ui`                                                 | `src/app/layout/`, `src/app/ui/`                                        |
 | `@library`, `@history`                                           | `src/app/features/<block>/`                                             |
