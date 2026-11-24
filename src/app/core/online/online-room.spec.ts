@@ -72,11 +72,20 @@ const state = (changes: Partial<GameRoomState> = {}): GameRoomState => ({
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-async function open(api = new FakeApi()) {
+/** A legal Ship Sink fleet. */
+const FLEET = [
+  { ship: 'carrier', row: 0, col: 0, orientation: 'h' },
+  { ship: 'battleship', row: 2, col: 0, orientation: 'v' },
+  { ship: 'cruiser', row: 2, col: 2, orientation: 'h' },
+  { ship: 'submarine', row: 6, col: 4, orientation: 'v' },
+  { ship: 'destroyer', row: 9, col: 7, orientation: 'h' },
+];
+
+async function open(api = new FakeApi(), gameId: 'classic' | 'fleet' = 'classic') {
   const sockets: FakeSocket[] = [];
   const injector = createEnvironmentInjector(
     [
-      provideOnlineRoom('classic'),
+      provideOnlineRoom(gameId),
       { provide: GameRoomsApi, useValue: api },
       {
         provide: SOCKET_FACTORY,
@@ -243,5 +252,35 @@ describe('an online room', () => {
     expect(again.room.left()).toBe(false);
     expect(again.sockets).toHaveLength(1);
     expect(TestBed.inject(RoomCredentialsStore).get('room-1')?.left).toBe(false);
+  });
+
+  it('keeps a placement on its way when the rival places first, until the state carries it', async () => {
+    const { room, last } = await open(new FakeApi(), 'fleet');
+    last().open();
+    last().receive(state({ gameId: 'fleet' }));
+    const mine = { kind: 'place', player: 'O', fleet: FLEET };
+    room.play(mine);
+    // The rival's placement lands first: revision 1, without this player's.
+    last().receive(
+      state({ gameId: 'fleet', moves: [{ kind: 'place', player: 'X' }], revision: 1 }),
+    );
+    expect(room.game()?.moves).toEqual([{ kind: 'place', player: 'X' }, mine]);
+    const sent = last().sent.at(-1) as { commandId: string };
+    last().receive({ type: 'ack', commandId: sent.commandId, revision: 2 });
+    last().receive(
+      state({ gameId: 'fleet', moves: [{ kind: 'place', player: 'X' }, mine], revision: 2 }),
+    );
+    expect(room.game()?.moves).toHaveLength(2);
+  });
+
+  it('drops a move resent after a reconnection once the state already holds it', async () => {
+    const { room, last } = await open(new FakeApi(), 'fleet');
+    last().open();
+    last().receive(state({ gameId: 'fleet' }));
+    const mine = { kind: 'place', player: 'O', fleet: FLEET };
+    room.play(mine);
+    // The socket comes back and the room's state already holds the placement, before any ack.
+    last().receive(state({ gameId: 'fleet', moves: [mine], revision: 1 }));
+    expect(room.game()?.moves).toEqual([mine]);
   });
 });

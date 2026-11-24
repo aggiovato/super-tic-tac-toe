@@ -1,1 +1,2 @@
-export { FleetStore, type LastShot } from './fleet-store';
+export { FleetStore } from './fleet-store';
+export type { LastShot } from './last-shot.model';

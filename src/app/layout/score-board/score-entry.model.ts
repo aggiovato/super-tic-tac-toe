@@ -10,4 +10,6 @@ export interface ScoreEntry {
   readonly levelName: string | null;
   /** The player to move. */
   readonly active: boolean;
+  /** Whose turn it is, on the tag under the score: shown only on the player to move. */
+  readonly turn: string | null;
 }

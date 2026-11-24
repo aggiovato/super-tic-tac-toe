@@ -47,7 +47,10 @@
     <div class="quay">
       <ng-container *ngTemplateOutlet="ownWaters" />
       <ng-container *ngTemplateOutlet="ownRow" />
-      @if (!store.isOver()) {
+      <!-- One primary action in one place: Fire while the game goes on, Rematch once it ends. -->
+      @if (store.isOver()) {
+        <button app-button="primary" (click)="store.rematch()">{{ t().rematch }}</button>
+      } @else {
         <button app-button="primary" [disabled]="store.aimed() === null" (click)="store.fire()">
           {{ t().fleet.fire }}
         </button>
@@ -58,10 +61,10 @@
     <ng-container *ngTemplateOutlet="rivalRow" />
     <ng-container *ngTemplateOutlet="ownRow" />
     <figure class="waters">
-      <ng-container *ngTemplateOutlet="ownWaters" />
       <figcaption>
         {{ store.lookingAtOwn() ? t().fleet.rivalWaters : t().fleet.yourWaters }}
       </figcaption>
+      <ng-container *ngTemplateOutlet="ownWaters" />
     </figure>
   }
 }

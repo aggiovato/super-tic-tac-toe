@@ -78,7 +78,11 @@ export class GameRoomService {
       return { type: 'refused', commandId, reason: verdict.reason };
     }
     const now = this.now();
-    this.repository.addMove(game.game, { revision: moves.length, commandId, seat, move }, now);
+    this.repository.addMove(
+      game.game,
+      { revision: moves.length, commandId, seat, move: verdict.move },
+      now,
+    );
     if (verdict.result) {
       this.repository.finishGame(game.game, verdict.result, now);
     }

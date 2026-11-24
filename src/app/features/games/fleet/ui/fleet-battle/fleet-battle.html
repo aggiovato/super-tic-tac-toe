@@ -34,4 +34,15 @@
   />
 }
 
+<!-- Wide screens: the one primary action right under the board, Fire then Rematch. -->
+<div class="act">
+  @if (store.isOver()) {
+    <button app-button="primary" (click)="store.rematch()">{{ t().rematch }}</button>
+  } @else {
+    <button app-button="primary" [disabled]="store.aimed() === null" (click)="store.fire()">
+      {{ t().fleet.fire }}
+    </button>
+  }
+</div>
+
 <app-fleet-quay part="own" class="stacked" />

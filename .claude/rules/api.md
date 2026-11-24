@@ -54,7 +54,16 @@ Its types live in `@protocol` (`packages/game-core/src/protocol/`), shared with 
 - **Move**: `{type: 'move', commandId, expectedRevision, move}`. Judged with the game's own engine:
   `waiting` (no guest yet), `game-over`, `stale` (another move came first), `not-your-turn`,
   `illegal`. The sender gets `ack` (with the revision) or `refused`. A move is stored once: unique by
-  game and revision and by `commandId`; a retried command gets the same `ack` again.
+  game and revision and by `commandId`; a retried command gets the same `ack` again. The room
+  stores the move as the engine stored it (`MoveVerdict.move`), never the client's message as sent.
+- **Who may move**: the player to move, or whoever the game's `mayMove` says (both, while Ship
+  Sink's fleets are placed). In such a game a move made on an older revision is still taken while
+  its player may move. A move made in the other player's name (`moverOf`: a placement naming them)
+  is `not-your-turn`.
+- **Hidden information** (`GameRules.hidden`, Ship Sink): each seat's state carries only its view
+  of the moves (`redact`): its own fleet, the rival's placement as a fact, every shot with its
+  outcome, a sunk ship's placement; the whole fleets once the game is over. `revision` still counts
+  every move. Tests prove no message to a seat carries the rival's fleet before the end.
 - **Rematch**: `{type: 'rematch', game}` starts the next game once `game` is over, symbols swapped;
   a second request for the same game is ignored. **Sync**: `{type: 'sync'}` sends the state again.
 - **TTL**: any join, move or rematch pushes an alarm a week ahead; a room left alone deletes itself.
@@ -76,11 +85,13 @@ Its types live in `@protocol` (`packages/game-core/src/protocol/`), shared with 
 `npm run test:api` (in `task unit`): typecheck, then Vitest inside the Workers runtime
 (`@cloudflare/vitest-plugin`, storage isolated per test):
 
-- `test/game-rooms.spec.ts`: real sockets through every protocol rule (eviction and expiry included);
+- `test/game-rooms.spec.ts`: real sockets through every protocol rule (eviction and expiry
+  included), and a Ship Sink room where both place at once and nothing seat 1 hears holds X's fleet;
 - `test/services/game-room.service.spec.ts`: the use cases on the memory repository, with a test clock;
 - `test/repositories/game-room-repository.contract.spec.ts`: the same contract run on memory and on the
   Durable Object's real SQLite, so service tests use a repository that behaves like production;
-- `test/domain/game-room-rules.spec.ts`: the pure rules for every game of the catalog;
+- `test/domain/game-room-rules.spec.ts`: the pure rules for every game of the catalog, Ship Sink's
+  placements at once, moves in the other's name, stored moves and each seat's view;
 - `test/protocol.spec.ts`: what a client may send.
 
 `task api:dev` runs the Worker locally with `wrangler dev`.

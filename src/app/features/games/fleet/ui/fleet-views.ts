@@ -44,10 +44,6 @@ export const overlay = (placement: ShipPlacement, selected = false): ShipOverlay
 export const sunkBy = (shots: readonly Shot[]): ShipPlacement[] =>
   shots.flatMap((shot) => (shot.sunk ? [shot.sunk] : []));
 
-/** What a cell's state is called for screen readers. */
-const spoken = (state: CellState): Parameters<Messages['fleet']['cell']>[1] =>
-  state === 'rim' ? 'water' : state;
-
 /** What a board shows: the ships known on it, the shots fired at it and the last one. */
 export interface BoardOf {
   readonly fleet: Fleet | null;
@@ -94,7 +90,8 @@ export function waterCells(
       ...cell,
       name,
       state,
-      label: t.fleet.cell(name, spoken(state)),
+      // While placing, nothing is fired yet: an empty cell is just its name.
+      label: rims && state === 'unknown' ? name : t.fleet.cell(name, state),
       last: last !== null && cellIndex(last) === index,
     };
   });

@@ -56,6 +56,12 @@ export interface GameRules<S, M> {
    * on; a game where both may move at once (Ship Sink's placements) says so here.
    */
   mayMove?(state: S, player: Player): boolean;
+  /**
+   * Who makes `move` on `state`, where a move names its player (Ship Sink's placements, made at
+   * once by either): the server refuses a move made in the other player's name. Without it, the
+   * player to move.
+   */
+  moverOf?(state: S, move: M): Player;
   /** Present for a game of hidden information; such a game has no undo (it would peek). */
   hidden?: HiddenInformation<S, M>;
 }

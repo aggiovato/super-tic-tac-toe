@@ -76,6 +76,10 @@ export function mayMove(state: GameState, player: Player): boolean {
   return state.phase === 'firing' && state.turn === player && !waiting(state, player);
 }
 
+/** Who makes `move`: a placement names its player; a shot is fired by the player to move. */
+export const moverOf = (state: GameState, move: Move): Player =>
+  move.kind === 'place' ? move.player : state.turn;
+
 /**
  * Plays a move. A placement: refused once the game is over, when that player placed already (or
  * the firing began), or when the fleet breaks a rule (`fleetProblem`); the firing starts once both

@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
-import { BOARD_SIZE } from '@fleet/core';
-import { FleetStore } from '@fleet/state';
+import { BOARD_SIZE, shotsInOrder } from '@fleet/core';
+import { FleetStore, type LastShot } from '@fleet/state';
 import { Translator } from '@i18n';
 import { participantName } from '@layout';
 import type { Participant } from '@match';
@@ -11,7 +11,6 @@ import { afloat, cellName } from '../fleet-views';
 /** The result cascades through more characters than an ordinary announcement. */
 const RESULT_STEPS = 14;
 
-const glyph = (player: 'X' | 'O'): string => (player === 'X' ? 'x' : 'o');
 const word = (text: string, extra: Partial<FlapTile> = {}): FlapTile[] =>
   [...text].map((char) => ({ char, accent: false, ...extra }));
 
@@ -56,8 +55,9 @@ export class FleetStatus {
     if (view.phase === 'placing') return word(flap.fleet);
     const last = this.store.lastShot();
     if (!last) return word(flap.fire);
-    // Whose shot it was: the shooter's symbol leads, as the family's rows lead with the player.
-    const cell = [{ char: glyph(last.by), accent: false }, ...word(cellName(last.shot))];
+    // The cell and what the shot did; who fired is said in the sentence below (a symbol here read
+    // as a hit's cross).
+    const cell = word(cellName(last.shot));
     const { outcome } = last.shot;
     if (outcome === 'pending') return [...cell, { char: ' ', accent: false }, ...word('···')];
     const said = outcome === 'water' ? flap.water : outcome === 'hit' ? flap.hit : flap.sunk;
@@ -86,15 +86,26 @@ export class FleetStatus {
         ? f.aimingAfterMiss(this.rivalName(), cellName(last.shot), at)
         : f.aiming(at);
     }
-    if (!last) return this.store.personTurn() ? f.yourTurn : '';
-    const { shot } = last;
+    if (!last) return this.store.personTurn() ? f.yourTurn : f.rivalTurn(this.rivalName());
+    return this.shotSentence(last);
+  });
+
+  /** What the last shot did, said from this player's side. */
+  private shotSentence({ by, shot }: LastShot): string {
+    const f = this.t().fleet;
     const name = cellName(shot);
     if (shot.outcome === 'pending') return f.pending(name);
     const ship = shot.sunk ? f.ships[shot.sunk.ship] : '';
-    return last.by === this.store.me()
-      ? f.yourShot(name, shot.outcome, ship)
-      : f.rivalShot(this.rivalName(), name, shot.outcome, ship);
-  });
+    if (by === this.store.me()) return f.yourShot(name, shot.outcome, ship);
+    const rival = f.rivalShot(this.rivalName(), name, shot.outcome, ship);
+    // The turn came back: what this player's own last shot did is said again before the rival's.
+    const mine = shotsInOrder(this.store.view())
+      .filter((fired) => fired.by === this.store.me())
+      .at(-1);
+    return mine && shot.outcome === 'water' && mine.shot.outcome === 'water'
+      ? `${f.yourMiss(cellName(mine.shot))} ${rival}`
+      : rival;
+  }
 
   /** What screen readers hear: the sentence and the ships each side has afloat. */
   protected readonly status = computed((): string => {

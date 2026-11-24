@@ -1,0 +1,15 @@
+@if (room) {
+  <button
+    app-button="quiet"
+    size="small"
+    class="room"
+    popovertarget="online-room-popover"
+    [attr.aria-label]="t().online.roomState(allWell())"
+  >
+    <span class="dot" [class.well]="allWell()" aria-hidden="true"></span>
+    {{ t().online.room }}
+  </button>
+  <div id="online-room-popover" class="popover" popover>
+    <app-online-panel when="always" />
+  </div>
+}

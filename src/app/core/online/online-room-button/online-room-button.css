@@ -1,0 +1,40 @@
+/*
+ * The room button: a quiet masthead button with a presence dot, Chalk filled when all is well and
+ * a Seagrass ring otherwise, as the panel's own dots. Its popover drops the whole panel under the
+ * masthead, at the right edge; Escape or a tap outside closes it.
+ */
+:host {
+  display: contents;
+}
+
+.room {
+  gap: calc(var(--spacing) * 1.5);
+}
+
+.dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border: var(--border-line) solid var(--color-fg);
+  border-radius: var(--radius-pill);
+}
+
+.dot.well {
+  border-color: var(--color-fg-strong);
+  background: var(--color-fg-strong);
+}
+
+.popover {
+  position: fixed;
+  inset: 3.75rem var(--spacing-gutter) auto auto;
+  width: min(24rem, 100vw - 2 * var(--spacing-gutter));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+.popover::backdrop {
+  background: transparent;
+}

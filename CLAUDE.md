@@ -53,15 +53,17 @@ played against the computer or online, never by two people on one device. One PR
   move at once) and `GameRules.hidden` (`redact`, `replayView`): no undo, the computer told its
   symbol (`ComputerRequest.player`), and online the match mirrors this seat's view. Ship Sink's
   engine plays views as states (`viewer`, `placed`, pending shots). The other games unchanged.
-- 7d (`phase/7d-fleet-app`): the app. `FLEET_GAME` in `@catalog` (`modes: ['computer']`,
+- 7d (`phase/7d-fleet-app`, PR #35): the app. `FLEET_GAME` in `@catalog` (`modes: ['computer']`,
   `online: false` until 7e: Settings offer online only to games with `online`), `@fleet/session`
   (its Worker hands the computer `viewOf` its own side), `@fleet/state` (`FleetStore`: the person's
   `view`, `lastShot`, `aim`/`fire`), `@fleet/ui` (placement, the fleet quay, the departure row,
   how to play, preview), copy in both languages, `--color-hit` (Sand), no Undo row for hidden games,
   `e2e/fleet.spec.ts`.
-- 7e: online: the API redacts per seat, placements accepted in either order without a revision
-  check, a shot pending until the server answers; Workers tests that no message leaks a floating
-  ship, the two-browser e2e. Then the release (v0.7.0).
+- 7e (`phase/7e-fleet-online`): online. The API judges with `mayMove` and `moverOf` (placements
+  at once, on any revision, never in the other's name), stores the engine's move, and sends each
+  seat `redact`'s view; `OnlineRoom` keeps a simultaneous move pending until its `ack`; Ship Sink
+  `online: true` with its route; Workers tests that nothing a seat hears holds the rival fleet, a
+  two-browser e2e (each e2e device its own client address). Then the release (v0.7.0).
 
 Accounts (phase 8) add Neon Postgres (Hyperdrive, Drizzle) for verified history across devices.
 

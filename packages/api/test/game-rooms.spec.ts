@@ -129,12 +129,6 @@ describe('creating and joining a room', () => {
     expect((await call('/game-rooms', 'not json')).status).toBe(400);
   });
 
-  it('refuses a game of the catalog that is not played online', async () => {
-    const response = await call('/game-rooms', { gameId: 'fleet' });
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: 'not-online' });
-  });
-
   it('gives seat 1 once: a second guest finds the room full', async () => {
     const room = await createRoom();
     await joinRoom(room.roomId);
@@ -343,5 +337,74 @@ describe('limits and the heartbeat', () => {
     x.clear();
     expect(await runDurableObjectAlarm(stub)).toBe(true);
     await x.state((s) => !s.seats[1].online);
+  });
+});
+
+describe('a room of hidden information (Ship Sink)', () => {
+  const fleetA = [
+    { ship: 'carrier', row: 0, col: 0, orientation: 'h' },
+    { ship: 'battleship', row: 2, col: 0, orientation: 'v' },
+    { ship: 'cruiser', row: 2, col: 2, orientation: 'h' },
+    { ship: 'submarine', row: 6, col: 4, orientation: 'v' },
+    { ship: 'destroyer', row: 9, col: 7, orientation: 'h' },
+  ];
+  const fleetB = [
+    { ship: 'carrier', row: 9, col: 0, orientation: 'h' },
+    { ship: 'battleship', row: 0, col: 9, orientation: 'v' },
+    { ship: 'cruiser', row: 4, col: 3, orientation: 'h' },
+    { ship: 'submarine', row: 0, col: 5, orientation: 'v' },
+    { ship: 'destroyer', row: 6, col: 7, orientation: 'v' },
+  ];
+
+  it('takes both placements made at once and never sends a seat the rival fleet', async () => {
+    const { x, o } = await playing('fleet');
+    // Everything seat 1 (O) hears, as text: X's fleet must never be in it.
+    const heardByO: string[] = [];
+    o.socket.addEventListener('message', (event: MessageEvent) => {
+      heardByO.push(String(event.data));
+    });
+    // Both place on revision 0, at once: neither placement depends on the other.
+    x.send({
+      type: 'move',
+      commandId: 'px',
+      expectedRevision: 0,
+      move: { kind: 'place', player: 'X', fleet: fleetA },
+    });
+    o.send({
+      type: 'move',
+      commandId: 'po',
+      expectedRevision: 0,
+      move: { kind: 'place', player: 'O', fleet: fleetB },
+    });
+    const [px, po] = await Promise.all([x.reply('px'), o.reply('po')]);
+    expect([px.type, po.type]).toEqual(['ack', 'ack']);
+    const placed = await o.state((s) => s.revision === 2);
+    expect(placed.moves).toContainEqual({ kind: 'place', player: 'X' });
+    expect(placed.moves).toContainEqual({ kind: 'place', player: 'O', fleet: fleetB });
+
+    // X fires at J1, a cell of O's carrier: a hit, X fires again.
+    x.send({
+      type: 'move',
+      commandId: 's1',
+      expectedRevision: 2,
+      move: { kind: 'shot', row: 9, col: 0 },
+    });
+    expect(await x.reply('s1')).toMatchObject({ type: 'ack', revision: 3 });
+    const shot = await o.state((s) => s.revision === 3);
+    expect(shot.moves.at(-1)).toEqual({ kind: 'shot', row: 9, col: 0, outcome: 'hit' });
+    // O may not fire: it is still X's turn.
+    o.send({
+      type: 'move',
+      commandId: 's2',
+      expectedRevision: 3,
+      move: { kind: 'shot', row: 0, col: 0 },
+    });
+    expect(await o.reply('s2')).toMatchObject({ reason: 'not-your-turn' });
+
+    const leaks = heardByO.filter(
+      (text) => text.includes('"fleet"') && text.includes('"player":"X","fleet"'),
+    );
+    expect(leaks).toEqual([]);
+    expect(heardByO.join('')).not.toContain(JSON.stringify(fleetA[0]));
   });
 });
