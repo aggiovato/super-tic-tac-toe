@@ -10,6 +10,8 @@ import { participantName } from '@layout';
 const WORD_LENGTH = 5;
 /** The result cascades through more characters than an ordinary turn. */
 const RESULT_STEPS = 14;
+/** A box closed: the mover's tiles cascade again from blank, shorter than the result. */
+const BOX_STEPS = 10;
 
 const glyph = (player: Player): string => (player === 'X' ? 'x' : 'o');
 /** Two flap digits, capped at 99. */
@@ -59,13 +61,23 @@ export class DotsStatus {
       return word(flap.draw, true, RESULT_STEPS, WORD_LENGTH + 2);
     }
     // The boxes are the score: each player's symbol and count in their ink; the player who waits
-    // steps back, so the side at full strength is the one to move.
+    // steps back, so the side at full strength is the one to move. A box just closed replays the
+    // mover's side from blank, in their own ink (Apricot stays for the win).
     const { X, O } = this.store.boxes();
+    const last = this.store.lastLine();
     const side = (player: Player, boxes: number): FlapTile[] => {
       const ink = glyph(player) as 'x' | 'o';
       const dim = player !== turn;
-      const tiles = digits(boxes).map((char): FlapTile => ({ char, accent: false, ink, dim }));
-      const symbol: FlapTile = { char: ink, accent: false, ink, dim };
+      const closed = last !== null && last.closed > 0 && last.mover === player;
+      const cascade = closed ? { spin: boxes, steps: BOX_STEPS } : {};
+      const tiles = digits(boxes).map((char): FlapTile => ({
+        char,
+        accent: false,
+        ink,
+        dim,
+        ...cascade,
+      }));
+      const symbol: FlapTile = { char: ink, accent: false, ink, dim, ...cascade };
       return player === 'X' ? [symbol, ...tiles] : [...tiles, symbol];
     };
     return [...side('X', X), { char: ' ', accent: false }, ...side('O', O)];

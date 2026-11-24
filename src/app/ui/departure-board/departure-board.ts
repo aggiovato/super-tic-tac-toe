@@ -21,6 +21,7 @@ import type { FlapTile } from './flap-tile.model';
           [accent]="tile.accent"
           [index]="$index"
           [maxSteps]="tile.steps ?? 6"
+          [spin]="tile.spin ?? 0"
           [style.--flap-fg]="tile.ink ? 'var(--color-player-' + tile.ink + ')' : null"
           [style.--flap-mark]="tile.ink ? 'var(--color-player-' + tile.ink + ')' : null"
           [class.dim]="tile.dim"

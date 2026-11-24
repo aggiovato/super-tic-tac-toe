@@ -8,4 +8,6 @@ export interface FlapTile {
   readonly ink?: 'x' | 'o';
   /** Stepped back (the player who waits), so the other side of the row reads first. */
   readonly dim?: boolean;
+  /** Changing it replays the tile from blank, even onto the same character (a box closed). */
+  readonly spin?: number;
 }

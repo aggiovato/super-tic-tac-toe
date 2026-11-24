@@ -17,6 +17,32 @@ test.describe('classic tic tac toe', () => {
   const classicCell = (page: Page, at: number) =>
     page.getByRole('button', { name: new RegExp(`^Cell ${at + 1},`) });
 
+  test('a win ends as a Super 3T board closes: the large mark, then three flashes', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/classic');
+    for (const at of [0, 3, 1, 4, 2]) {
+      await classicCell(page, at).click();
+    }
+    await expect(status(page)).toHaveText('Game over. X wins.');
+    await expect(page.locator('app-classic-board app-closing-mark.mark-x')).toBeVisible();
+    const flashing = () =>
+      page.evaluate(() =>
+        document
+          .getAnimations()
+          .some(
+            (animation) =>
+              animation instanceof CSSAnimation && animation.animationName.endsWith('win-flash'),
+          ),
+      );
+    await expect.poll(flashing).toBe(true);
+    // A game restored already over shows its mark at once, without the show.
+    await page.reload();
+    await expect(page.locator('app-classic-board app-closing-mark.mark-x')).toBeVisible();
+    await expect(page.locator('app-classic-board app-closing-mark.animate')).toHaveCount(0);
+  });
+
   test('on wide screens the library folds to a rail and stays folded after a reload', async ({
     page,
     isMobile,

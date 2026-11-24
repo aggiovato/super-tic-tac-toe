@@ -94,6 +94,27 @@
     animation: page-in var(--duration-frame) var(--ease-out) both;
   }
 
+  /*
+   * A won game's one spectacle, the same in every game: three strong flashes in the accent on what
+   * won it (Super 3T's three boards, the classic board, the winner's boxes). Used by each board's
+   * overlay; the global `data-motion` rule below and each component's reduced-motion rule stop it.
+   */
+  @keyframes win-flash {
+    0%,
+    16%,
+    42%,
+    68%,
+    100% {
+      opacity: 0;
+    }
+
+    6%,
+    32%,
+    58% {
+      opacity: 1;
+    }
+  }
+
   @keyframes page-out {
     to {
       opacity: 0;
