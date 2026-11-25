@@ -7,7 +7,8 @@ name: CD
 #   pre        (main)       → super-3t-api-pre, app version alias pre bound to it, a smoke test
 #                              against it; then, if package.json's version has no tag yet (a release
 #                              PR was merged): super-3t-api, the same dist to production, and last
-#                              the tag vX.Y.Z with its GitHub Release
+#                              the tag vX.Y.Z with its GitHub Release; the portfolio is told
+#                              (portfolio.yml) once production has it
 #   production (by hand)    → Actions → CD → Run workflow: a CI run's dist to production, on the
 #                              hosts chosen, and the API from the chosen ref when ticked
 #
@@ -260,6 +261,17 @@ jobs:
       message: v${{ needs.release.outputs.version }}
       run-id: ${{ needs.plan.outputs.run-id }}
     secrets: inherit
+
+  # Once the new version is live, the portfolio's case study shows it (portfolio.yml has the rest).
+  portfolio:
+    name: Tell the portfolio
+    needs: [release, production-app]
+    if: needs.release.outputs.release == 'true'
+    uses: aggiovato/portfolio/.github/workflows/project-release.yml@main
+    with:
+      version: v${{ needs.release.outputs.version }}
+    secrets:
+      PORTFOLIO_TOKEN: ${{ secrets.PORTFOLIO_TOKEN }}
 
   tag:
     name: Tag and GitHub Release
