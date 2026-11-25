@@ -7,6 +7,8 @@ new version and date.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-25
+
 ### Added
 
 - A chat in online rooms: write to your rival without leaving the game. A button with a dot shows
@@ -246,7 +248,8 @@ First production release: Ultimate Tic Tac Toe for two people on one device.
 - Continuous integration with deploys to Netlify: a preview for every pull request and production
   for every version tag.
 
-[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/aggiovato/super-tic-tac-toe/compare/v0.4.0...v0.5.0
