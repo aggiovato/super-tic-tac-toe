@@ -1,0 +1,9 @@
+# What aggiovato/portfolio shows about Super 3T, sent when a new version reaches production
+# (cd.yml → portfolio). Only facts that do not depend on the language; the version and its day are
+# added by the workflow.
+# Contract: https://github.com/aggiovato/portfolio/blob/main/.github/workflows/project-release.yml
+slug: super-3t # the case study it updates
+status: active # active | completed | prototype | paused
+links:
+  demo: https://super-3t.aggiovato.workers.dev
+  code: https://github.com/aggiovato/super-tic-tac-toe
