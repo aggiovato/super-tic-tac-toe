@@ -1,5 +1,5 @@
 <app-backdrop />
-<div class="game">
+<div class="game" [class.with-chat]="online">
   <header class="masthead">
     <ng-content select="app-brand-title" />
     <!-- Online, the room's button before the page's own masthead actions; nothing on a local game. -->
@@ -14,6 +14,8 @@
     <ng-content select="[controls]" />
     <!-- Online, the room's panel only while something needs saying (the masthead button has it all). -->
     <app-online-panel when="needed" />
+    <!-- Online, the chat with the rival: a floating button on phones, in this column on wide screens. -->
+    <app-online-chat />
     <!-- A new version, offered in the flow under the save notice: never over the controls. -->
     <app-update-notice />
   </footer>

@@ -14,6 +14,7 @@
   --color-player-x: var(--ref-verdigris-200);
   --color-player-o: var(--ref-sand-200);
   --color-hit: var(--ref-sand-200);
+  --color-online: var(--ref-signal-300);
   --backdrop-opacity: 0; /* no texture behind the board */
   --color-glow: transparent;
 }

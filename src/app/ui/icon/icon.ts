@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 export type IconName =
-  'settings' | 'undo' | 'grid' | 'games' | 'fold' | 'close' | 'history' | 'check' | 'zoom';
+  'settings' | 'undo' | 'grid' | 'games' | 'fold' | 'close' | 'history' | 'check' | 'zoom' | 'chat';
 
 /** Authored line icons in one stroke weight; decorative, so hidden from assistive tech. */
 @Component({
@@ -52,6 +52,11 @@ export type IconName =
         }
         @case ('check') {
           <path d="m5 12 5 5 9-10" />
+        }
+        @case ('chat') {
+          <path
+            d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-4 3.5V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+          />
         }
         @case ('zoom') {
           <circle cx="10.5" cy="10.5" r="6.5" />

@@ -43,6 +43,9 @@
   --color-player-o: var(--ref-sand-300);
   /* Ship Sink: a hit on a ship, in Sand (the accent stays for the next shot and the win). */
   --color-hit: var(--ref-sand-300);
+  /* Online: connected, and everyone in the room (a filled dot; a ring or dashed ring otherwise). */
+  --color-online: var(--ref-signal-400);
+  --color-online-halo: color-mix(in srgb, var(--color-online) 28%, transparent);
 
   /* Atmosphere: light and shade (torn strips come from artwork, see Backdrop). Decorative only; never carries information. */
   --color-glow: color-mix(in srgb, var(--ref-raven-700) 85%, transparent); /* soft light */

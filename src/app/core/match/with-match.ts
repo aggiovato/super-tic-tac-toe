@@ -97,6 +97,7 @@ function initialMatch<S, M, R>(): MatchState<S, R> {
     draws: 0,
     scored: false,
     seat: null,
+    awaitingRival: false,
   };
 }
 
@@ -112,7 +113,7 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
     withState<MatchState<S, R>>(() => initialMatch<S, M, R>()),
     // NgRx widens a generic state slice to its constraint: `position` reads the game back as S.
     withComputed(({ game }) => ({ position: computed(() => game() as S) })),
-    withComputed(({ game, position, xPlayer, mode, seat }) => {
+    withComputed(({ game, position, xPlayer, mode, seat, awaitingRival }) => {
       const toMove = computed((): Participant =>
         game().turn === 'X' ? xPlayer() : other(xPlayer()),
       );
@@ -129,10 +130,15 @@ function withMatchPlay<S extends MatchGame<M>, M, R>(rules: GameRules<S, M>) {
       };
       /** The computer moves now (the person may too, where both move at once). */
       const computerTurn = computed(() => mode() === 'computer' && mayMove(COMPUTER));
-      /** Online, this device cannot play: the other player's turn, or a move awaited. */
+      /**
+       * Online, this device cannot play: the other player's turn, a move awaited, or the other
+       * player not in the room yet.
+       */
       const remoteTurn = computed(() => {
         const own = seat();
-        return mode() === 'online' && !isOver() && (own === null || !mayMove(own));
+        return (
+          mode() === 'online' && !isOver() && (awaitingRival() || own === null || !mayMove(own))
+        );
       });
       /** The person (or, between two people, whoever is to move) may play now. */
       const personTurn = computed(() => {

@@ -43,7 +43,7 @@ the semantic layer's values point at its primitives.
 | Group  | Tokens                                                                                                                                                                                          |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Colour | `surface`, `surface-panel`, `surface-raised`, `surface-done`, `fg-disabled`, `glow`, `shade`, `fg`, `fg-strong`, `line`, `line-strong`, `accent`, `on-accent`, `focus`                          |
-| Game   | `mark-x`, `mark-o`, `target`, `last-move`, `preview`, `win`, `spark`                                                                                                                            |
+| Game   | `mark-x`, `mark-o`, `target`, `last-move`, `preview`, `win`, `spark`, `hit`, `online` (+ `online-halo`)                                                                                         |
 | Type   | `caption` 14, `body` 18, `title` 24, `score` 36, `flap` fluid 36–60 (each with its line height)                                                                                                 |
 | Radius | `cell` < `tile` < `panel` < `control` < `pill`: smaller parts get smaller radii                                                                                                                 |
 | Border | `--border-hairline` 1, `--border-line` 2, `--border-emphasis` 3 (forced board, focus ring)                                                                                                      |

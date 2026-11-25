@@ -35,6 +35,14 @@ export class RoomCredentialsStore {
     }
   }
 
+  /** Remembers the last chat message seen in `roomId` on this device; nothing without a seat. */
+  setReadChat(roomId: string, id: number): void {
+    const saved = this.get(roomId);
+    if (saved && (saved.readChat ?? 0) < id) {
+      this.write({ ...this.read(), [roomId]: { ...saved, readChat: id } });
+    }
+  }
+
   private read(): Record<string, RoomCredentials> {
     try {
       const raw = this.storage?.getItem(KEY);

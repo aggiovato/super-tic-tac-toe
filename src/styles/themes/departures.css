@@ -18,6 +18,9 @@
   --ref-sand-300: #d9b98f; /* Apricot muted to sand; 8.0:1 on raven-800 */
   --ref-verdigris-200: #9adccd; /* high contrast */
   --ref-sand-200: #ecd0a6; /* high contrast */
+  /* Presence: a classic signal green, only for "connected" in an online room. */
+  --ref-signal-400: #4fdc86; /* 10.2:1 on raven-800 */
+  --ref-signal-300: #7cf0a8; /* high contrast */
 
   --ref-family-sans: 'Barlow Semi Condensed', ui-sans-serif, system-ui, sans-serif;
 }

@@ -25,6 +25,7 @@ class FakeRemote extends RemoteSeat {
       draws: 0,
       scored: false,
       you: 0,
+      rivalIn: true,
     };
     this.server.set({ ...base, ...changes });
     this.game.set(this.server());
@@ -145,5 +146,23 @@ describe('an online classic match', () => {
     expect(store.id()).toBe('online-2');
     expect(store.game().moves).toEqual([]);
     expect(store.toMove()).toBe(1);
+  });
+
+  it('takes no move while the room waits for the other player, and plays once they are in', () => {
+    const { store, remote } = open();
+    remote.serve({ rivalIn: false });
+    TestBed.tick();
+    expect(store.awaitingRival()).toBe(true);
+    expect(store.personTurn()).toBe(false);
+    expect(store.legal()).toEqual([]);
+    store.play({ cell: 4 });
+    expect(remote.sent).toEqual([]);
+    expect(store.game().moves).toEqual([]);
+
+    remote.serve({ rivalIn: true });
+    TestBed.tick();
+    expect(store.personTurn()).toBe(true);
+    store.play({ cell: 4 });
+    expect(remote.sent).toEqual([{ cell: 4 }]);
   });
 });

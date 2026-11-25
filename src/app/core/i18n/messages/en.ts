@@ -286,6 +286,7 @@ export const en: Messages = {
     shuffle: 'Shuffle',
     rotate: 'Turn',
     confirmFleet: 'Confirm fleet',
+    awaitingRival: 'Arrange your fleet: you can confirm it once your rival is in.',
     selected: (ship) => `${ship[0]?.toUpperCase() ?? ''}${ship.slice(1)} selected`,
     howToPlay: {
       title: 'How to play',
@@ -298,10 +299,29 @@ export const en: Messages = {
     },
   },
   games: { 'super-3t': 'Super 3T', classic: 'Classic', dots: 'Boxes', fleet: 'Ship Sink' },
+  chat: {
+    open: (unread) => (unread > 0 ? `Chat, ${unread} unread` : 'Chat'),
+    title: 'Chat',
+    close: 'Close',
+    empty: 'No messages yet. Write to your rival.',
+    placeholder: 'Write a message',
+    send: 'Send',
+    left: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+    sending: 'Sending…',
+    refused: (reason) =>
+      reason === 'too-fast'
+        ? 'Not sent: too many in a row.'
+        : 'Not sent: that message will not do.',
+    retry: 'Retry',
+    discard: 'Discard',
+    you: 'You',
+    rival: 'Rival',
+    incoming: (text) => `Rival: ${text}`,
+  },
   online: {
     title: 'Online',
     room: 'Room',
-    roomState: (allWell) => (allWell ? 'Room: all well' : 'Room: check the connection'),
+    roomState: (note) => (note === null ? 'Room: all well' : `Room: ${note}`),
     invite: 'Invite someone online',
     inviteHint: 'Create a private room and share its link: the game is played on two devices.',
     creating: 'Creating the room…',

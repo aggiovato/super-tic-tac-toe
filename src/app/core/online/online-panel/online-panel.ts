@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Translator } from '@i18n';
 import { Button } from '@ui';
 import { ONLINE_GAME, OnlineRoom } from '../online-room';
+import { roomNote } from '../room-note';
 
 /** How long "Link copied" stays on the button. */
 const COPIED_MS = 2000;
@@ -67,32 +68,9 @@ export class OnlinePanel {
   });
 
   /** One sentence when something needs saying; null while all is well. */
-  protected readonly note = computed((): string | null => {
-    const room = this.room;
-    if (!room) {
-      return null;
-    }
-    const t = this.t().online;
-    const problem = room.problem();
-    if (problem) {
-      return t.problems[problem];
-    }
-    if (room.left()) {
-      return t.left;
-    }
-    const connection = room.connection();
-    if (connection === 'reconnecting') {
-      return t.reconnecting;
-    }
-    if (connection !== 'open') {
-      return t.connecting;
-    }
-    const rival = room.rival();
-    if (rival && !rival.joined) {
-      return t.waitingHint;
-    }
-    return rival && !rival.online ? t.rivalAway : null;
-  });
+  protected readonly note = computed(() =>
+    this.room ? roomNote(this.room, this.t().online) : null,
+  );
 
   /** Whether the panel shows: always, or only while there is something to say. */
   protected readonly shown = computed(() => this.when() === 'always' || this.note() !== null);

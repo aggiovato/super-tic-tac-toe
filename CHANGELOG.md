@@ -7,6 +7,14 @@ new version and date.
 
 ## [Unreleased]
 
+### Added
+
+- A chat in online rooms: write to your rival without leaving the game. A button with a dot shows
+  messages waiting unread, a new one is glimpsed over it for a few seconds, and the conversation
+  opens as a tall ticket (the whole screen on phones). Messages written while the connection is
+  lost go once it comes back; the room keeps the talk for its lifetime, and each device remembers
+  what it has read.
+
 ## [0.7.0] - 2026-11-24
 
 ### Added

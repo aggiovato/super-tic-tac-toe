@@ -62,6 +62,7 @@ export function matchRemote<S extends MatchGame<M>, M, R>(
       variant: remote.variant,
       xPlayer: remote.xPlayer,
       seat: remote.you,
+      awaitingRival: !remote.rivalIn,
       wins,
       draws,
       scored: game.status.kind !== 'in-progress',

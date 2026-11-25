@@ -5,7 +5,7 @@ import { Backdrop, Button, Icon } from '@ui';
 import { Preferences } from '@preferences';
 import { GameLibrary } from '@library';
 import { UpdateNotice } from '@pwa';
-import { OnlinePanel, OnlineRoomButton } from '@online';
+import { OnlineChat, OnlinePanel, OnlineRoom, OnlineRoomButton } from '@online';
 
 /**
  * The page every game shares: the masthead (title and settings), the status row, the board in the
@@ -20,6 +20,7 @@ import { OnlinePanel, OnlineRoomButton } from '@online';
     Button,
     Icon,
     GameLibrary,
+    OnlineChat,
     OnlinePanel,
     OnlineRoomButton,
     RouterOutlet,
@@ -32,6 +33,8 @@ export class GameLayout {
   protected readonly t = inject(Translator).t;
   private readonly preferences = inject(Preferences);
   protected readonly shown = this.preferences.libraryShown;
+  /** An online game: the chat's button floats over the page on phones, which keeps room for it. */
+  protected readonly online = inject(OnlineRoom, { optional: true }) !== null;
 
   protected toggle(): void {
     this.preferences.setLibraryShown(!this.shown());
