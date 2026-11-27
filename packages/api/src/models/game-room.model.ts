@@ -1,5 +1,5 @@
 import type { GameId } from '@catalog';
-import type { GameRoomResult, GameRoomScore, JoinRefusal, Seat } from '@protocol';
+import type { ChatMessage, GameRoomResult, GameRoomScore, JoinRefusal, Seat } from '@protocol';
 
 export type { GameRoomResult, GameRoomScore, Seat };
 
@@ -29,6 +29,15 @@ export interface MoveRow {
 export type JoinOutcome =
   | { readonly ok: true; readonly seat: Seat; readonly token: string }
   | { readonly ok: false; readonly reason: JoinRefusal };
+
+/**
+ * What saying something came to: the message kept (`fresh` when stored now, so everyone gets it),
+ * refused past the chat budget, or null in a room that no longer exists.
+ */
+export type SayOutcome =
+  | { readonly message: ChatMessage; readonly fresh: boolean }
+  | { readonly refused: 'too-fast' }
+  | null;
 
 /** A chat message before the room stores it (the room gives it its order and time). */
 export interface NewChatMessage {

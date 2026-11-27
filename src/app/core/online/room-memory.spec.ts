@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { RoomCredentialsStore } from './room-credentials';
+import { RoomMemory } from './room-memory';
 
 describe('the seats this device holds', () => {
   beforeEach(() => localStorage.clear());
 
   it('remembers the last chat message read in a room, only ever forward', () => {
-    const store = TestBed.inject(RoomCredentialsStore);
+    const store = TestBed.inject(RoomMemory);
     store.save('room-1', { gameId: 'classic', seat: 0, token: 't', savedAt: Date.now() });
     store.setReadChat('room-1', 4);
     store.setReadChat('room-1', 2);

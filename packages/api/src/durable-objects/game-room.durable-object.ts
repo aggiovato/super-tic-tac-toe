@@ -165,39 +165,37 @@ export class GameRoom extends DurableObject<Env> {
   }
 
   /**
-   * A chat message: a retry of one already stored goes back to its writer only, without spending
-   * the chat budget (a reconnection resends everything pending); a new one, within the socket's
-   * chat budget, is stored and sent to every player (its writer too, which tells them it arrived).
-   * One past the budget is refused by its `clientId`.
+   * A chat message, as the service decides it (a retry back to its writer without spending the
+   * socket's chat budget, a new one within it to everyone, one past it refused by its `clientId`).
    */
   private async say(socket: WebSocket, seat: Seat, message: SayMessage): Promise<void> {
-    const retried = this.rooms.said(seat, message.clientId);
-    if (retried) {
-      this.send(socket, { type: 'said', message: retried });
+    const outcome = this.rooms.say(seat, message, () =>
+      this.chatBudgetOf(socket).spend(Date.now()),
+    );
+    if (!outcome) {
       return;
     }
+    if ('refused' in outcome) {
+      this.send(socket, { type: 'unsaid', clientId: message.clientId, reason: outcome.refused });
+      return;
+    }
+    if (!outcome.fresh) {
+      this.send(socket, { type: 'said', message: outcome.message });
+      return;
+    }
+    await this.schedule();
+    for (const open of this.sockets()) {
+      this.send(open, { type: 'said', message: outcome.message });
+    }
+  }
+
+  private chatBudgetOf(socket: WebSocket): ChatBudget {
     let budget = this.chatBudgets.get(socket);
     if (!budget) {
       budget = new ChatBudget(Date.now());
       this.chatBudgets.set(socket, budget);
     }
-    if (!budget.spend(Date.now())) {
-      this.send(socket, { type: 'unsaid', clientId: message.clientId, reason: 'too-fast' });
-      return;
-    }
-    const outcome = this.rooms.say(seat, message);
-    if (!outcome) {
-      return;
-    }
-    const { message: said, fresh } = outcome;
-    if (!fresh) {
-      this.send(socket, { type: 'said', message: said });
-      return;
-    }
-    await this.schedule();
-    for (const open of this.sockets()) {
-      this.send(open, { type: 'said', message: said });
-    }
+    return budget;
   }
 
   /** Answers the sender of a move; true when it was accepted. */

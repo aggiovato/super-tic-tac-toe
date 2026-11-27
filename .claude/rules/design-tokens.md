@@ -33,7 +33,7 @@ the semantic layer's values point at its primitives.
   that belong to one component live (e.g. `--thumbnail-size`).
 - Spacing uses Tailwind's 4 px `--spacing` multiplier (`p-4`, `calc(var(--spacing) * 2)`) or a
   semantic space (`gutter`, `stack`, `stack-tight`, `stack-loose`, `board-gap`, `cell-gap`,
-  `panel-pad`).
+  `panel-pad`, `fab`: a floating button and the room the page keeps for it).
 - Name tokens by role, not by value or hue (`--color-target`, not `--color-orange`).
 - Add a semantic token only when a role is used in more than one place or a design could
   reasonably change it on its own. Otherwise keep a component token.

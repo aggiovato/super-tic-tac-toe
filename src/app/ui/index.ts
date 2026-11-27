@@ -17,6 +17,7 @@ export {
   type FlipOptions,
 } from './dom/flip';
 export { injectMediaQuery } from './dom/media-query';
+export { NARROW_LAYOUT, WIDE_LAYOUT } from './dom/layout-queries';
 export { swipeToClose } from './dom/swipe-to-close';
 export { trackTear } from './dom/ticket-tear';
 export { Icon, type IconName } from './icon/icon';

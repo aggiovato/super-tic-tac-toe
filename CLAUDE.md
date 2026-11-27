@@ -35,41 +35,14 @@ three-level opponent. Later deliveries: offline PWA, private online rooms and ac
 
 ## Current phase
 
-**Phase 8 · Chat: in progress (8b and 8c together, PR #41).** Phase 7 shipped as v0.7.0: Ship Sink (rule `fleet`), the
-first game of hidden information, against the computer and online (each seat sent only its view),
-plus whose-turn tags, the room button and full-width boards on phones for every game.
-
-Phase 8 adds a chat between the two players of an online room (v0.8.0). Free text, unmoderated,
-plain text only. One PR each, each branched from `main` once the previous one is merged:
-
-- 8a ✓ (`phase/8a-chat-api`, PR #40, merged): the protocol (`say`, `said`, `chat` in `@protocol`, `CHAT_MAX`,
-  `CHAT_KEPT`) and the API: the room's `chat` table on both repositories, `GameRoomService.say`,
-  the history sent on connecting, a chat budget per socket; tests in the Workers runtime.
-- 8b (`phase/8b-chat-client`): the client. `OnlineRoom.chat` (`RoomChat`) keeps the conversation:
-  this player's messages shown at once and replaced by the room's copy on `said` (by client id),
-  resent when the socket opens, marked when `unsaid` (retry or discard); unread are the rival's
-  messages after the last one read, remembered per room on this device (`readChat`).
-- 8c (same branch and PR as 8b): the UI, `OnlineChat` in `@online`, mounted by the game layout. A chat FAB on online rooms (above the controls on phones, the page's corner on wide
-  screens) with an Apricot unread dot (a second, recorded exception to the One Departure Rule); an
-  incoming message previewed as a ticket bubble for about 4 s; the chat as a full-screen ticket on
-  phones and a tall one on desktop; copy, DESIGN.md, an impeccable pass, a two-browser e2e. Then
-  the release (v0.8.0).
-
-Improvements recorded for later (from the review of the chat's responsibilities, PR #41):
-
-- The retry policy is split: `GameRoom.say` looks a message up (`said`) to spare the chat budget,
-  then `GameRoomService.say` looks it up again (its `!fresh` branch is nearly dead). Let the service
-  decide in one step, taking the budget as a permission (`say(seat, message, spend)`).
-- One chat text rule for both ends: a pure `cleanChatText` in `@protocol` used by `parse.ts` and
-  `RoomChat` (today the client only trims, so a text of invisible characters comes back `unsaid`).
-- `RoomCredentialsStore` also keeps `readChat`, which is no credential: rename it (`RoomMemory`) or
-  keep what was read apart.
-- `OnlineChat` decides what is a new message; an arrivals signal in `RoomChat` would leave the
-  component only the glimpse's timer.
-- `GameLayout` reserves the chat button's `3.25rem` by hand (the chat's `--fab`): share it as a token.
-- The narrow/wide breakpoint is repeated in CSS (layout, Ship Sink) and TS (`NARROW` in
-  `OnlineRoomButton`): one source (a custom media or a token) for both.
-- The layers table below lacks `@online` among what `@layout` may import (`DEPENDS` allows it).
+**Phase 9 · Accounts: next, not started.** Phase 8 shipped as v0.8.0: a chat between the two
+players of an online room (free text, unmoderated, plain text only): `say`/`said`/`unsaid`/`chat` in
+`@protocol` with one text rule for both ends (`cleanChatText`), the room's `chat` table and a chat
+budget per socket in the API (`GameRoomService.say` decides a retry, a new message or a refusal in
+one step), `RoomChat` in `@online` (messages shown at once, resent on reconnecting, unread per room
+on this device in `RoomMemory`), and `OnlineChat`: a FAB with an Apricot unread dot (the second
+recorded exception to the One Departure Rule), a glimpse at the top for about 4 s, and the chat as a
+tall ticket. Nobody moves in a room before the rival is in.
 
 Accounts (phase 9) add Neon Postgres (Hyperdrive, Drizzle) for verified history across devices.
 
@@ -83,7 +56,7 @@ Accounts (phase 9) add Neon Postgres (Hyperdrive, Drizzle) for verified history 
 | 5 PWA beta ✓  | Reopened offline, someone plays all three levels; an update keeps earlier games.      |
 | 6 Online ✓    | Two browsers converge after playing, losing the connection and retrying; one result.  |
 | 7 Ship Sink ✓ | Against each level and online, no message or view locates a rival ship still afloat.  |
-| 8 Chat        | Two browsers chat in a room; a reconnection keeps the talk; unread shows on the FAB.  |
+| 8 Chat ✓      | Two browsers chat in a room; a reconnection keeps the talk; unread shows on the FAB.  |
 | 9 Accounts    | One account sees verified results on two devices; local play needs no sign-in.        |
 
 Update this table when a phase closes.
@@ -193,24 +166,24 @@ Angular app, grouped as `core/`
 (app-wide infrastructure), `layout/`, `features/` (what the player uses, the games among them) and
 `ui/` (shared components).
 
-| Path                                       | Responsibility                                                   | May import                                             |
-| ------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------ |
-| `packages/game-core/src/tictac/`           | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                  |
-| `packages/game-core/src/catalog/`          | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                          |
-| `packages/game-core/src/protocol/`         | The online protocol's types, shared with the API Worker          | `catalog`                                              |
-| `packages/game-core/src/<game>/core/`      | Types, rules, replay. Deterministic.                             | `tictac`                                               |
-| `packages/game-core/src/<game>/ai/`        | Evaluation, search, levels, Worker                               | `core`                                                 |
-| `packages/game-core/src/<game>/challenge/` | Tactical challenges: positions and judging                       | `core`, `ai`                                           |
-| `src/app/features/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                   |
-| `src/app/features/games/<game>/state/`     | The game's store (SignalStore), provided on the route            | `core`, `session`                                      |
-| `src/app/features/games/<game>/ui/`        | Board, mini board, score, controls                               | `state`, `core` types                                  |
-| `src/app/core/match/`                      | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`          |
-| `src/app/layout/`                          | Layout, masthead, score, actions, save notice, settings          | `match`, `library`, `pwa`, `ui`, `preferences`, `i18n` |
-| `src/app/features/library/`                | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `ui`, `preferences`, `i18n`        |
-| `src/app/features/history/`                | A game's history page                                            | `layout`, `pwa`, `catalog`, `storage`, `ui`, `i18n`    |
-| `src/app/core/online/`                     | Online play: rooms, the route's `OnlineRoom`, its panel          | `catalog`, `protocol`, `match`, `ui`, `i18n`           |
-| `src/app/core/pwa/`                        | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                  |
-| `src/app/core/storage/`                    | Game and series records, IndexedDB and memory                    | `preferences` types                                    |
+| Path                                       | Responsibility                                                   | May import                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `packages/game-core/src/tictac/`           | Shared by the family: players, lines, a 3×3                      | Local TypeScript only                                            |
+| `packages/game-core/src/catalog/`          | The games as data and engines: ids, rules, variants              | Each game's `core`, `@tictac`                                    |
+| `packages/game-core/src/protocol/`         | The online protocol's types, shared with the API Worker          | `catalog`                                                        |
+| `packages/game-core/src/<game>/core/`      | Types, rules, replay. Deterministic.                             | `tictac`                                                         |
+| `packages/game-core/src/<game>/ai/`        | Evaluation, search, levels, Worker                               | `core`                                                           |
+| `packages/game-core/src/<game>/challenge/` | Tactical challenges: positions and judging                       | `core`, `ai`                                                     |
+| `src/app/features/games/<game>/session/`   | Orchestrates commands, engine, storage, Worker                   | `core`, `ai`, `challenge`, `storage`                             |
+| `src/app/features/games/<game>/state/`     | The game's store (SignalStore), provided on the route            | `core`, `session`                                                |
+| `src/app/features/games/<game>/ui/`        | Board, mini board, score, controls                               | `state`, `core` types                                            |
+| `src/app/core/match/`                      | `withMatch`, sessions, computer, `ACTIVE_GAME`                   | `tictac`, `catalog`, `preferences`, `storage`                    |
+| `src/app/layout/`                          | Layout, masthead, score, actions, save notice, settings          | `match`, `online`, `library`, `pwa`, `ui`, `preferences`, `i18n` |
+| `src/app/features/library/`                | The game library (aside, games dialog, previews token)           | `match`, `catalog`, `ui`, `preferences`, `i18n`                  |
+| `src/app/features/history/`                | A game's history page                                            | `layout`, `pwa`, `catalog`, `storage`, `ui`, `i18n`              |
+| `src/app/core/online/`                     | Online play: rooms, the route's `OnlineRoom`, its panel          | `catalog`, `protocol`, `match`, `ui`, `i18n`                     |
+| `src/app/core/pwa/`                        | New versions of the installed app (`AppUpdates`, `UpdateNotice`) | `match`, `ui`, `i18n`                                            |
+| `src/app/core/storage/`                    | Game and series records, IndexedDB and memory                    | `preferences` types                                              |
 
 The "May import" column is enforced: `DEPENDS` in `scripts/check-architecture.mjs` (part of `npm run
 lint`) is its source of truth for production code, together with no cycles between blocks and a
@@ -283,7 +256,7 @@ Project skills: `angular-developer` and `angular-new-app` in `.claude/skills/` (
 ## Product and design
 
 - `PRODUCT.md`: users, purpose, brand commitments and principles (written with impeccable).
-- `.impeccable/surfaces/src-app-game-ui-game-page-ts.md`: the game screen's direction contract
+- `.impeccable/surfaces/src-app-games-super-3t-ui-game-page-ts.md`: the game screen's direction contract
   (departure board). Read it before changing the game UI; it is development-only and never goes
   into source or the bundle.
 - `DESIGN.md`: written at the end of phase 2 from the built UI.

@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import {
-  CHAT_MAX,
+  cleanChatText,
   type ChatMessage,
   type ChatRefusal,
   type ChatServerMessage,
@@ -25,13 +25,6 @@ export interface RoomChatLink {
   readUpTo(): number;
   saveReadUpTo(id: number): void;
   now(): number;
-}
-
-/** The text as the room will keep it, or null when there is nothing (or too much) to say. */
-export function chatText(text: string): string | null {
-  const clean = text.trim();
-  const length = [...clean].length;
-  return length === 0 || length > CHAT_MAX ? null : clean;
 }
 
 /**
@@ -76,19 +69,16 @@ export class RoomChat {
     return this.kept().filter((message) => message.seat !== you && message.id > read).length;
   });
 
-  /** The rival's newest message, for a glimpse of it as it comes in; null before any. */
-  readonly latestFromRival = computed((): ChatMessage | null => {
-    const you = this.link.you();
-    return (
-      this.kept()
-        .filter((message) => message.seat !== you)
-        .at(-1) ?? null
-    );
-  });
+  /**
+   * The rival's message that just came in (one `said`, never the history sent on connecting), for a
+   * glimpse of it; a later one replaces it.
+   */
+  private readonly arrived = signal<ChatMessage | null>(null);
+  readonly arrival = this.arrived.asReadonly();
 
   /** Sends a message, shown at once; false when there is nothing (or too much) to say. */
   say(text: string): boolean {
-    const clean = chatText(text);
+    const clean = cleanChatText(text);
     if (clean === null) return false;
     const message: Outgoing = { clientId: crypto.randomUUID(), text: clean, at: this.link.now() };
     this.outbox.update((outbox) => [...outbox, message]);
@@ -140,14 +130,18 @@ export class RoomChat {
         this.kept.set(message.messages);
         this.dropArrived(message.messages);
         return;
-      case 'said':
-        this.kept.update((kept) =>
-          kept.some((known) => known.id === message.message.id)
-            ? kept
-            : [...kept, message.message].sort((a, b) => a.id - b.id),
-        );
-        this.dropArrived([message.message]);
+      case 'said': {
+        const said = message.message;
+        if (this.kept().some((known) => known.id === said.id)) {
+          return;
+        }
+        this.kept.update((kept) => [...kept, said].sort((a, b) => a.id - b.id));
+        if (said.seat !== this.link.you()) {
+          this.arrived.set(said);
+        }
+        this.dropArrived([said]);
         return;
+      }
       case 'unsaid':
         this.outbox.update((outbox) =>
           outbox.map((outgoing) =>

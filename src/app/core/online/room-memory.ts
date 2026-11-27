@@ -6,12 +6,13 @@ const KEY = 'super3t.online-rooms';
 const KEEP_MS = 8 * 24 * 60 * 60 * 1000;
 
 /**
- * The seats this device holds, by room id, in local storage: reopening an invitation link takes
+ * What this device remembers of each room it plays in, by room id, in local storage: its seat (the
+ * token, the only proof; whether it left) and the last chat message it read. The seats: reopening an invitation link takes
  * back the same seat instead of asking for a new one. Without storage (private mode) it keeps them
  * for this visit only.
  */
 @Injectable({ providedIn: 'root' })
-export class RoomCredentialsStore {
+export class RoomMemory {
   private readonly storage = inject(DOCUMENT).defaultView?.localStorage ?? null;
   private memory: Record<string, RoomCredentials> = {};
 

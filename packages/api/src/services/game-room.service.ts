@@ -8,6 +8,7 @@ import type {
   SayMessage,
   GameRoomSetup,
   GameRoomState,
+  SayOutcome,
   Seat,
 } from '../models';
 import type { GameRoomRepository } from '../repositories';
@@ -93,26 +94,28 @@ export class GameRoomService {
     return { type: 'ack', commandId, revision: moves.length + 1 };
   }
 
-  /** The message `seat` already stored under its own `clientId`: a retry, if it is one. */
-  said(seat: Seat, clientId: string): ChatMessage | null {
-    return this.exists() ? this.repository.chatBy(seat, clientId) : null;
-  }
-
   /**
-   * A chat message from `seat`, stored once: a retry of the same `clientId` (that seat's own) gets
-   * the message stored the first time (`fresh` false, so it is not sent to everyone again). Keeps
-   * the room alive. Null in a room that no longer exists (expired while a socket was closing).
+   * A chat message from `seat`, decided in one step:
+   * - a retry of the same `clientId` (that seat's own) gets the message stored the first time
+   *   (`fresh` false: back to its writer only), spending nothing, so a reconnection can resend
+   *   everything still pending;
+   * - a new one is stored only if `spend()` allows it (the socket's chat budget), else refused
+   *   `too-fast`; storing it keeps the room alive;
+   * - null in a room that no longer exists (expired while a socket was closing).
    *
    * A retry of a message so old that it left the kept conversation is stored again: a client only
    * retries what it has not seen arrive, which is never that far behind.
    */
-  say(seat: Seat, { clientId, text }: SayMessage): { message: ChatMessage; fresh: boolean } | null {
+  say(seat: Seat, { clientId, text }: SayMessage, spend: () => boolean = () => true): SayOutcome {
     if (!this.exists()) {
       return null;
     }
     const stored = this.repository.chatBy(seat, clientId);
     if (stored) {
       return { message: stored, fresh: false };
+    }
+    if (!spend()) {
+      return { refused: 'too-fast' };
     }
     const now = this.now();
     const message = this.repository.addChat({ clientId, seat, text }, now, CHAT_KEPT);

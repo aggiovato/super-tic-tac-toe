@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MoveMessage } from '../../src/models';
+import type { ChatMessage, MoveMessage, SayOutcome } from '../../src/models';
 import { MemoryGameRoomRepository } from '../../src/repositories';
 import { GAME_ROOM_TTL_MS, GameRoomService } from '../../src/services/game-room.service';
 
@@ -89,32 +89,52 @@ describe('the room service', () => {
   });
 });
 
+/** A message the room kept, or a failure naming what came instead. */
+function kept(outcome: SayOutcome): ChatMessage {
+  if (!outcome || 'refused' in outcome) throw new Error(`not kept: ${JSON.stringify(outcome)}`);
+  return outcome.message;
+}
+
 describe('the chat of a room', () => {
   it('stores a message once, a retry getting the same one back, and keeps the room alive', async () => {
     const { service, later } = await room();
     const expiry = service.expiresAt();
     later(1_000);
-    const said = service.say(0, { type: 'say', clientId: 'm1', text: 'hola' });
-    if (!said) throw new Error('not said');
-    expect(said).toEqual({
-      fresh: true,
-      message: { id: said.message.id, clientId: 'm1', seat: 0, text: 'hola', at: 2_000 },
-    });
+    const said = kept(service.say(0, { type: 'say', clientId: 'm1', text: 'hola' }));
+    expect(said).toEqual({ id: said.id, clientId: 'm1', seat: 0, text: 'hola', at: 2_000 });
     expect(service.expiresAt()).toBe((expiry ?? 0) + 1_000);
     expect(service.say(0, { type: 'say', clientId: 'm1', text: 'hola' })).toEqual({
       fresh: false,
-      message: said.message,
+      message: said,
     });
-    expect(service.chat()).toEqual([said.message]);
+    expect(service.chat()).toEqual([said]);
+  });
+
+  it('spends the budget on new messages only: a retry always gets through', async () => {
+    const { service } = await room();
+    let left = 1;
+    const spend = () => left-- > 0;
+    const first = kept(service.say(0, { type: 'say', clientId: 'a', text: 'uno' }, spend));
+    expect(service.say(0, { type: 'say', clientId: 'b', text: 'dos' }, spend)).toEqual({
+      refused: 'too-fast',
+    });
+    // The budget is spent, yet resending the first (a reconnection) gets it back.
+    expect(service.say(0, { type: 'say', clientId: 'a', text: 'uno' }, spend)).toEqual({
+      fresh: false,
+      message: first,
+    });
+    expect(service.chat()).toEqual([first]);
   });
 
   it("never lets one seat reach the other's message through its id", async () => {
     const { service } = await room();
-    const mine = service.say(0, { type: 'say', clientId: 'same', text: 'del anfitrión' });
+    const mine = kept(service.say(0, { type: 'say', clientId: 'same', text: 'del anfitrión' }));
     const theirs = service.say(1, { type: 'say', clientId: 'same', text: 'del invitado' });
     expect(theirs).toMatchObject({ fresh: true, message: { seat: 1, text: 'del invitado' } });
-    expect(service.said(1, 'same')?.text).toBe('del invitado');
-    expect(service.said(0, 'same')).toEqual(mine?.message);
+    expect(service.say(0, { type: 'say', clientId: 'same', text: 'x' })).toEqual({
+      fresh: false,
+      message: mine,
+    });
   });
 
   it('keeps nothing once the room is gone', async () => {
@@ -122,7 +142,6 @@ describe('the chat of a room', () => {
     later(GAME_ROOM_TTL_MS + 1);
     expect(service.expireIfIdle()).toBe(true);
     expect(service.say(0, { type: 'say', clientId: 'late', text: 'hola' })).toBeNull();
-    expect(service.said(0, 'late')).toBeNull();
     expect(service.chat()).toEqual([]);
   });
 });

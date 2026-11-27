@@ -9,13 +9,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { Translator } from '@i18n';
-import { Button } from '@ui';
+import { Button, NARROW_LAYOUT } from '@ui';
 import { OnlinePanel } from '../online-panel/online-panel';
 import { OnlineRoom } from '../online-room';
 import { roomNeed, roomNote } from '../room-note';
-
-/** The layouts where the room button is the room's only voice (the page shows no panel). */
-const NARROW = '(max-width: 47.99rem), (max-aspect-ratio: 1249/1000)';
 
 /**
  * The room, in the masthead of an online game: a quiet button with one presence dot (signal green
@@ -47,7 +44,7 @@ export class OnlineRoomButton {
   private readonly need = computed(() => (this.room ? roomNeed(this.room) : null));
 
   constructor() {
-    const media = inject(DOCUMENT).defaultView?.matchMedia?.(NARROW);
+    const media = inject(DOCUMENT).defaultView?.matchMedia?.(NARROW_LAYOUT);
     // Opened by itself when a new need comes up; closed by itself once it is met, unless the
     // player closed it meanwhile (then it stays closed until the next need).
     let shown: string | null = null;

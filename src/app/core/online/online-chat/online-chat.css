@@ -4,7 +4,7 @@
  * of an incoming message rises over the button as a small ticket. The conversation is a tall ticket.
  */
 :host {
-  --fab: 3.25rem;
+  --fab: var(--spacing-fab);
   display: block;
 }
 
