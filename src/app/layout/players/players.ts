@@ -5,28 +5,38 @@ import { LevelBars, SplitFlap } from '@ui';
 import { COMPUTER_LEVELS, gameById } from '@catalog';
 import { Preferences } from '@preferences';
 import { type Participant, ACTIVE_GAME } from '@match';
-import { participantName } from '../participant-name';
-import type { ScoreEntry } from './score-entry.model';
+import { playerLabel } from '../participant-name';
+import type { PlayerCard, PlayerMarks, PlayerStat } from './players.model';
 
-const glyph = (player: Player): string => (player === 'X' ? 'x' : 'o');
+const glyph = (player: Player): 'x' | 'o' => (player === 'X' ? 'x' : 'o');
 /** Two flap digits, capped at 99. */
 const digits = (value: number): string[] => [...String(Math.min(value, 99)).padStart(2, '0')];
 
-/** The series score: each player's wins and the draws, in flap digits; the player to move stands out. */
+/**
+ * The players of every game, one card each (and the draws between them in games that can end
+ * drawn): who they are (the game's mark, their name, the computer's level), the game's own live
+ * figure when it has one (Dots and Boxes: boxes, in each player's ink), their series wins, and the
+ * turn tag on the player to move. The game says how it marks players and what its figure counts;
+ * the mode says how players are named and what the tag reads.
+ */
 @Component({
-  selector: 'app-score-board',
+  selector: 'app-players',
   imports: [SplitFlap, LevelBars],
-  templateUrl: './score-board.html',
-  styleUrl: './score-board.css',
-  host: { '[class.compact]': 'compact()' },
+  templateUrl: './players.html',
+  styleUrl: './players.css',
+  host: { '[class.compact]': 'compact() || !!stat()' },
 })
-export class ScoreBoard {
-  /** A quieter series score, where the game shows its own score above (Dots and Boxes). */
+export class Players {
+  /** How the game marks its players: its symbol, the symbol in each player's ink, or nothing. */
+  readonly marks = input<PlayerMarks>('symbol');
+  /** The game's live figure per player, shown above the series; null when it has none. */
+  readonly stat = input<PlayerStat | null>(null);
+  /** A quieter series, where the game keeps its live figures elsewhere (Ship Sink's trains). */
   readonly compact = input(false);
 
   private readonly game = inject(ACTIVE_GAME);
   private readonly store = this.game.match;
-  /** A game that cannot end in a draw (Ship Sink) shows no draws. */
+  /** A game that cannot end in a draw shows no draws. */
   private readonly draws = computed(() => gameById(this.game.id).draws);
   private readonly preferences = inject(Preferences);
   protected readonly t = inject(Translator).t;
@@ -61,43 +71,47 @@ export class ScoreBoard {
     return participant === mine ? tag.yours : tag.theirs;
   }
 
-  protected readonly entries = computed((): readonly ScoreEntry[] => {
+  protected readonly cards = computed((): readonly PlayerCard[] => {
     const t = this.t();
     const wins = this.store.wins();
     const names = this.preferences.names();
     const mayMove = this.mayMove();
+    const marks = this.marks();
+    const stat = this.stat();
     const side = { mode: this.store.mode(), level: this.store.level(), seat: this.store.seat() };
     const computer = (participant: Participant) => side.mode === 'computer' && participant === 1;
-    const player = (participant: Participant): ScoreEntry => ({
-      label:
-        side.mode === 'online'
-          ? side.seat === null
-            ? t.defaultName(participant + 1)
-            : (participantName(t, names, side, participant) ??
-              (participant === side.seat ? t.online.you : t.online.rival))
-          : (participantName(t, names, side, participant) ?? t.defaultName(participant + 1)),
-      bars: computer(participant) ? COMPUTER_LEVELS.indexOf(side.level) + 1 : null,
-      levelName: computer(participant) ? t.settings.levels[side.level] : null,
-      glyph: glyph(this.store.symbolOf(participant)),
-      digits: digits(wins[participant]),
-      active: mayMove[participant],
-      turn: mayMove[participant] ? this.turnWord(participant) : null,
-    });
+    const player = (participant: Participant): PlayerCard => {
+      const symbol = glyph(this.store.symbolOf(participant));
+      return {
+        label: playerLabel(t, names, side, participant),
+        glyph: marks === 'none' ? null : symbol,
+        ink: marks === 'ink' ? symbol : null,
+        stat: stat
+          ? { digits: digits(stat.values[participant]), spin: stat.spins?.[participant] ?? 0 }
+          : null,
+        bars: computer(participant) ? COMPUTER_LEVELS.indexOf(side.level) + 1 : null,
+        levelName: computer(participant) ? t.settings.levels[side.level] : null,
+        digits: digits(wins[participant]),
+        active: mayMove[participant],
+        turn: mayMove[participant] ? this.turnWord(participant) : null,
+        draws: false,
+      };
+    };
     if (!this.draws()) {
       return [player(0), player(1)];
     }
-    return [
-      player(0),
-      {
-        label: t.draws,
-        glyph: null,
-        digits: digits(this.store.draws()),
-        active: false,
-        turn: null,
-        bars: null,
-        levelName: null,
-      },
-      player(1),
-    ];
+    const drawn: PlayerCard = {
+      label: t.draws,
+      glyph: null,
+      ink: null,
+      stat: null,
+      digits: digits(this.store.draws()),
+      active: false,
+      turn: null,
+      bars: null,
+      levelName: null,
+      draws: true,
+    };
+    return [player(0), drawn, player(1)];
   });
 }

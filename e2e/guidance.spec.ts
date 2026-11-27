@@ -154,5 +154,5 @@ test('Players groups who plays and their names; a room opens only from its invit
   await expect(panel.getByRole('radio', { name: 'Rookie' })).toHaveCount(0);
   await expect(page).toHaveURL(/\/classic$/);
   await page.getByRole('button', { name: 'Close settings' }).click();
-  await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
+  await expect(page.locator('app-players dt').last()).toHaveText('Rookie, Beginner');
 });

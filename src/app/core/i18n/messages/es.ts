@@ -304,6 +304,7 @@ export const es: Messages = {
     },
   },
   games: { 'super-3t': 'Super 3T', classic: 'Clásico', dots: 'Cajas', fleet: 'Ship Sink' },
+  players: { won: 'Ganadas' },
   chat: {
     open: (unread) => (unread > 0 ? `Chat, ${unread} sin leer` : 'Chat'),
     title: 'Chat',

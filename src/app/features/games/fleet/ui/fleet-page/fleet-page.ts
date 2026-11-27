@@ -2,14 +2,7 @@ import { afterNextRender, Component, computed, inject, viewChild } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import { FleetStore } from '@fleet/state';
 import { Translator } from '@i18n';
-import {
-  BrandTitle,
-  GameLayout,
-  HistoryLink,
-  SaveNotice,
-  ScoreBoard,
-  SettingsSheet,
-} from '@layout';
+import { BrandTitle, GameLayout, HistoryLink, SaveNotice, Players, SettingsSheet } from '@layout';
 import { GamesMenu } from '@library';
 import { Preferences } from '@preferences';
 import { Button } from '@ui';
@@ -39,7 +32,7 @@ import { FleetStatus } from '../fleet-status/fleet-status';
     GamesMenu,
     HistoryLink,
     SaveNotice,
-    ScoreBoard,
+    Players,
     SettingsSheet,
   ],
   templateUrl: './fleet-page.html',

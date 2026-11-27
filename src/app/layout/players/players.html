@@ -1,0 +1,57 @@
+<dl class="players" [attr.aria-label]="t().score" [style.--entries]="cards().length">
+  @for (card of cards(); track $index) {
+    <div
+      class="card"
+      [class.active]="card.active"
+      [class.draws]="card.draws"
+      [style.--card-ink]="card.ink ? 'var(--color-player-' + card.ink + ')' : null"
+    >
+      <dt>
+        @if (card.glyph) {
+          <app-split-flap class="mark" [char]="card.glyph" [maxSteps]="1" />
+        }
+        <span class="truncate">{{ card.label }}</span>
+        @if (card.bars) {
+          <app-level-bars class="level" [value]="card.bars" />
+          <span class="sr-only">{{ ', ' + card.levelName }}</span>
+        }
+      </dt>
+      <dd class="figures">
+        @if (card.stat; as figure) {
+          <!-- The game's own figure leads, in the player's ink; the series steps back beside it. -->
+          <span class="stat text-score">
+            <span class="sr-only">{{ stat()?.label + ': ' + figure.digits.join('') + ', ' }}</span>
+            @for (digit of figure.digits; track $index) {
+              <app-split-flap
+                [char]="digit"
+                [index]="$index"
+                [maxSteps]="10"
+                [spin]="figure.spin"
+              />
+            }
+          </span>
+          <span class="series">
+            <span class="series-label">{{ t().players.won }}</span>
+            <span class="digits">
+              <span class="sr-only">{{ t().players.won + ': ' + card.digits.join('') }}</span>
+              @for (digit of card.digits; track $index) {
+                <app-split-flap [char]="digit" [index]="$index" [maxSteps]="10" />
+              }
+            </span>
+          </span>
+        } @else {
+          <span class="digits text-score">
+            <span class="sr-only">{{ card.digits.join('') }}</span>
+            @for (digit of card.digits; track $index) {
+              <app-split-flap [char]="digit" [index]="$index" [maxSteps]="10" />
+            }
+          </span>
+        }
+      </dd>
+      @if (!card.draws) {
+        <!-- Always in the flow, so the turn moving between players never shifts the cards. -->
+        <dd class="turn" [class.on]="card.turn">{{ card.turn ?? ' ' }}</dd>
+      }
+    </div>
+  }
+</dl>

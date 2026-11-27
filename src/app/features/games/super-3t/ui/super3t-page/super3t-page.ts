@@ -9,7 +9,7 @@ import {
   GameLayout,
   HistoryLink,
   SaveNotice,
-  ScoreBoard,
+  Players,
   SettingsSheet,
 } from '@layout';
 import { GamesMenu } from '@library';
@@ -30,7 +30,7 @@ import { Super3tSettings } from '../super3t-settings/super3t-settings';
     GamesMenu,
     HistoryLink,
     HowToPlay,
-    ScoreBoard,
+    Players,
     SaveNotice,
     SettingsSheet,
     Super3tSettings,

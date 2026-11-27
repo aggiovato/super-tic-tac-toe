@@ -10,7 +10,7 @@
   </div>
   <app-dots-status status />
   <app-dots-board arena />
-  <app-score-board controls [compact]="true" />
+  <app-players controls marks="ink" [stat]="boxes()" />
   <app-game-actions controls />
   <app-save-notice controls />
 </app-game-layout>

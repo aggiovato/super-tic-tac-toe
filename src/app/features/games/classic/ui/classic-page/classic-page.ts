@@ -7,7 +7,7 @@ import {
   GameLayout,
   HistoryLink,
   SaveNotice,
-  ScoreBoard,
+  Players,
   SettingsSheet,
 } from '@layout';
 import { GamesMenu } from '@library';
@@ -25,7 +25,7 @@ import { ClassicStatus } from '../classic-status/classic-status';
     GameLayout,
     GamesMenu,
     HistoryLink,
-    ScoreBoard,
+    Players,
     SaveNotice,
     SettingsSheet,
   ],

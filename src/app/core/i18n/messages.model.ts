@@ -279,6 +279,11 @@ export interface Messages {
   };
   /** Each game's name, in the game library. */
   readonly games: Readonly<Record<GameId, string>>;
+  /** The player cards around every game. */
+  readonly players: {
+    /** The series wins beside a game's own figure (Dots and Boxes' boxes). */
+    readonly won: string;
+  };
   /** The chat between the two players of an online room. */
   readonly chat: {
     /** The floating button's name, with the unread count when there is one. */

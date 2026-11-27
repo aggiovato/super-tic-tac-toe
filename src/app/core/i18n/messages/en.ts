@@ -299,6 +299,7 @@ export const en: Messages = {
     },
   },
   games: { 'super-3t': 'Super 3T', classic: 'Classic', dots: 'Boxes', fleet: 'Ship Sink' },
+  players: { won: 'Won' },
   chat: {
     open: (unread) => (unread > 0 ? `Chat, ${unread} unread` : 'Chat'),
     title: 'Chat',
