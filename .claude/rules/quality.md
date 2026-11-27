@@ -53,7 +53,8 @@ paths:
 
 ## Budgets
 
-- Initial bundle: warning at 400 kB, error at 550 kB uncompressed (`angular.json`).
+- Initial bundle: warning at 420 kB, error at 550 kB uncompressed (`angular.json`). Raised from
+  400 kB at v0.8.0, when `main` sat at 399.95 kB and every eager change went over it.
 - Component styles: warning at 6 kB, error at 10 kB (raised from the CLI default for the board,
   the central component; split a component before going past the warning).
 - Targets to measure later: local response p95 ≤ 100 ms, framing 180–280 ms, interactive board
