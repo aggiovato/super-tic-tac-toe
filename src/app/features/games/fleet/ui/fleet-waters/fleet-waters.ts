@@ -34,6 +34,8 @@ const STEPS: Readonly<Record<string, number>> = {
   host: {
     '[class.compact]': 'compact()',
     '[class.platform]': 'platform()',
+    '[class.won]': 'won()',
+    '[class.celebrate]': 'celebrate()',
     '[attr.aria-hidden]': 'compact() || null',
   },
 })
@@ -49,6 +51,10 @@ export class FleetWaters {
   readonly compact = input(false);
   /** On a raised platform with the panel lift, as the family's boards stand. */
   readonly platform = input(false);
+  /** Every ship here is sunk and the game won: the winner's figure, in the win colour. */
+  readonly won = input(false);
+  /** The winning shot was just fired: the figure flashes three times. */
+  readonly celebrate = input(false);
 
   /** A cell tapped, or Enter or Space on it. */
   readonly picked = output<number>();

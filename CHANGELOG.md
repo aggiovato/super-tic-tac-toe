@@ -15,6 +15,10 @@ new version and date.
   names each fleet after its player instead of showing X and O. The turn tag no longer looks
   struck out.
 - A routine save no longer shows "Saved": the save notice appears only when a save fails.
+- One spark and one win flash for the whole family: a Dots box closing crackles as a Super 3T board does, and every game's win flash starts a frame after the winning move draws (light off in high contrast).
+- Ship Sink: a ship just sunk crackles, and winning flashes the sunk fleet with its crosses in Apricot, whoever won.
+- Dots: the winning figure's sides turn Apricot with its marks.
+- A draw is no longer shown in Apricot, and Ship Sink's hit and sunk flaps use the hit colour.
 
 ## [0.8.0] - 2026-11-25
 

@@ -42,7 +42,10 @@ export class FleetQuay {
   });
 
   protected readonly views = computed(() =>
-    battleViews(this.t(), this.store.view(), this.store.me(), this.store.lastShot()),
+    battleViews(this.t(), this.store.view(), this.store.me(), {
+      last: this.store.lastShot(),
+      fresh: this.store.freshShot(),
+    }),
   );
 
   /** The board the thumbnail shows: the one not on the big board. */

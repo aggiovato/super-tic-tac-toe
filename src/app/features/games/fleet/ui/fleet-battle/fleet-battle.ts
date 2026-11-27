@@ -23,7 +23,10 @@ export class FleetBattle {
   protected readonly t = inject(Translator).t;
 
   protected readonly views = computed(() =>
-    battleViews(this.t(), this.store.view(), this.store.me(), this.store.lastShot()),
+    battleViews(this.t(), this.store.view(), this.store.me(), {
+      last: this.store.lastShot(),
+      fresh: this.store.freshShot(),
+    }),
   );
 
   /** A tap or Enter on a cell: aims there, or fires when it was aimed already. */

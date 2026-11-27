@@ -10,7 +10,7 @@
   --platform-radius: var(--radius-panel);
   --grid-line: var(--color-line);
   /* The closing spark: how long it crackles, and when (the board sets a delay where it lands). */
-  --spark-time: var(--duration-draw);
+  --spark-time: var(--duration-spark);
   --spark-delay: 0ms;
   --spark-colour: var(--color-spark);
 
@@ -137,53 +137,23 @@
   border: var(--border-emphasis) solid var(--spark-colour);
   border-radius: inherit;
   box-shadow:
-    0 0 1rem var(--spark-colour),
-    inset 0 0 1.5rem var(--spark-colour);
+    0 0 var(--flash-halo) var(--spark-colour),
+    inset 0 0 var(--flash-halo-inset) var(--spark-colour);
   opacity: 0;
   pointer-events: none;
+  /* The family's spark (`spark-flicker`, styles.css). */
   animation: spark-flicker var(--spark-time) linear var(--spark-delay) both;
 }
 
 /*
- * After the closing spark of the winning move, if any, three strong flashes on each winning board,
- * in the accent: the game's one spectacle (`win-flash`, styles.css, shared by every game).
+ * After the closing spark of the winning move, if any, three strong flashes on each winning board
+ * in the win colour: the family's win flash (`win-flash`, styles.css), a frame after the spark.
  */
 :host(.win-spark:not(.mini))::before {
-  --spark-colour: var(--color-accent);
+  --spark-colour: var(--color-win);
 
-  animation: win-flash calc(var(--spark-time) * 1.6) linear
-    calc(var(--spark-delay) + var(--spark-time) * 0.4) both;
-}
-
-/* Uneven on and off, like an arc catching: bright strikes that fade out. */
-@keyframes spark-flicker {
-  0% {
-    opacity: 0;
-  }
-
-  6% {
-    opacity: 1;
-  }
-
-  12% {
-    opacity: 0.2;
-  }
-
-  20% {
-    opacity: 0.9;
-  }
-
-  28% {
-    opacity: 0.35;
-  }
-
-  38% {
-    opacity: 0.75;
-  }
-
-  100% {
-    opacity: 0;
-  }
+  animation: win-flash var(--duration-win-flash) linear
+    calc(var(--spark-delay) + var(--duration-frame)) both;
 }
 
 @keyframes spark-shake {

@@ -55,7 +55,8 @@ export class DotsStatus {
       ];
     }
     if (status.kind === 'drawn') {
-      return word(flap.draw, true, RESULT_STEPS, WORD_LENGTH + 2);
+      // Nobody won: plain flaps (Apricot marks only the winning figure).
+      return word(flap.draw, false, RESULT_STEPS, WORD_LENGTH + 2);
     }
     // Who draws next, in their ink (the boxes are on the players' cards); every free line is
     // where they may draw, as every free cell in the classic game.

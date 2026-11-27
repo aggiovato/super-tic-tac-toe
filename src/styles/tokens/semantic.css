@@ -99,6 +99,11 @@
   --duration-step: var(--ref-duration-60); /* one character step of a flap cycling to its word */
   --duration-zoom: var(--ref-duration-520); /* a board opening from, or closing into, the grid */
   --duration-draw: var(--ref-duration-600); /* the winning line being drawn */
+  --duration-spark: var(--ref-duration-600); /* a board, box or ship closing: its spark */
+  --duration-win-flash: calc(var(--ref-duration-600) * 1.6); /* a won game's three flashes */
+  /* The light of a spark and of the win flash, around and inside what closed; 0 turns it off. */
+  --flash-halo: 1rem;
+  --flash-halo-inset: 1.5rem;
   --shadow-panel: 0 0.375rem 1.25rem -0.25rem var(--color-shade); /* platforms over the page */
   --backdrop-opacity: 0.2; /* torn-paper strips behind everything; 0 hides them */
   --backdrop-blur: 0.6px;

@@ -1,4 +1,4 @@
-import { computed } from '@angular/core';
+import { computed, linkedSignal, untracked } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { FLEET_GAME } from '@catalog';
 import {
@@ -27,7 +27,7 @@ export const FleetStore = signalStore(
     aimedAt: null,
     lookingIn: null,
   }),
-  withComputed(({ game, mode, seat, xPlayer }) => {
+  withComputed(({ game, mode, seat, xPlayer, id }) => {
     /** The participant playing on this device: the person against the computer, or this seat. */
     const person = computed((): Participant => (mode() === 'online' ? (seat() ?? 0) : 0));
     const me = computed((): Player => (person() === xPlayer() ? 'X' : 'O'));
@@ -35,13 +35,23 @@ export const FleetStore = signalStore(
       const state = game();
       return state.viewer !== null ? state : viewOf(state, me());
     });
+    const lastShot = computed((): LastShot | null => shotsInOrder(view()).at(-1) ?? null);
+    /** Shots already fired when the game appeared, or when a new one began: shown without motion. */
+    const settled = linkedSignal({
+      source: id,
+      computation: () => untracked(() => shotsInOrder(view()).length),
+    });
     return {
       person,
       me,
       rival: computed((): Player => other(me())),
       view,
       /** The last shot fired, by either player, and who fired it; null before the first. */
-      lastShot: computed((): LastShot | null => shotsInOrder(view()).at(-1) ?? null),
+      lastShot,
+      /** The last shot when it was fired while the board was on screen: its sinking sparks. */
+      freshShot: computed((): LastShot | null =>
+        shotsInOrder(view()).length > settled() ? lastShot() : null,
+      ),
     };
   }),
   withComputed(({ lookingIn, id }) => ({

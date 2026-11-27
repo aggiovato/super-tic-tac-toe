@@ -62,7 +62,7 @@ export class FleetStatus {
     if (outcome === 'pending') return [...cell, { char: ' ', accent: false }, ...word('···')];
     const said = outcome === 'water' ? flap.water : outcome === 'hit' ? flap.hit : flap.sunk;
     // A hit and a sinking in the hit's own ink (Sand); the cell in plain flaps.
-    const ink = outcome === 'water' ? {} : { ink: 'o' as const };
+    const ink = outcome === 'water' ? {} : { ink: 'hit' as const };
     return [...cell, { char: ' ', accent: false }, ...word(said, ink)];
   });
 

@@ -52,20 +52,21 @@
 }
 
 /*
- * The win just made: three strong flashes in the accent, outline and glow, after the line and the
- * mark, exactly as Super 3T's winning boards (the game's one spectacle, `win-flash` in styles.css).
+ * The win just made: the family's win flash (`win-flash`, styles.css) on the board, a frame after
+ * its large mark starts drawing (the mark waits for the line), as Super 3T's winning boards.
  */
 .platform.celebrate::before {
   content: '';
   position: absolute;
   z-index: 5;
   inset: calc(-1 * var(--border-emphasis));
-  border: var(--border-emphasis) solid var(--color-accent);
+  border: var(--border-emphasis) solid var(--color-win);
   border-radius: inherit;
   box-shadow:
-    0 0 1rem var(--color-accent),
-    inset 0 0 1.5rem var(--color-accent);
+    0 0 var(--flash-halo) var(--color-win),
+    inset 0 0 var(--flash-halo-inset) var(--color-win);
   opacity: 0;
   pointer-events: none;
-  animation: win-flash calc(var(--duration-draw) * 1.6) linear calc(var(--duration-draw) * 1.6) both;
+  animation: win-flash var(--duration-win-flash) linear
+    calc(var(--duration-draw) + var(--duration-frame)) both;
 }

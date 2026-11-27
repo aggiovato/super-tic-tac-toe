@@ -215,31 +215,20 @@
   --player-ink: var(--color-player-o);
 }
 
-/* The closing spark: a brief Chalk flicker of the box, as a board closing in Super 3T. */
+/* The closing spark: the family's spark (`spark-flicker`, styles.css) on the new tile. */
 .box.fresh::after {
   content: '';
   position: absolute;
+  z-index: 2;
   inset: 7%;
   border-radius: var(--radius-tile);
-  border: var(--border-line) solid var(--color-spark);
+  border: var(--border-emphasis) solid var(--color-spark);
+  box-shadow:
+    0 0 var(--flash-halo) var(--color-spark),
+    inset 0 0 var(--flash-halo-inset) var(--color-spark);
   opacity: 0;
-  animation: spark var(--duration-draw) var(--ease-out);
-}
-
-@keyframes spark {
-  0%,
-  40% {
-    opacity: 1;
-  }
-
-  20%,
-  60% {
-    opacity: 0.2;
-  }
-
-  100% {
-    opacity: 0;
-  }
+  pointer-events: none;
+  animation: spark-flicker var(--duration-spark) linear both;
 }
 
 /*
@@ -264,21 +253,31 @@
   box-shadow: none;
 }
 
+/* The winner's sides, whoever drew them: with the boxes' marks, the winning figure in Apricot. */
+.platform.decided .line.winning.drawn .ink {
+  --player-ink: var(--color-win);
+}
+
+/* The figure reads whole: the last line's ring goes, as on a closed board elsewhere. */
+.platform.over .line.last .ink {
+  outline: none;
+}
+
 /*
- * The winning line just drawn: each winning box flashes three times in the accent, outline and
- * glow, after the closing spark, exactly as Super 3T's winning boards (the game's one spectacle).
+ * The winning line just drawn: the family's win flash (`win-flash`, styles.css) on each winning
+ * box, a frame after the closing spark, as Super 3T's winning boards.
  */
 .box.celebrate::before {
   inset: 0;
   z-index: 2;
-  border: var(--border-emphasis) solid var(--color-accent);
-  border-radius: var(--radius-cell);
+  border: var(--border-emphasis) solid var(--color-win);
+  border-radius: var(--radius-tile);
   box-shadow:
-    0 0 1rem var(--color-accent),
-    inset 0 0 1.5rem var(--color-accent);
+    0 0 var(--flash-halo) var(--color-win),
+    inset 0 0 var(--flash-halo-inset) var(--color-win);
   opacity: 0;
   pointer-events: none;
-  animation: win-flash calc(var(--duration-draw) * 1.6) linear calc(var(--duration-draw) * 0.4) both;
+  animation: win-flash var(--duration-win-flash) linear var(--duration-frame) both;
 }
 
 .platform.decided .box:not(.winning) {

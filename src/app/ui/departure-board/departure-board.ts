@@ -22,8 +22,8 @@ import type { FlapTile } from './flap-tile.model';
           [index]="$index"
           [maxSteps]="tile.steps ?? 6"
           [spin]="tile.spin ?? 0"
-          [style.--flap-fg]="tile.ink ? 'var(--color-player-' + tile.ink + ')' : null"
-          [style.--flap-mark]="tile.ink ? 'var(--color-player-' + tile.ink + ')' : null"
+          [style.--flap-fg]="inkOf(tile)"
+          [style.--flap-mark]="inkOf(tile)"
           [class.dim]="tile.dim"
         />
       }
@@ -33,4 +33,9 @@ import type { FlapTile } from './flap-tile.model';
 export class DepartureBoard {
   readonly tiles = input.required<readonly FlapTile[]>();
   readonly label = input.required<string>();
+
+  protected inkOf({ ink }: FlapTile): string | null {
+    if (!ink) return null;
+    return ink === 'hit' ? 'var(--color-hit)' : `var(--color-player-${ink})`;
+  }
 }

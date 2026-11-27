@@ -16,6 +16,8 @@
     [cells]="views().own.cells"
     [ships]="views().own.ships"
     [wrecks]="views().own.wrecks"
+    [won]="views().own.won"
+    [celebrate]="views().own.celebrate"
     [platform]="true"
     [label]="t().fleet.yourWaters"
   />
@@ -25,6 +27,8 @@
     [cells]="views().enemy.cells"
     [ships]="views().enemy.ships"
     [wrecks]="views().enemy.wrecks"
+    [won]="views().enemy.won"
+    [celebrate]="views().enemy.celebrate"
     [aimed]="store.aimed()"
     [interactive]="true"
     [platform]="true"

@@ -55,8 +55,9 @@ export class DeparturePanel {
       ];
     }
     if (status.kind === 'drawn') {
-      // A draw has no player or arrow: the word takes the whole row.
-      return word(flap.draw, true, RESULT_STEPS, WORD_LENGTH + 2);
+      // A draw has no player or arrow: the word takes the whole row, in plain
+      // flaps (Apricot marks only the winning figure).
+      return word(flap.draw, false, RESULT_STEPS, WORD_LENGTH + 2);
     }
     const head: FlapTile[] = [
       { char: glyph(turn), accent: false },
