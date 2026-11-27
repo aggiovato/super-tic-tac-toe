@@ -6,13 +6,12 @@
   display: none;
 }
 
-/* One line, reserved so the controls never jump when it appears. */
+/* Takes no room until a save fails: that is rare enough to let the controls move once. */
 .notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-stack-tight);
-  min-height: calc(var(--text-caption) * 1.6);
   font-size: var(--text-caption);
   line-height: 1.35;
 }
@@ -20,12 +19,6 @@
 /* The live region stays in the page to announce a failure, but takes no slot while empty. */
 .notice > [aria-live]:empty {
   position: absolute;
-}
-
-.saved {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--spacing) * 1);
 }
 
 /* A failed save matters: Chalk text behind the same left rule as the challenge's attempt line. */

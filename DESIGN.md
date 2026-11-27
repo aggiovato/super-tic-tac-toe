@@ -306,7 +306,7 @@ The conversation is a tall How-to-play Ticket: the whole screen inside the gutte
 
 ### Save Notice and History
 
-- **Save notice:** a caption line under the game's actions, reserved so the controls never jump. It reads "Saved" (es "Guardado") with a check icon once the device confirms a save, and "Saving…" meanwhile. A failed save turns it into a notice: Chalk text behind a 3px Chalk left rule (the challenge attempt line's language), with "Try again" (secondary, small) for a full disk or a failure and "Reload" when another tab moved the game on. A browser that keeps nothing says so once.
+- **Save notice:** silent while saves succeed (every game is kept on this device, so a routine save says nothing and takes no room). A failed save shows a caption line under the game's actions: Chalk text behind a 3px Chalk left rule (the challenge attempt line's language), with "Try again" (secondary, small) for a full disk or a failure and "Reload" when another tab moved the game on. A browser that keeps nothing says so once.
 - **History button:** a quiet small button with a history icon, "History" (es "Historial"), beside Settings in the masthead of every game.
 - **History page** (`/<game>/history`): the masthead with "Back to the game", the title "Super 3T history" (es "Historial de Super 3T"), then a table of results against the computer by level (Wins, Draws, Losses; hairline rows, figures in semibold Chalk, tabular), the count of games for two people, and the ten latest finished games as hairline rows: the result in semibold Chalk on the left ("You won", "You lost", "Draw", or "Player 1 wins"), then the setup and, in caption size, the date and the number of moves. No accent colour: the page reports, it does not signal.
 

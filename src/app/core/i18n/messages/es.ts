@@ -105,8 +105,6 @@ export const es: Messages = {
     cell: (cell, mark) => `Casilla ${cell}, ${mark ?? 'vacía'}`,
   },
   save: {
-    saving: 'Guardando…',
-    saved: 'Guardado',
     quota: 'No queda espacio en este dispositivo para guardar la partida.',
     failed: 'No se pudo guardar la partida.',
     unavailable: 'Este navegador no guarda partidas: esta se perderá al cerrar.',

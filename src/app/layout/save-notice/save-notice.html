@@ -1,5 +1,5 @@
 <div class="notice" [class.problem]="problem()">
-  <!-- Only a failure is announced: the routine Saving and Saved stay silent after every move. -->
+  <!-- Only a failure shows: a routine save is silent, as every game is kept on this device. -->
   <span aria-live="polite">{{ problem() }}</span>
   @if (problem()) {
     @if (retryable()) {
@@ -9,9 +9,5 @@
     } @else if (match.saveStatus() === 'conflict') {
       <button app-button="secondary" size="small" (click)="reload()">{{ t().save.reload }}</button>
     }
-  } @else if (match.saveStatus() === 'saved') {
-    <span class="saved"><app-icon name="check" /> {{ t().save.saved }}</span>
-  } @else if (match.saveStatus() === 'saving') {
-    <span class="saved">{{ t().save.saving }}</span>
   }
 </div>
