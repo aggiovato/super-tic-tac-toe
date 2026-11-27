@@ -1,19 +1,19 @@
 import { Component, computed, DOCUMENT, inject } from '@angular/core';
 import { Translator } from '@i18n';
-import { Button, Icon } from '@ui';
+import { Button } from '@ui';
 import { ACTIVE_GAME } from '@match';
 
 /**
- * Where the game's last save stands: a quiet "Saved" once the device confirms it, and a notice with
- * a way out when it fails (try again, or reload when another tab moved on).
+ * A failed save, with a way out (try again, or reload when another tab moved on). A routine save
+ * shows nothing; its status stays on the host (`data-save`) for tests to wait on.
  */
 @Component({
   selector: 'app-save-notice',
-  imports: [Button, Icon],
+  imports: [Button],
   templateUrl: './save-notice.html',
   styleUrl: './save-notice.css',
   // An online game is kept by its room, not saved here: no line to reserve.
-  host: { '[hidden]': "match.mode() === 'online'" },
+  host: { '[hidden]': "match.mode() === 'online'", '[attr.data-save]': 'match.saveStatus()' },
 })
 export class SaveNotice {
   protected readonly t = inject(Translator).t;

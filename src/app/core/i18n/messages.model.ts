@@ -110,8 +110,6 @@ export interface Messages {
   };
   /** Saving the game on this device. */
   readonly save: {
-    readonly saving: string;
-    readonly saved: string;
     readonly quota: string;
     readonly failed: string;
     readonly unavailable: string;

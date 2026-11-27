@@ -14,6 +14,7 @@ new version and date.
   player's ink) and the series. Cajas no longer shows draws, which it cannot have, and Ship Sink
   names each fleet after its player instead of showing X and O. The turn tag no longer looks
   struck out.
+- A routine save no longer shows "Saved": the save notice appears only when a save fails.
 
 ## [0.8.0] - 2026-11-25
 

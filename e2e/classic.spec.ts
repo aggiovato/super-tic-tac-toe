@@ -135,7 +135,7 @@ test.describe('saving and resuming', () => {
   test('a game saved before seats (schema 1) resumes with its mode and level', async ({ page }) => {
     // The app creates its database on the first visit; then a game is stored as version 1 did.
     await page.goto('/classic');
-    await expect(page.getByText('Saved')).toBeVisible();
+    await expect(page.locator('app-save-notice')).toHaveAttribute('data-save', 'saved');
     await page.evaluate(
       () =>
         new Promise<void>((resolve, reject) => {
@@ -184,8 +184,8 @@ test.describe('saving and resuming', () => {
   test('a game resumes after a reload, on the same turn', async ({ page }) => {
     await play(page, 4, 2);
     await play(page, 2, 4);
-    // Both moves written before the reload: "Saved" is already showing from the first one, so it
-    // cannot tell the second save has landed (it had not, once, on a busy CI runner).
+    // Both moves written before the reload: the save status already reads saved from the first one,
+    // so it cannot tell the second save has landed (it had not, once, on a busy CI runner).
     await expect.poll(() => savedMoves(page, 'super-3t')).toBe(2);
     await page.reload();
     await expect(status(page)).toHaveText('X to move. Must play on board 5.');
@@ -199,11 +199,11 @@ test.describe('saving and resuming', () => {
     await againstComputer(page);
     await play(page, 4, 2);
     // Reload once X's move is written (saving is asynchronous, slower on CI) and, as a rule, before
-    // the reply lands: the saved game stopped on the opponent's turn. "Saved" shows once the
-    // restored game is back (the empty game shown while it loads is never saved).
+    // the reply lands: the saved game stopped on the opponent's turn. The status reads saved once
+    // the restored game is back (the empty game shown while it loads is never saved).
     await expect.poll(() => savedMoves(page, 'super-3t')).toBeGreaterThanOrEqual(1);
     await page.reload();
-    await expect(page.getByText('Saved')).toBeVisible();
+    await expect(page.locator('app-save-notice')).toHaveAttribute('data-save', 'saved');
     await expect(status(page)).toHaveText(/^X to move/);
     if (!isMobile) {
       // The whole board shows every mark: one move each, the reply played once.

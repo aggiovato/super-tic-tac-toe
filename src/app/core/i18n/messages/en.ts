@@ -104,8 +104,6 @@ export const en: Messages = {
     cell: (cell, mark) => `Cell ${cell}, ${mark ?? 'empty'}`,
   },
   save: {
-    saving: 'Saving…',
-    saved: 'Saved',
     quota: 'There is no room left on this device to save the game.',
     failed: 'The game could not be saved.',
     unavailable: 'This browser does not keep games: this one will be lost when you close it.',
