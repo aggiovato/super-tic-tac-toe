@@ -10,12 +10,11 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { CHAT_MAX } from '@protocol';
+import { CHAT_MAX, cleanChatText } from '@protocol';
 import { Translator } from '@i18n';
 import { Button, Icon, Ticket } from '@ui';
 import type { ChatEntry } from '../online.model';
 import { OnlineRoom } from '../online-room';
-import { chatText } from '../room-chat';
 
 /** How long an incoming message is glimpsed over the button before only the dot says it is there. */
 const GLIMPSE_MS = 4000;
@@ -70,7 +69,7 @@ export class OnlineChat {
     }));
   });
   protected readonly unread = computed(() => this.room?.chat.unread() ?? 0);
-  protected readonly canSend = computed(() => chatText(this.draft()) !== null);
+  protected readonly canSend = computed(() => cleanChatText(this.draft()) !== null);
   /** Characters left, once the draft comes near the limit. */
   protected readonly left = computed(() => {
     const left = CHAT_MAX - [...this.draft().trim()].length;
@@ -86,19 +85,15 @@ export class OnlineChat {
     if (!room) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     inject(DestroyRef).onDestroy(() => clearTimeout(timer));
-    // A new message from the rival: glimpsed over the button while the chat is closed. The first
-    // value is what was already there (the history on connecting), never glimpsed.
-    let seen: number | null | undefined;
+    // A message from the rival just came in: glimpsed at the top while the chat is closed.
     effect(() => {
-      const latest = room.chat.latestFromRival();
+      const arrival = room.chat.arrival();
       untracked(() => {
-        const id = latest?.id ?? null;
-        if (seen !== undefined && id !== null && id !== seen && !this.opened()) {
-          this.glimpse.set(latest?.text ?? null);
+        if (arrival && !this.opened()) {
+          this.glimpse.set(arrival.text);
           clearTimeout(timer);
           timer = setTimeout(() => this.glimpse.set(null), GLIMPSE_MS);
         }
-        seen = id;
       });
     });
     // While the chat is open everything that arrives is read, and the newest stays in view.

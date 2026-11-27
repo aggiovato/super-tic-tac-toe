@@ -1,6 +1,7 @@
 // Fails when app code bypasses the semantic token layer: raw colour literals or `--ref-*`
-// primitives outside src/styles/. Run by `npm run lint` over src/, and by the pre-commit hook over
-// the staged files it is given as arguments.
+// primitives outside src/styles/, or a media query on the two layouts that does not read as
+// `layout-queries.ts` says. Run by `npm run lint` over src/, and by the pre-commit hook over the
+// staged files it is given as arguments.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { isAbsolute, join, relative } from 'node:path';
 
@@ -38,11 +39,28 @@ function* files(dir) {
 const given = process.argv.slice(2).map((path) => (isAbsolute(path) ? relative('.', path) : path));
 const targets = given.length > 0 ? given.filter(checked) : [...files(ROOT)];
 
+// The two layouts' media queries come from one place (`src/app/ui/dom/layout-queries.ts`): a
+// stylesheet query on the 48rem / 5:4 breakpoint must read exactly one of them.
+const LAYOUTS = [
+  ...readFileSync(join('src', 'app', 'ui', 'dom', 'layout-queries.ts'), 'utf8').matchAll(
+    /_LAYOUT = '([^']+)'/g,
+  ),
+].map(([, query]) => query);
+const layoutProblem = (line) => {
+  const media = /@media\s+(.+?)\s*\{/.exec(line)?.[1];
+  if (!media || !/aspect-ratio/.test(media) || !/(?:48|47\.99)rem/.test(media)) return null;
+  return LAYOUTS.includes(media)
+    ? null
+    : 'layout breakpoint; use WIDE_LAYOUT or NARROW_LAYOUT words';
+};
+
 const problems = [];
 for (const file of targets) {
   readFileSync(file, 'utf8')
     .split('\n')
     .forEach((line, index) => {
+      const layout = file.endsWith('.css') ? layoutProblem(line) : null;
+      if (layout) problems.push(`${relative('.', file)}:${index + 1}  ${layout}`);
       for (const { pattern, message } of RULES) {
         for (const match of line.matchAll(pattern)) {
           problems.push(`${relative('.', file)}:${index + 1}  ${match[0]}  ${message}`);

@@ -1,5 +1,5 @@
 import { CHAT_MAX, type ChatMessage, type SayMessage, type Seat } from '@protocol';
-import { chatText, RoomChat } from './room-chat';
+import { RoomChat } from './room-chat';
 
 /** A chat on a fake room: what it sent, the seat it plays and what it saved as read. */
 function chatAt(you: Seat | null = 0, readUpTo = 0) {
@@ -43,7 +43,6 @@ describe("a room's chat on this device", () => {
     expect(chat.say('   ')).toBe(false);
     expect(chat.say('x'.repeat(CHAT_MAX + 1))).toBe(false);
     expect(sent).toEqual([]);
-    expect(chatText('🙂'.repeat(CHAT_MAX))).toHaveLength(CHAT_MAX * 2);
   });
 
   it('marks a message the room did not keep, to retry or discard', () => {
@@ -87,9 +86,11 @@ describe("a room's chat on this device", () => {
     });
     // Read up to 2 on this device: of what came after, only the rival's message counts.
     expect(chat.unread()).toBe(1);
-    expect(chat.latestFromRival()?.text).toBe('¡vamos!');
+    // The history on connecting is no arrival: nothing to glimpse.
+    expect(chat.arrival()).toBeNull();
     chat.receive({ type: 'said', message: kept(5, 0, 'otro') });
     expect(chat.unread()).toBe(2);
+    expect(chat.arrival()?.text).toBe('otro');
     chat.markRead();
     expect(chat.unread()).toBe(0);
     expect(saved).toEqual([5]);

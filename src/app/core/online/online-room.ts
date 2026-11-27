@@ -12,7 +12,7 @@ import { type RemoteGame, RemoteSeat } from '@match';
 import { GAME_ROOMS_PATH, type GameRoomState, type Seat, type ServerMessage } from '@protocol';
 import { GameRoomsApi, RoomsUnreachable } from './game-rooms-api';
 import type { RivalPresence, RoomProblem } from './online.model';
-import { RoomCredentialsStore } from './room-credentials';
+import { RoomMemory } from './room-memory';
 import { RoomChat } from './room-chat';
 import { RoomSocket, type SocketFactory } from './room-socket';
 
@@ -83,7 +83,7 @@ export class OnlineRoom extends RemoteSeat {
    */
   private readonly simultaneous = this.replays();
   private readonly api = inject(GameRoomsApi);
-  private readonly credentials = inject(RoomCredentialsStore);
+  private readonly credentials = inject(RoomMemory);
   private readonly createSocket = inject(SOCKET_FACTORY);
   private readonly window = inject(DOCUMENT).defaultView;
 

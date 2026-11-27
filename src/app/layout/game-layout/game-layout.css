@@ -55,7 +55,7 @@
  * Narrow screens: the room button in the masthead says it all (its dot, and its popover, opened by
  * itself while the rival is to be invited); the page does not repeat the room's notes under the score.
  */
-@media (max-width: 47.99rem), (max-aspect-ratio: 1249/1000) {
+@media (max-width: 47.99rem), (max-aspect-ratio: 1249 / 1000) {
   .controls app-online-panel {
     display: none;
   }
@@ -64,7 +64,7 @@
 /* Phones, online: the chat's floating button keeps the end of the page clear for itself. */
 @media (max-width: 47.99rem) {
   .game.with-chat {
-    padding-bottom: calc(3.25rem + 2 * var(--spacing-stack));
+    padding-bottom: calc(var(--spacing-fab) + 2 * var(--spacing-stack));
   }
 }
 

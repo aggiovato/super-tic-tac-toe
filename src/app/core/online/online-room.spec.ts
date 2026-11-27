@@ -4,7 +4,7 @@ import type { GameRoomState, JoinRefusal, SeatGrant, ServerMessage } from '@prot
 import { GameRoomsApi, RoomsUnreachable } from './game-rooms-api';
 import { OnlineRoom, SOCKET_FACTORY } from './online-room';
 import { provideOnlineRoom } from './provide-online-room';
-import { RoomCredentialsStore } from './room-credentials';
+import { RoomMemory } from './room-memory';
 
 /** A WebSocket the test opens, closes and talks through. */
 class FakeSocket extends EventTarget {
@@ -112,7 +112,7 @@ describe('an online room', () => {
   it('takes the guest seat through the invitation, keeps its token and connects with it', async () => {
     const { room, api, last } = await open();
     expect(api.joins).toBe(1);
-    expect(TestBed.inject(RoomCredentialsStore).get('room-1')).toMatchObject({
+    expect(TestBed.inject(RoomMemory).get('room-1')).toMatchObject({
       seat: 1,
       token: 'guest-token',
       gameId: 'classic',
@@ -122,7 +122,7 @@ describe('an online room', () => {
   });
 
   it('reuses a seat this device already holds', async () => {
-    TestBed.inject(RoomCredentialsStore).save('room-1', {
+    TestBed.inject(RoomMemory).save('room-1', {
       gameId: 'classic',
       seat: 0,
       token: 'host-token',
@@ -242,7 +242,7 @@ describe('an online room', () => {
     first.last().open();
     first.injector.destroy();
     expect(first.room.connection()).toBe('closed');
-    expect(TestBed.inject(RoomCredentialsStore).get('room-1')?.left).toBe(true);
+    expect(TestBed.inject(RoomMemory).get('room-1')?.left).toBe(true);
 
     // Back in the room (the back button, the link again): it waits for the player.
     const again = await open();
@@ -251,7 +251,7 @@ describe('an online room', () => {
     again.room.rejoin();
     expect(again.room.left()).toBe(false);
     expect(again.sockets).toHaveLength(1);
-    expect(TestBed.inject(RoomCredentialsStore).get('room-1')?.left).toBe(false);
+    expect(TestBed.inject(RoomMemory).get('room-1')?.left).toBe(false);
   });
 
   it('keeps a placement on its way when the rival places first, until the state carries it', async () => {

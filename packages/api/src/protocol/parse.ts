@@ -1,4 +1,4 @@
-import { CHAT_MAX } from '@protocol';
+import { cleanChatText } from '@protocol';
 import type { ClientMessage } from '../models';
 
 /**
@@ -53,36 +53,15 @@ export function parseClientMessage(raw: string): ReadMessage | null {
 }
 
 /**
- * Characters never part of what a player writes: controls (the line break is kept) and invisible
- * format characters that hide or reorder text (direction overrides, zero widths), but the zero-width
- * joiner and tag characters emoji are built with.
- */
-const HIDDEN = /[\p{Cc}\p{Cf}]/gu;
-const KEPT = new Set(['\n', '\u200D']);
-const isEmojiTag = (char: string) => {
-  const code = char.codePointAt(0) ?? 0;
-  return code >= 0xe0020 && code <= 0xe007f;
-};
-
-/**
- * A chat message: line and paragraph separators read as line breaks, hidden characters go, at most
- * two line breaks stay in a row, and the text is trimmed; one that is then empty or longer than
- * `CHAT_MAX` characters cannot be kept (`invalid-say`, named by its `clientId`).
+ * A chat message: its text cleaned by the rule both ends share (`cleanChatText`); one that cannot be
+ * kept (empty, or longer than `CHAT_MAX`) is `invalid-say`, named by its `clientId`.
  */
 function parseSay(clientId: unknown, text: unknown): ReadMessage | null {
   if (typeof clientId !== 'string' || !COMMAND_ID.test(clientId)) {
     return null;
   }
-  if (typeof text !== 'string') {
-    return { type: 'invalid-say', clientId };
-  }
-  const clean = text
-    .replace(/[\u2028\u2029]/g, '\n')
-    .replace(HIDDEN, (char) => (KEPT.has(char) || isEmojiTag(char) ? char : ''))
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-  const length = [...clean].length;
-  return length === 0 || length > CHAT_MAX
+  const clean = typeof text === 'string' ? cleanChatText(text) : null;
+  return clean === null
     ? { type: 'invalid-say', clientId }
     : { type: 'say', clientId, text: clean };
 }

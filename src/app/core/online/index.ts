@@ -5,7 +5,7 @@ export { OnlineRooms } from './online-rooms';
 export { ONLINE_GAME, OnlineRoom, SOCKET_FACTORY } from './online-room';
 export { openOnlineRoom, provideOnlineRoom } from './provide-online-room';
 export type { ChatEntry, ConnectionState, RivalPresence, RoomProblem } from './online.model';
-export { chatText, RoomChat } from './room-chat';
+export { RoomChat } from './room-chat';
 export { OnlinePanel } from './online-panel/online-panel';
 export { OnlineChat } from './online-chat/online-chat';
 export { OnlineRoomButton } from './online-room-button/online-room-button';
