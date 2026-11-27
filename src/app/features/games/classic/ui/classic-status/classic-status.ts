@@ -54,7 +54,8 @@ export class ClassicStatus {
       ];
     }
     if (status.kind === 'drawn') {
-      return word(flap.draw, true, RESULT_STEPS, WORD_LENGTH + 2);
+      // Nobody won: plain flaps (Apricot marks only the winning figure).
+      return word(flap.draw, false, RESULT_STEPS, WORD_LENGTH + 2);
     }
     return [
       { char: glyph(turn), accent: false },

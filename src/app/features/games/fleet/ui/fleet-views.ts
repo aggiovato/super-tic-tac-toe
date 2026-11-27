@@ -31,13 +31,18 @@ const ALL: readonly Cell[] = Array.from({ length: BOARD_SIZE * BOARD_SIZE }, (_,
   col: i % BOARD_SIZE,
 }));
 
-export const overlay = (placement: ShipPlacement, selected = false): ShipOverlay => ({
+export const overlay = (
+  placement: ShipPlacement,
+  selected = false,
+  fresh = false,
+): ShipOverlay => ({
   ship: placement.ship,
   row: placement.row,
   col: placement.col,
   length: SHIP_LENGTHS[placement.ship],
   orientation: placement.orientation,
   selected,
+  fresh,
 });
 
 /** The ships sunk by `shots`, where they lay. */
@@ -136,12 +141,24 @@ export const afloat = (view: GameState, player: Player): number =>
 /** The rival of `player`. */
 export const rivalOf = other;
 
-/** What the battle shows of both boards, from this device's player's view. */
+/** A shot and who fired it. */
+interface FiredShot {
+  readonly by: Player;
+  readonly shot: Shot;
+}
+
+/**
+ * What the battle shows of both boards, from this device's player's view, after the `last` shot
+ * (marked on its board). `fresh` is the last shot
+ * when it was fired while the board was on screen: the ship it sank sparks, and when it won the
+ * game the winner's figure (the wrecks on the loser's waters) flashes. Once a player has won, the
+ * waters they emptied show that figure in the win colour, whoever won.
+ */
 export function battleViews(
   t: Messages,
   view: GameState,
   me: Player,
-  last: { readonly by: Player; readonly shot: Shot } | null,
+  { last, fresh = null }: { readonly last: FiredShot | null; readonly fresh?: FiredShot | null },
 ) {
   const rival = other(me);
   const over = view.phase === 'over';
@@ -150,20 +167,33 @@ export function battleViews(
   const sunkByMe = sunkBy(view.shots[me]);
   const ownFleet = view.fleets[me];
   const lastAt = (by: Player) => (last?.by === by ? last.shot : null);
+  const winner = view.status.kind === 'won' ? view.status.winner : null;
+  /** The wrecks sunk by `by`, the one their fresh shot sank marked. */
+  const wrecksBy = (by: Player) =>
+    sunkBy(view.shots[by]).map((ship) =>
+      overlay(ship, false, fresh?.by === by && fresh.shot.sunk?.ship === ship.ship),
+    );
+  /** The figure won by `by`: drawn in the win colour, flashing when the winning shot is fresh. */
+  const figure = (by: Player) => ({
+    won: winner === by,
+    celebrate: winner === by && fresh?.by === by,
+  });
   return {
     enemy: {
       cells: waterCells(t, { fleet: rivalFleet, shots: view.shots[me], last: lastAt(me) }),
       ships: (rivalFleet ?? [])
         .filter((ship) => !sunkByMe.some((sunk) => sunk.ship === ship.ship))
         .map((ship) => overlay(ship)),
-      wrecks: sunkByMe.map((ship) => overlay(ship)),
+      wrecks: wrecksBy(me),
+      ...figure(me),
       trains: trains(t, rivalFleet, view.shots[me]),
       afloat: afloat(view, me),
     },
     own: {
       cells: waterCells(t, { fleet: ownFleet, shots: view.shots[rival], last: lastAt(rival) }),
       ships: (ownFleet ?? []).map((ship) => overlay(ship)),
-      wrecks: sunkBy(view.shots[rival]).map((ship) => overlay(ship)),
+      wrecks: wrecksBy(rival),
+      ...figure(rival),
       trains: trains(t, ownFleet, view.shots[rival]),
       afloat: afloat(view, rival),
     },

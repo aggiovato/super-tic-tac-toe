@@ -35,4 +35,6 @@ export interface ShipOverlay {
   readonly length: number;
   readonly orientation: 'h' | 'v';
   readonly selected?: boolean;
+  /** A wreck just sunk, while the board is on screen: it sparks once. */
+  readonly fresh?: boolean;
 }

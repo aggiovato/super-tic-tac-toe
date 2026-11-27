@@ -3,6 +3,8 @@
  * dim dot, a hit a round-capped Sand cross, a sunk ship's cells drop to Raven Deepest under a Chalk
  * outline over a softly hatched rim. Ships of one's own are Seagrass capsules under the marks.
  * Apricot rings the aimed cell (the thick ring is the shape cue) and lights its row and column.
+ * A ship just sunk sparks, as a board closing in Super 3T; once the game is won, the emptied
+ * waters show the winner's figure in Apricot (wrecks and crosses), flashing as the shot lands.
  */
 :host {
   --gap: 2px;
@@ -140,7 +142,7 @@ button.cell:focus-visible {
   aspect-ratio: 1;
   border: var(--border-line) solid var(--color-hit);
   border-radius: var(--radius-pill);
-  animation: pending 900ms var(--ease-out) infinite alternate;
+  animation: pending calc(var(--duration-draw) * 1.5) var(--ease-out) infinite alternate;
 }
 
 @keyframes pending {
@@ -185,6 +187,7 @@ button.cell:focus-visible {
 }
 
 .wreck {
+  position: relative;
   z-index: 2;
   border: var(--border-line) solid var(--color-fg-strong);
   border-radius: var(--radius-tile);
@@ -195,8 +198,66 @@ button.cell:focus-visible {
   border-width: var(--border-hairline);
 }
 
+/* The winner's figure: every wreck and its crosses in the win colour, whoever won. */
+:host(.won) .wreck {
+  border-color: var(--color-win);
+}
+
+:host(.won) .sunk .mark svg {
+  stroke: var(--color-win);
+}
+
+/* The figure reads whole: the last shot's ring goes, as on a closed board elsewhere. */
+:host(.won) .last::after {
+  display: none;
+}
+
+/*
+ * A ship just sunk: the family's spark (`spark-flicker`, styles.css) on its wreck. The winning shot:
+ * the family's win flash (`win-flash`) on every wreck, a frame after that spark.
+ */
+.wreck.fresh::before,
+:host(.celebrate) .wreck::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--border-emphasis));
+  border: var(--border-emphasis) solid var(--flash-colour);
+  border-radius: inherit;
+  box-shadow:
+    0 0 var(--flash-halo) var(--flash-colour),
+    inset 0 0 var(--flash-halo-inset) var(--flash-colour);
+  opacity: 0;
+}
+
+.wreck.fresh::before {
+  --flash-colour: var(--color-spark);
+
+  animation: spark-flicker var(--duration-spark) linear both;
+}
+
+:host(.celebrate) .wreck::after {
+  --flash-colour: var(--color-win);
+
+  animation: win-flash var(--duration-win-flash) linear var(--duration-frame) both;
+}
+
+/* The thumbnail is for a glance: a thinner outline and no light, so it never outshines the board. */
+:host(.compact) .wreck.fresh::before,
+:host(.compact.celebrate) .wreck::after {
+  border-width: var(--border-line);
+  box-shadow: none;
+}
+
 /* On the thumbnail the rival's last shot still has to be seen at a glance: a full-weight ring. */
 :host(.compact) .last::after {
   inset: -1px;
   border-width: var(--border-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host-context(:root:not([data-motion='full'])) .pending .mark::before,
+  :host-context(:root:not([data-motion='full'])) .wreck::before,
+  :host-context(:root:not([data-motion='full'])) .wreck::after {
+    animation: none;
+  }
 }

@@ -17,4 +17,7 @@
   --color-online: var(--ref-signal-300);
   --backdrop-opacity: 0; /* no texture behind the board */
   --color-glow: transparent;
+  /* Sparks and win flashes keep their outline and lose their light. */
+  --flash-halo: 0rem;
+  --flash-halo-inset: 0rem;
 }

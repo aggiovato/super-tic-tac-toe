@@ -95,10 +95,50 @@
   }
 
   /*
-   * A won game's one spectacle, the same in every game: three strong flashes in the accent on what
-   * won it (Super 3T's three boards, the classic board, the winner's boxes). Used by each board's
-   * overlay; the global `data-motion` rule below and each component's reduced-motion rule stop it.
+   * The family's two feedback moments, shared by every game. Each board draws them on an overlay
+   * of what closed or won: a `--border-emphasis` outline in the moment's colour with the
+   * `--flash-halo` light around and inside it, starting at opacity 0.
+   *
+   * - A local win (a Super 3T board, a Dots box, a Ship Sink ship sunk): `spark-flicker` in
+   *   `--color-spark`, `--duration-spark`, linear, as it lands.
+   * - A won game: `win-flash` in `--color-win` on the winner's figure, `--duration-win-flash`,
+   *   linear, one `--duration-frame` after the last thing the winning move draws starts.
+   *
+   * The global `data-motion` rule below and each component's reduced-motion rule stop them.
    */
+
+  /* Uneven on and off, like an arc catching: bright strikes that fade out. */
+  @keyframes spark-flicker {
+    0% {
+      opacity: 0;
+    }
+
+    6% {
+      opacity: 1;
+    }
+
+    12% {
+      opacity: 0.2;
+    }
+
+    20% {
+      opacity: 0.9;
+    }
+
+    28% {
+      opacity: 0.35;
+    }
+
+    38% {
+      opacity: 0.75;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Three strong flashes. */
   @keyframes win-flash {
     0%,
     16%,

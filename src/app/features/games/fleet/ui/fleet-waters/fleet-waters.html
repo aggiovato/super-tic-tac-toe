@@ -70,6 +70,7 @@
   @for (wreck of wrecks(); track wreck.ship) {
     <span
       class="wreck"
+      [class.fresh]="wreck.fresh"
       [style.grid-row]="span(wreck, 'row')"
       [style.grid-column]="span(wreck, 'col')"
     ></span>
