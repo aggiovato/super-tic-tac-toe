@@ -1,7 +1,7 @@
 <ng-template #rivalRow>
   <section class="fleet" [attr.aria-label]="t().fleet.rivalFleet">
     <div class="heading">
-      <h2>{{ t().fleet.rivalFleet }}</h2>
+      <h2>{{ owners().rival }}</h2>
       <span class="afloat">{{ t().fleet.afloat(views().enemy.afloat) }}</span>
     </div>
     <app-fleet-trains [ships]="views().enemy.trains" [label]="t().fleet.rivalFleet" />
@@ -11,7 +11,7 @@
 <ng-template #ownRow>
   <section class="fleet" [attr.aria-label]="t().fleet.yourFleet">
     <div class="heading">
-      <h2>{{ t().fleet.yourFleet }}</h2>
+      <h2>{{ owners().own }}</h2>
       <span class="afloat">{{ t().fleet.afloat(views().own.afloat) }}</span>
     </div>
     <app-fleet-trains [ships]="views().own.trains" [own]="true" [label]="t().fleet.yourFleet" />

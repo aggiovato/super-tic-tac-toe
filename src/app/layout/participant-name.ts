@@ -29,3 +29,24 @@ export function participantName(
   }
   return names[participant] || null;
 }
+
+/**
+ * How a player is labelled where they are named in full (the player cards, Ship Sink's quay): their
+ * own name, otherwise "You" for this device's player against the computer or online, the computer's
+ * level, "Rival" online, and "Player n" between two people here.
+ */
+export function playerLabel(
+  t: Messages,
+  names: readonly [string, string],
+  side: PlaySide,
+  participant: Participant,
+): string {
+  const own = participantName(t, names, side, participant);
+  if (own) return own;
+  if (side.mode === 'computer') return participant === 0 ? t.online.you : t.defaultName(2);
+  if (side.mode === 'online') {
+    if (side.seat === null || side.seat === undefined) return t.defaultName(participant + 1);
+    return participant === side.seat ? t.online.you : t.online.rival;
+  }
+  return t.defaultName(participant + 1);
+}

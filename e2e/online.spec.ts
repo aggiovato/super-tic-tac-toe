@@ -17,7 +17,7 @@ const allWell = (page: Page) => page.getByRole('button', { name: 'Room: all well
 const roomSays = (page: Page, note: string) =>
   expect(page.getByRole('button', { name: /^Room: / })).toHaveAccessibleName(`Room: ${note}`);
 const openRoom = (page: Page) => page.getByRole('button', { name: /^Room: / }).click();
-const firstScore = (page: Page) => page.locator('app-score-board dd .sr-only').first();
+const firstScore = (page: Page) => page.locator('app-players dd .sr-only').first();
 
 /**
  * A device (a browser context: its own storage, so its own seat) with the how-to-play ticket
@@ -86,8 +86,8 @@ test('two browsers play online, lose the connection, retry and converge on one r
   for (const { page } of [host, guest]) {
     await expect(allWell(page)).toBeVisible();
   }
-  await expect(host.page.locator('app-score-board')).toContainText('You');
-  await expect(host.page.locator('app-score-board')).toContainText('Rival');
+  await expect(host.page.locator('app-players')).toContainText('You');
+  await expect(host.page.locator('app-players')).toContainText('Rival');
 
   // The host plays X and opens; the guest cannot play out of turn.
   await cell(host.page, 0).click();
@@ -221,8 +221,8 @@ test('two browsers play ship sink online: both place at once and neither sees th
   // Both place at once: no one's turn to tag. Once the host has placed, only the guest may move,
   // and the score says so on each device.
   await host.page.getByRole('button', { name: 'Confirm fleet' }).click();
-  await expect(host.page.locator('app-score-board .turn.on')).toHaveText('THEIR TURN');
-  await expect(guest.page.locator('app-score-board .turn.on')).toHaveText('YOUR TURN');
+  await expect(host.page.locator('app-players .turn.on')).toHaveText('THEIR TURN');
+  await expect(guest.page.locator('app-players .turn.on')).toHaveText('YOUR TURN');
   await guest.page.getByRole('button', { name: 'Confirm fleet' }).click();
   for (const { page } of [host, guest]) {
     await expect(enemy(page)).toBeVisible();

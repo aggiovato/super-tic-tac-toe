@@ -10,18 +10,15 @@ import { participantName } from '@layout';
 const WORD_LENGTH = 5;
 /** The result cascades through more characters than an ordinary turn. */
 const RESULT_STEPS = 14;
-/** A box closed: the mover's tiles cascade again from blank, shorter than the result. */
-const BOX_STEPS = 10;
 
 const glyph = (player: Player): string => (player === 'X' ? 'x' : 'o');
-/** Two flap digits, capped at 99. */
-const digits = (value: number): string[] => [...String(Math.min(value, 99)).padStart(2, '0')];
 const word = (text: string, accent = false, steps?: number, length = WORD_LENGTH): FlapTile[] =>
   [...text.padEnd(length).slice(0, length)].map((char) => ({ char, accent, steps }));
 
 /**
- * The Dots and Boxes status: a departure row (who plays, or the result), one sentence on the last
- * line, the boxes each player holds, and the status region screen readers hear.
+ * The Dots and Boxes status: a departure row (who draws next, in their ink, or the result), one
+ * sentence on the last line, and the status region screen readers hear (the boxes each player
+ * holds are on their cards).
  */
 @Component({
   selector: 'app-dots-status',
@@ -60,27 +57,16 @@ export class DotsStatus {
     if (status.kind === 'drawn') {
       return word(flap.draw, true, RESULT_STEPS, WORD_LENGTH + 2);
     }
-    // The boxes are the score: each player's symbol and count in their ink; the player who waits
-    // steps back, so the side at full strength is the one to move. A box just closed replays the
-    // mover's side from blank, in their own ink (Apricot stays for the win).
-    const { X, O } = this.store.boxes();
+    // Who draws next, in their ink (the boxes are on the players' cards); every free line is
+    // where they may draw, as every free cell in the classic game.
+    const ink = glyph(turn) as 'x' | 'o';
     const last = this.store.lastLine();
-    const side = (player: Player, boxes: number): FlapTile[] => {
-      const ink = glyph(player) as 'x' | 'o';
-      const dim = player !== turn;
-      const closed = last !== null && last.closed > 0 && last.mover === player;
-      const cascade = closed ? { spin: boxes, steps: BOX_STEPS } : {};
-      const tiles = digits(boxes).map((char): FlapTile => ({
-        char,
-        accent: false,
-        ink,
-        dim,
-        ...cascade,
-      }));
-      const symbol: FlapTile = { char: ink, accent: false, ink, dim, ...cascade };
-      return player === 'X' ? [symbol, ...tiles] : [...tiles, symbol];
-    };
-    return [...side('X', X), { char: ' ', accent: false }, ...side('O', O)];
+    const again = last !== null && last.closed > 0 && last.mover === turn;
+    return [
+      { char: ink, accent: false, ink, ...(again ? { spin: this.store.game().moves.length } : {}) },
+      { char: '→', accent: false },
+      ...word(this.t().dots.flapTurn, true),
+    ];
   });
 
   /** One sentence: a refused line, the result, or what the last line did. */

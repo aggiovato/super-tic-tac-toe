@@ -243,7 +243,7 @@ test.describe('against the opponent', () => {
     isMobile,
   }) => {
     await againstComputer(page);
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
+    await expect(page.locator('app-players dt').last()).toHaveText('Rookie, Beginner');
     for (let round = 0; round < 3; round++) {
       await playAnyLegal(page);
       await expect(status(page)).toHaveText(/^Rookie to move/);
@@ -291,7 +291,7 @@ test.describe('against the opponent', () => {
     await confirm.click();
     await expect(confirm).toHaveCount(0);
     await expect(status(page)).toHaveText('X to move. May pick any open board.');
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
+    await expect(page.locator('app-players dt').last()).toHaveText('Rookie, Beginner');
   });
 
   // Each level is a rank: its name in the level choice, the score and the status.
@@ -320,7 +320,7 @@ test.describe('against the opponent', () => {
   test('the mode is remembered after a reload', async ({ page }) => {
     await againstComputer(page);
     await page.reload();
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Rookie, Beginner');
+    await expect(page.locator('app-players dt').last()).toHaveText('Rookie, Beginner');
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Players' }).click();
     await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();

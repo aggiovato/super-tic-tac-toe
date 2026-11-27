@@ -55,7 +55,8 @@ export const DOTS_GAME = {
   variants: dots.SIZES.map(dots.variantOf),
   variantOf: (raw: string | undefined) => dots.variantOf(dots.sizeOfVariant(raw ?? '')),
   modes: BOTH_MODES,
-  draws: true,
+  // Every size has an odd number of boxes (9, 25): one player always holds more.
+  draws: false,
   online: true,
   levels: COMPUTER_LEVELS,
   featured: false,

@@ -97,7 +97,7 @@ test.describe('classic tic tac toe', () => {
     await expect(page.getByText('That cell is already taken.')).toBeVisible();
     await classicCell(page, 2).click();
     await expect(status(page)).toHaveText('Game over. X wins.');
-    await expect(page.locator('app-score-board dd .sr-only').first()).toHaveText('01');
+    await expect(page.locator('app-players dd .sr-only').first()).toHaveText('01');
     await page.getByRole('button', { name: 'Rematch' }).click();
     // Player 2 now plays X and opens.
     await expect(status(page)).toHaveText('X to move.');
@@ -177,7 +177,7 @@ test.describe('saving and resuming', () => {
     await expect(classicCell(page, 4)).toHaveAccessibleName(/^Cell 5, X/);
     await expect(classicCell(page, 0)).toHaveAccessibleName(/^Cell 1, O/);
     // Against the computer at the advanced level: its train name, and X to move.
-    await expect(page.locator('app-score-board dt').last()).toHaveText('Master, Advanced');
+    await expect(page.locator('app-players dt').last()).toHaveText('Master, Advanced');
     await expect(status(page)).toHaveText(/^X to move/);
   });
 
@@ -223,7 +223,7 @@ test.describe('saving and resuming', () => {
     for (let visit = 0; visit < 2; visit++) {
       await page.reload();
       await expect(status(page)).toHaveText('Game over. X wins.');
-      await expect(page.locator('app-score-board dd .sr-only').first()).toHaveText('01');
+      await expect(page.locator('app-players dd .sr-only').first()).toHaveText('01');
     }
     await page.getByRole('button', { name: 'History' }).click();
     await expect(page).toHaveURL(/\/classic\/history$/);

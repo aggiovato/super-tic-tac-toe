@@ -7,6 +7,14 @@ new version and date.
 
 ## [Unreleased]
 
+### Changed
+
+- The players read the same in every game: one card each with the game's own mark, their name
+  ("Tú" against the computer), the game's live figure where it has one (the boxes in Cajas, in each
+  player's ink) and the series. Cajas no longer shows draws, which it cannot have, and Ship Sink
+  names each fleet after its player instead of showing X and O. The turn tag no longer looks
+  struck out.
+
 ## [0.8.0] - 2026-11-25
 
 ### Added
