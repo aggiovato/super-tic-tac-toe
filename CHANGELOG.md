@@ -11,6 +11,13 @@ new version and date.
 
 ### Changed
 
+- On phones the games open from a floating button at the bottom left (the chat's twin, which takes
+  the bottom right online), and their ticket grows out of it. The board now sits right under the
+  departure row with the players just below it, and small phones no longer scroll in Super 3T.
+- The button after a game reads "Otra partida" (not "Revancha", the loser's word) and sits at the
+  right in every game.
+- Classic and Cajas no longer repeat whose turn it is in the sentence: the departure row and the
+  turn tag already say it.
 - The players read the same in every game: one card each with the game's own mark, their name
   ("Tú" against the computer), the game's live figure where it has one (the boxes in Cajas, in each
   player's ink) and the series. Cajas no longer shows draws, which it cannot have, and Ship Sink

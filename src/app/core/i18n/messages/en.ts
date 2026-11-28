@@ -86,7 +86,7 @@ export const en: Messages = {
   classic: {
     flapTurn: 'PLAYS',
     opening: 'Tic tac toe: the first to get three in a line wins. X starts.',
-    played: (mover, cell, next) => `${mover} played cell ${cell}. ${next} to move.`,
+    played: (mover, cell) => `${mover} played cell ${cell}.`,
     won: (winner) => `${winner} wins with three in a line.`,
     drawn: 'Draw: the board is full and nobody made a line.',
     rejected: (reason) =>
@@ -159,7 +159,7 @@ export const en: Messages = {
   dots: {
     flapTurn: 'PLAYS',
     opening: 'Draw a line between two neighbouring dots. Close a box to keep it and play again.',
-    drew: (mover, next) => `${mover} drew a line. ${next} to move.`,
+    drew: (mover) => `${mover} drew a line.`,
     closed: (mover, boxes) =>
       boxes === 1
         ? `${mover} closed a box and plays again.`

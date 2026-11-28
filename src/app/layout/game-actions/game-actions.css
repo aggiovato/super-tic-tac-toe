@@ -5,6 +5,12 @@
   gap: var(--spacing-stack-tight);
 }
 
+/* The next game always at the right, in every game (Ship Sink's Fire slot too): Undo, when there
+   is one, stays at the left. */
+.rematch {
+  margin-inline-start: auto;
+}
+
 :host([hidden]) {
   display: none;
 }

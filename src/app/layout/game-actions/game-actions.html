@@ -6,5 +6,5 @@
   </button>
 }
 @if (store.isOver()) {
-  <button app-button="primary" (click)="store.rematch()">{{ t().rematch }}</button>
+  <button app-button="primary" class="rematch" (click)="store.rematch()">{{ t().rematch }}</button>
 }

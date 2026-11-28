@@ -79,9 +79,7 @@ export class ClassicStatus {
       return c.drawn;
     }
     const last = moves.at(-1);
-    return last
-      ? c.played(this.who(turn === 'X' ? 'O' : 'X'), last.cell + 1, this.who(turn))
-      : c.opening;
+    return last ? c.played(this.who(turn === 'X' ? 'O' : 'X'), last.cell + 1) : c.opening;
   });
 
   /** What screen readers hear after every change. */

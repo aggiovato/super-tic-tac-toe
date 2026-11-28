@@ -11,8 +11,9 @@ import { Button, Icon, trackTear } from '@ui';
 import { GameLibrary } from '../game-library/game-library';
 
 /**
- * The masthead's way to the other games where the page has no room for the library aside (phones
- * and narrow windows): a button that opens the library in a modal dialog, a bottom sheet on phones.
+ * The way to the other games where the page has no room for the library aside: a masthead button
+ * on tablets and narrow windows, opening a sheet from the right; on phones a floating button at the
+ * bottom left (the chat's twin), whose ticket grows out of it and goes back into it.
  * Hidden where the aside shows. The native dialog traps focus and closes on Escape; a click on the
  * backdrop or on a game closes it too.
  */

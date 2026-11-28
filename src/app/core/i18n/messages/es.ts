@@ -24,7 +24,7 @@ export const es: Messages = {
       case 'cell-occupied':
         return 'Esa casilla ya está ocupada.';
       case 'game-over':
-        return 'La partida ha terminado: pulsa Revancha para jugar otra.';
+        return 'La partida ha terminado: pulsa Otra partida para seguir.';
       case 'invalid-coordinates':
         return 'Esa jugada no existe en el tablero.';
     }
@@ -50,7 +50,8 @@ export const es: Messages = {
   draws: 'Tablas',
   score: 'Marcador de la serie',
   turnTag: { yours: 'TU TURNO', theirs: 'SU TURNO', plays: 'JUEGA' },
-  rematch: 'Revancha',
+  // Not "Revancha": that is only the loser's word; the next game is for both.
+  rematch: 'Otra partida',
   undo: 'Deshacer',
   howToPlay: {
     title: 'Cómo se juega',
@@ -87,14 +88,14 @@ export const es: Messages = {
   classic: {
     flapTurn: 'JUEGA',
     opening: 'Tres en raya: el primero que consiga tres en línea gana. Empieza X.',
-    played: (mover, cell, next) => `${mover} jugó la casilla ${cell}. Turno de ${next}.`,
+    played: (mover, cell) => `${mover} jugó la casilla ${cell}.`,
     won: (winner) => `${winner} gana con tres en línea.`,
     drawn: 'Tablas: el tablero está lleno y nadie hizo línea.',
     rejected: (reason) =>
       reason === 'cell-occupied'
         ? 'Esa casilla ya está ocupada.'
         : reason === 'game-over'
-          ? 'La partida ha terminado: pulsa Revancha para jugar otra.'
+          ? 'La partida ha terminado: pulsa Otra partida para seguir.'
           : 'Esa jugada no existe en el tablero.',
     status: {
       turn: (next) => `Turno de ${next}.`,
@@ -164,7 +165,7 @@ export const es: Messages = {
     flapTurn: 'JUEGA',
     opening:
       'Traza una línea entre dos puntos vecinos. Quien cierra una caja se la queda y vuelve a jugar.',
-    drew: (mover, next) => `${mover} trazó una línea. Turno de ${next}.`,
+    drew: (mover) => `${mover} trazó una línea.`,
     closed: (mover, boxes) =>
       boxes === 1
         ? `${mover} cerró una caja y vuelve a jugar.`
@@ -175,7 +176,7 @@ export const es: Messages = {
       reason === 'line-taken'
         ? 'Esa línea ya está trazada.'
         : reason === 'game-over'
-          ? 'La partida ha terminado: pulsa Revancha para jugar otra.'
+          ? 'La partida ha terminado: pulsa Otra partida para seguir.'
           : 'Esa línea no existe en el tablero.',
     status: {
       turn: (next) => `Turno de ${next}.`,
@@ -238,7 +239,7 @@ export const es: Messages = {
       reason === 'already-shot'
         ? 'Ya disparaste a esa casilla.'
         : reason === 'game-over'
-          ? 'La partida ha terminado: pulsa Revancha para jugar otra.'
+          ? 'La partida ha terminado: pulsa Otra partida para seguir.'
           : reason === 'invalid-fleet'
             ? 'Esa flota no vale: revisa que ningún barco toque a otro.'
             : reason === 'pending'

@@ -97,10 +97,39 @@
   overscroll-behavior: contain;
 }
 
+/*
+ * Phones: the way to the games is a floating button at the bottom left, the chat's twin (round,
+ * Charcoal, hairline edge, panel lift), in the thumb's reach; the page keeps room for it at its
+ * end. Its name stays for screen readers.
+ */
+@media (max-width: 47.99rem) {
+  .toggle {
+    position: fixed;
+    left: var(--spacing-gutter);
+    bottom: calc(var(--spacing-stack-tight) + env(safe-area-inset-bottom));
+    z-index: 10;
+    width: var(--spacing-fab);
+    min-height: var(--spacing-fab);
+    height: var(--spacing-fab);
+    padding: 0;
+    border: var(--border-hairline) solid var(--color-line);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-panel);
+    color: var(--color-fg-strong);
+    font-size: var(--text-body);
+  }
+
+  .label {
+    display: none;
+  }
+}
+
 /* Phones: a bottom sheet as tall as its games need. */
-@media (max-width: 34.99rem) {
+@media (max-width: 47.99rem) {
   :host {
-    --sheet-from: 0 calc(100% + 2rem);
+    /* No slide on phones: the ticket grows out of the floating button instead (below). */
+    --sheet-from: 0 0;
     --sheet-duration: var(--duration-zoom);
   }
 
@@ -125,18 +154,31 @@
 }
 
 /*
- * Phones: a departure ticket, like the how-to-play one. A Raven Deep card held off the edges with
+ * Phones: a departure ticket, like the how-to-play one, that grows out of the floating button and
+ * goes back into it (scaled from its corner, fading; no travel under reduced motion). A Raven Deep card held off the edges with
  * twice the panel radius and the upward ticket lift; the head is its stub, torn off along a dashed
  * Raven Lift perforation with a notch cut on each side (`--tear-top`, kept at the head's height by
  * `trackTear`). The shadow sits on the sheet, the notches on the card: a mask would cut the shadow.
  */
-@media (max-width: 34.99rem) {
+@media (max-width: 47.99rem) {
   :host {
     --ticket-notch: 0.65rem;
   }
 
   .sheet {
+    --sheet-scale: 0.3;
+
     inset: auto var(--spacing-gutter) calc(var(--spacing-gutter) + env(safe-area-inset-bottom));
+    max-width: 30rem;
+    transform-origin: calc(var(--spacing-fab) / 2) 100%;
+    scale: var(--sheet-scale);
+    opacity: 0;
+    translate: 0 0;
+    transition:
+      scale var(--sheet-duration) var(--ease-zoom),
+      opacity var(--duration-frame) var(--ease-out),
+      display var(--sheet-duration) allow-discrete,
+      overlay var(--sheet-duration) allow-discrete;
     width: auto;
     border: 0;
     border-radius: 0;
@@ -160,6 +202,12 @@
         right / 51% 100% no-repeat;
   }
 
+  .sheet[open] {
+    scale: 1;
+    opacity: 1;
+    translate: 0 0;
+  }
+
   .sheet-head {
     border-bottom: var(--border-line) dashed var(--color-surface-raised);
   }
@@ -167,6 +215,13 @@
   /* The ticket's own veil (Ink at 70%), so the card and its notches stand out from the page. */
   .sheet::backdrop {
     background: var(--color-shade);
+  }
+
+  @starting-style {
+    .sheet[open] {
+      scale: var(--sheet-scale);
+      opacity: 0;
+    }
   }
 }
 
