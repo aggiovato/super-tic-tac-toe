@@ -60,7 +60,7 @@ test.describe('dots and boxes', () => {
       'Horizontal line, row 2, dots 1 and 2',
     );
     await expect(page.getByText('O closed a box and plays again.', { exact: true })).toBeVisible();
-    // The departure row is now the box score; screen readers hear the count.
+    // The boxes are on the players' cards; screen readers hear the count.
     await expect(status(page)).toHaveText('O closed a box and plays again. Boxes: X 0, O 1.');
 
     await page.reload();

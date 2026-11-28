@@ -58,6 +58,8 @@
       'arena' var(--arena-min)
       'controls' auto / minmax(0, 1fr);
     align-content: start;
+    /* The page grows past the screen rather than run the players under the floating buttons. */
+    height: auto;
   }
 }
 

@@ -16,6 +16,7 @@ new version and date.
   departure row with the players just below it, and small phones no longer scroll in Super 3T.
 - The button after a game reads "Otra partida" (not "Revancha", the loser's word) and sits at the
   right in every game.
+- A closed box in Cajas is a hatch in its player's ink instead of a dark tile.
 - Classic and Cajas no longer repeat whose turn it is in the sentence: the departure row and the
   turn tag already say it.
 - The players read the same in every game: one card each with the game's own mark, their name

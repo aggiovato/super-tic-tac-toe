@@ -185,21 +185,19 @@
 }
 
 /*
- * A closed box turns into a tile, as a closed board in Super 3T: the darker "done" surface, tinted
- * with its player's ink and set slightly inside its lines, under the player's mark in that ink with
- * a halo of the tile's own colour.
+ * A closed box is filled with a soft diagonal hatch in its player's ink (the family's hatch, as in
+ * the history's stats), set slightly inside its lines, under the player's mark in that ink. The
+ * mark's halo is the board's own ground, so the stripes stop short of its strokes.
  */
 .box {
   --player-ink: var(--color-player-x);
-  --box-tile: color-mix(in srgb, var(--player-ink) 24%, var(--color-surface-done));
+  --box-hatch: color-mix(in srgb, var(--player-ink) 55%, transparent);
 
   position: absolute;
   z-index: 1;
   width: calc(100% / var(--boxes));
   height: calc(100% / var(--boxes));
   --closing-colour: var(--player-ink);
-  /* The mark's halo takes the tile's colour, as on Super 3T's closed boards. */
-  --platform-bg: var(--box-tile);
 }
 
 .box::before {
@@ -207,12 +205,17 @@
   position: absolute;
   inset: 7%;
   border-radius: var(--radius-tile);
-  background: var(--box-tile);
-  box-shadow: var(--shadow-panel);
+  background: repeating-linear-gradient(-45deg, var(--box-hatch) 0 1.5px, transparent 1.5px 6px);
 }
 
 .box.o {
   --player-ink: var(--color-player-o);
+}
+
+/* No drop shadow under a box's mark: at a box's size it darkened the whole square; the halo already
+   lifts the mark off the hatch. */
+.box app-closing-mark {
+  filter: none;
 }
 
 /* The closing spark: the family's spark (`spark-flicker`, styles.css) on the new tile. */
