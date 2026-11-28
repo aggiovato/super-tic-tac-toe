@@ -126,8 +126,9 @@
   display: none;
 }
 
-/* Phones: the floating buttons (games; the chat online) keep the end of the page clear for them. */
-@media (max-width: 47.99rem) {
+/* Phones tall enough for the floating buttons (games; the chat online): the end of the page is
+   kept clear for them. Shorter phones keep the games in the masthead and the chat in the flow. */
+@media (max-width: 47.99rem) and (min-height: 47.5rem) {
   .game {
     padding-bottom: calc(
       var(--spacing-fab) + 2 * var(--spacing-stack-tight) + env(safe-area-inset-bottom)

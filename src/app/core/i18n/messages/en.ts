@@ -125,7 +125,7 @@ export const en: Messages = {
     back: 'Back to the game',
     sections: 'History sections',
     results: 'Results',
-    byLevel: 'Against the opponent',
+    byLevel: 'Against the computer',
     level: 'Level',
     wins: 'Wins',
     draws: 'Draws',
@@ -140,7 +140,7 @@ export const en: Messages = {
     moves: (count) => `${count} moves`,
     board: (variant) => `${variant}×${variant}`,
     totals: (wins, draws, losses) =>
-      `Against the opponent: ${wins} wins, ${draws} draws and ${losses} losses.`,
+      `Against the computer: ${wins} wins, ${draws} draws and ${losses} losses.`,
     flapResult: { won: 'W', drawn: 'D', lost: 'L' },
     strip: (count) =>
       count === 1 ? "The latest game's result" : `The latest ${count} games' results`,
@@ -371,7 +371,7 @@ export const en: Messages = {
     title: 'Settings',
     close: 'Close settings',
     mode: 'Who plays?',
-    modes: { local: 'Two players', computer: 'Against the opponent' },
+    modes: { local: 'Two players', computer: 'Against the computer' },
     onlineMode: 'Online room',
     level: 'Opponent level',
     levels: { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced' },

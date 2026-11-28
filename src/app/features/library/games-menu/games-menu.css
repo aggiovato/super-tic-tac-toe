@@ -98,28 +98,31 @@
 }
 
 /*
- * Phones: the way to the games is a floating button at the bottom left, the chat's twin (round,
- * Charcoal, hairline edge, panel lift), in the thumb's reach; the page keeps room for it at its
- * end. Its name stays for screen readers.
+ * Phones tall enough for it: the way to the games is a floating pill at the bottom left, "Juegos"
+ * with its icon, in the chat button's material (Charcoal, hairline edge, panel lift), in the thumb's
+ * reach; the page keeps room for it at its end. Shorter phones keep it in the masthead, where it
+ * never covers the players.
  */
-@media (max-width: 47.99rem) {
+@media (max-width: 47.99rem) and (min-height: 47.5rem) {
   .toggle {
     position: fixed;
     left: var(--spacing-gutter);
     bottom: calc(var(--spacing-stack-tight) + env(safe-area-inset-bottom));
     z-index: 10;
-    width: var(--spacing-fab);
     min-height: var(--spacing-fab);
     height: var(--spacing-fab);
-    padding: 0;
+    padding-inline: var(--spacing-stack);
     border: var(--border-hairline) solid var(--color-line);
     border-radius: var(--radius-pill);
     background: var(--color-surface-raised);
     box-shadow: var(--shadow-panel);
     color: var(--color-fg-strong);
-    font-size: var(--text-body);
+    font-size: var(--text-caption);
   }
+}
 
+/* The masthead button names itself where there is room (above 30rem), as before. */
+@media (max-width: 30rem) and (max-height: 47.49rem) {
   .label {
     display: none;
   }

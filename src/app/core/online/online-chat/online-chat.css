@@ -26,6 +26,13 @@
   }
 }
 
+/* Short phones: in the flow under the players, at the right, where it covers nothing. */
+@media (max-width: 47.99rem) and (max-height: 47.49rem) {
+  .dock {
+    position: static;
+  }
+}
+
 .fab {
   position: relative;
   display: grid;

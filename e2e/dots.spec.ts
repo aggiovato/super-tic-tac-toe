@@ -88,7 +88,7 @@ test.describe('dots and boxes', () => {
     await page.goto('/dots');
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Players' }).click();
-    await page.getByRole('radio', { name: 'Against the opponent' }).check();
+    await page.getByRole('radio', { name: 'Against the computer' }).check();
     await page.getByRole('radio', { name: 'Master' }).check();
     await page.getByRole('button', { name: 'Close settings' }).click();
     const theirs = page.getByRole('button', { name: /, Master's$/ });

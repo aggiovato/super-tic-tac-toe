@@ -36,8 +36,11 @@ export class GamesMenu {
     );
   }
 
+  /** Opens the library with the game being played in view (on a phone it may sit below the fold). */
   protected open(): void {
-    this.dialog().nativeElement.showModal();
+    const dialog = this.dialog().nativeElement;
+    dialog.showModal();
+    dialog.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'nearest' });
   }
 
   protected close(): void {

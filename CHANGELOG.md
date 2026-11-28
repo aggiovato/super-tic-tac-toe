@@ -7,8 +7,6 @@ new version and date.
 
 ## [Unreleased]
 
-## [0.8.1] - 2026-11-28
-
 ### Changed
 
 - On phones the games open from a floating button at the bottom left (the chat's twin, which takes
@@ -19,6 +17,11 @@ new version and date.
 - A closed box in Cajas is a hatch in its player's ink instead of a dark tile.
 - Classic and Cajas no longer repeat whose turn it is in the sentence: the departure row and the
   turn tag already say it.
+
+## [0.8.1] - 2026-11-28
+
+### Changed
+
 - The players read the same in every game: one card each with the game's own mark, their name
   ("Tú" against the computer), the game's live figure where it has one (the boxes in Cajas, in each
   player's ink) and the series. Cajas no longer shows draws, which it cannot have, and Ship Sink

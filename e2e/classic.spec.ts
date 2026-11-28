@@ -113,7 +113,7 @@ test.describe('classic tic tac toe', () => {
       await page.goto('/classic');
       await page.getByRole('button', { name: 'Settings' }).click();
       await page.getByRole('tab', { name: 'Players' }).click();
-      await page.getByRole('radio', { name: 'Against the opponent' }).check();
+      await page.getByRole('radio', { name: 'Against the computer' }).check();
       await page.getByRole('radio', { name: train }).check();
       await page.getByRole('button', { name: 'Close settings' }).click();
       for (let round = 1; round <= 2; round++) {

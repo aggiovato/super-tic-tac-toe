@@ -127,7 +127,7 @@ export const es: Messages = {
     back: 'Volver a la partida',
     sections: 'Partes del historial',
     results: 'Resultados',
-    byLevel: 'Contra el rival',
+    byLevel: 'Contra la máquina',
     level: 'Nivel',
     wins: 'Victorias',
     draws: 'Tablas',
@@ -143,7 +143,7 @@ export const es: Messages = {
     moves: (count) => `${count} jugadas`,
     board: (variant) => `${variant}×${variant}`,
     totals: (wins, draws, losses) =>
-      `Contra el rival: ${wins} victorias, ${draws} tablas y ${losses} derrotas.`,
+      `Contra la máquina: ${wins} victorias, ${draws} tablas y ${losses} derrotas.`,
     flapResult: { won: 'V', drawn: 'T', lost: 'D' },
     strip: (count) =>
       count === 1
@@ -379,7 +379,7 @@ export const es: Messages = {
     title: 'Ajustes',
     close: 'Cerrar ajustes',
     mode: '¿Contra quién?',
-    modes: { local: 'Dos personas', computer: 'Contra el rival' },
+    modes: { local: 'Dos personas', computer: 'Contra la máquina' },
     onlineMode: 'Sala online',
     level: 'Nivel del rival',
     levels: { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' },

@@ -144,7 +144,7 @@ test('Players groups who plays and their names; a room opens only from its invit
   await expect(panel.getByRole('radio', { name: 'Two players' })).toBeChecked();
   await expect(panel.getByRole('textbox')).toHaveCount(2);
 
-  await panel.getByRole('radio', { name: 'Against the opponent' }).check();
+  await panel.getByRole('radio', { name: 'Against the computer' }).check();
   await expect(panel.getByRole('radio', { name: 'Rookie' })).toBeChecked();
   await expect(panel.getByRole('textbox')).toHaveCount(1);
 
