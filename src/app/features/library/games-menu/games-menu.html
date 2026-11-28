@@ -1,6 +1,13 @@
-<button app-button="quiet" size="small" class="toggle" (click)="open()">
+<!-- In the masthead on tablets and narrow windows; a floating button at the bottom left on phones. -->
+<button
+  app-button="quiet"
+  size="small"
+  class="toggle"
+  [attr.aria-label]="t().library.open"
+  (click)="open()"
+>
   <app-icon name="games" />
-  <span class="max-[30rem]:sr-only">{{ t().library.open }}</span>
+  <span class="label" aria-hidden="true">{{ t().library.open }}</span>
 </button>
 
 <!-- A click on the backdrop closes it; Escape is the dialog's own keyboard way out. -->

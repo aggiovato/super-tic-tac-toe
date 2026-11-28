@@ -283,7 +283,7 @@ test.describe('against the opponent', () => {
     await expect(status(page)).toHaveText('O to move. Must play on board 3.');
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Players' }).click();
-    await page.getByRole('radio', { name: 'Against the opponent' }).check();
+    await page.getByRole('radio', { name: 'Against the computer' }).check();
     const confirm = page.getByRole('button', { name: 'Switch and clear the score' });
     await expect(confirm).toBeVisible();
     // Nothing changed yet: the game in progress is still there.
@@ -323,7 +323,7 @@ test.describe('against the opponent', () => {
     await expect(page.locator('app-players dt').last()).toHaveText('Rookie, Beginner');
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Players' }).click();
-    await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Against the computer' })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'Rookie' })).toBeChecked();
     await expect(page.getByLabel('Player 2 name')).toHaveCount(0);
   });

@@ -104,7 +104,9 @@
                 type="text"
                 autocomplete="off"
                 [maxLength]="nameMaxLength"
-                [placeholder]="t().defaultName(index + 1)"
+                [placeholder]="
+                  nameFields().length === 1 ? t().online.you : t().defaultName(index + 1)
+                "
                 [value]="preferences.names()[index]"
                 (input)="onName(index, $event)"
               />

@@ -91,7 +91,7 @@ export class DotsStatus {
     }
     return last.closed > 0
       ? d.closed(this.who(last.mover), last.closed)
-      : d.drew(this.who(last.mover), this.who(game.turn));
+      : d.drew(this.who(last.mover));
   });
 
   /**
@@ -109,8 +109,12 @@ export class DotsStatus {
     if (status.kind === 'drawn') {
       return `${this.why()} ${tally} ${d.status.drawn}`;
     }
-    return this.store.lastLine()
-      ? `${this.why()} ${tally}`
+    // A line that closed nothing no longer names who draws next in the sentence (the row and the
+    // turn tag do): say it here. A closed box already says its mover plays again.
+    const last = this.store.lastLine();
+    if (last && last.closed > 0) return `${this.why()} ${tally}`;
+    return last
+      ? `${this.why()} ${tally} ${d.status.turn(this.who(turn))}`
       : `${tally} ${d.status.turn(this.who(turn))}`;
   });
 }

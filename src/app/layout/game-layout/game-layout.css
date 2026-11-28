@@ -48,6 +48,18 @@
 @media (max-width: 47.99rem) and (orientation: portrait) {
   .game {
     --arena-min: var(--game-arena-min, 18rem);
+
+    /* The arena takes just what its board needs, so the board meets the departure row above and
+       the players below; what a tall phone has left gathers at the end, under the floating
+       buttons, instead of around the board. */
+    grid-template:
+      'masthead' auto
+      'departures' auto
+      'arena' var(--arena-min)
+      'controls' auto / minmax(0, 1fr);
+    align-content: start;
+    /* The page grows past the screen rather than run the players under the floating buttons. */
+    height: auto;
   }
 }
 
@@ -58,13 +70,6 @@
 @media (max-width: 47.99rem), (max-aspect-ratio: 1249 / 1000) {
   .controls app-online-panel {
     display: none;
-  }
-}
-
-/* Phones, online: the chat's floating button keeps the end of the page clear for itself. */
-@media (max-width: 47.99rem) {
-  .game.with-chat {
-    padding-bottom: calc(var(--spacing-fab) + 2 * var(--spacing-stack));
   }
 }
 
@@ -114,6 +119,21 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-stack);
+}
+
+/* A part with nothing to show (no save problem, no new version, a local game's chat) takes no gap. */
+.controls > :empty {
+  display: none;
+}
+
+/* Phones tall enough for the floating buttons (games; the chat online): the end of the page is
+   kept clear for them. Shorter phones keep the games in the masthead and the chat in the flow. */
+@media (max-width: 47.99rem) and (min-height: 47.5rem) {
+  .game {
+    padding-bottom: calc(
+      var(--spacing-fab) + 2 * var(--spacing-stack-tight) + env(safe-area-inset-bottom)
+    );
+  }
 }
 
 /* Any landscape screen from tablet width up: board on the right at full height. */

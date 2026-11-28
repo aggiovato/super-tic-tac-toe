@@ -46,7 +46,7 @@ test.describe('ship sink', () => {
     await page.goto('/fleet');
     await page.getByRole('button', { name: 'Settings' }).click();
     await page.getByRole('tab', { name: 'Players' }).click();
-    await expect(page.getByRole('radio', { name: 'Against the opponent' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Against the computer' })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'Two players' })).toHaveCount(0);
     await expect(page.getByRole('radio', { name: 'Online room' })).toHaveCount(1);
   });

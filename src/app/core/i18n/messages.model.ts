@@ -96,7 +96,8 @@ export interface Messages {
     /** Flap word after the player and the arrow while the game goes on (five letters). */
     readonly flapTurn: string;
     readonly opening: string;
-    readonly played: (mover: string, cell: number, next: string) => string;
+    /** The last move; whose turn it is shows on the departure row and the turn tag. */
+    readonly played: (mover: string, cell: number) => string;
     readonly won: (winner: string) => string;
     readonly drawn: string;
     readonly rejected: (reason: 'game-over' | 'invalid-coordinates' | 'cell-occupied') => string;
@@ -175,7 +176,8 @@ export interface Messages {
     /** Flap word after the player and the arrow while the game goes on (five letters). */
     readonly flapTurn: string;
     readonly opening: string;
-    readonly drew: (mover: string, next: string) => string;
+    /** A line that closed nothing; whose turn it is shows on the departure row and the turn tag. */
+    readonly drew: (mover: string) => string;
     readonly closed: (mover: string, boxes: number) => string;
     readonly won: (winner: string, theirs: number, others: number) => string;
     readonly drawn: string;

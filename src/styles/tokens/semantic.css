@@ -79,8 +79,8 @@
   --spacing-board-gap: clamp(var(--ref-space-2), 2.5vw, var(--ref-space-4)); /* between boards */
   --spacing-cell-gap: var(--ref-stroke-2); /* between cells: drawn as the grid line */
   --spacing-panel-pad: clamp(var(--ref-space-1), 1.5vw, var(--ref-space-3));
-  /* A floating button (the room chat's) and the room the page keeps for it at its end. */
-  --spacing-fab: 3.25rem;
+  /* A floating button (games, the room chat) and the room the page keeps for them at its end. */
+  --spacing-fab: 2.75rem; /* the 44 px touch target */
 
   /* Motion. */
   --ease-flap: cubic-bezier(0.3, 0, 0.2, 1);
